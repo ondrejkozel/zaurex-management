@@ -17,9 +17,9 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  *
  */
 @SpringBootApplication
-@NpmPackage(value = "@fontsource/lato", version = "4.5.0")
+@NpmPackage(value = "@fontsource/open-sans", version = "4.5.0")
 @Theme(value = "zaurex")
-@PWA(name = "Zaurex", shortName = "Zaurex", offlineResources = {"images/logo.png"})
+@PWA(name = "Zaurex management", shortName = "Management", offlineResources = {})
 @Push
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 public class Application extends SpringBootServletInitializer implements AppShellConfigurator {

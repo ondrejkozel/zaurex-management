@@ -1,5 +1,6 @@
 [slot='drawer'] {
   background-image: linear-gradient(0deg, var(--lumo-shade-5pct), var(--lumo-shade-5pct));
+  overflow: hidden;
 }
 
 [slot='drawer'] nav a {
@@ -75,11 +76,9 @@
 }
 
 .app-name {
-  align-items: center;
-  display: flex;
   height: var(--lumo-size-xl);
-  margin: 0;
-  padding-left: var(--lumo-space-m);
+  padding-top: var(--lumo-space-xd);
+  padding-left: var(--lumo-space-s);
   padding-right: var(--lumo-space-m);
   font-size: var(--lumo-font-size-m);
 }

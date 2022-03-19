@@ -31,7 +31,7 @@ import javax.annotation.security.PermitAll;
 import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Dovolená")
-@Route(value = "holidays", layout = MainLayout.class)
+@Route(value = "holidays/yours", layout = MainLayout.class)
 @PermitAll
 public class DovolenáView extends Div {
 

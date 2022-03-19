@@ -12,18 +12,16 @@ import javax.annotation.security.PermitAll;
 @PageTitle("Hlavní strana")
 @Route(value = "", layout = MainLayout.class)
 @PermitAll
-public class HlavnístranaView extends VerticalLayout {
+public class HomePageView extends VerticalLayout {
 
-    public HlavnístranaView() {
+    public HomePageView() {
         setSpacing(false);
-
-        Image img = new Image("images/empty-plant.png", "placeholder plant");
-        img.setWidth("200px");
-        add(img);
-
-        add(new H2("This place intentionally left empty"));
-        add(new Paragraph("It’s a place where you can grow your own UI 🤗"));
-
+        //
+        add(new Image("images/logo-full.png", "Zaurex"));
+        //
+        add(new H2("Vítejte v Zaurex management"));
+        add(new Paragraph("Lorem ipsum dolor sit amet"));
+        //
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);

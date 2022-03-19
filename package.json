@@ -2,7 +2,7 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
-    "@fontsource/lato": "4.5.0",
+    "@fontsource/open-sans": "4.5.0",
     "@polymer/iron-icon": "3.0.1",
     "@polymer/iron-iconset-svg": "3.0.1",
     "@polymer/iron-list": "3.1.0",
@@ -263,11 +263,13 @@
     "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
     "date-fns": "$date-fns",
     "lit": "$lit",
-    "chokidar": "$chokidar"
+    "chokidar": "$chokidar",
+    "line-awesome": "$line-awesome",
+    "@fontsource/open-sans": "$@fontsource/open-sans"
   },
   "vaadin": {
     "dependencies": {
-      "@fontsource/lato": "4.5.0",
+      "@fontsource/open-sans": "4.5.0",
       "@polymer/iron-icon": "3.0.1",
       "@polymer/iron-iconset-svg": "3.0.1",
       "@polymer/iron-list": "3.1.0",
@@ -407,6 +409,6 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "f973103aee897d6a948d43a3faf37230f83336e4331d6e80c789bd93d1f1539e"
+    "hash": "3b5e8df134e22ca0289c8c7545d5979522343a2db7e1019dae90739e384871c4"
   }
 }

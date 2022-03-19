@@ -4,18 +4,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Footer;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Header;
-import com.vaadin.flow.component.html.ListItem;
-import com.vaadin.flow.component.html.Nav;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.html.UnorderedList;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -24,7 +15,7 @@ import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.chat.ChatView;
 import cz.wildwest.zaurex.views.dovolená.DovolenáView;
 import cz.wildwest.zaurex.views.dovolenékeschválení.DovolenékeschváleníView;
-import cz.wildwest.zaurex.views.hlavnístrana.HlavnístranaView;
+import cz.wildwest.zaurex.views.hlavnístrana.HomePageView;
 import cz.wildwest.zaurex.views.naskladnit.NaskladnitView;
 import cz.wildwest.zaurex.views.prodat.ProdatView;
 import cz.wildwest.zaurex.views.sklad.SkladView;
@@ -50,11 +41,14 @@ public class MainLayout extends AppLayout {
             RouterLink link = new RouterLink();
             link.addClassNames("menu-item-link");
             link.setRoute(view);
-
+            //
             Span text = new Span(menuTitle);
             text.addClassNames("menu-item-text");
-
-            link.add(new LineAwesomeIcon(iconClass), text);
+            //
+            LineAwesomeIcon lineAwesomeIcon = new LineAwesomeIcon(iconClass);
+            lineAwesomeIcon.addClassNames("menu-item-icon");
+            //
+            link.add(lineAwesomeIcon, text);
             add(link);
         }
 
@@ -62,26 +56,12 @@ public class MainLayout extends AppLayout {
             return view;
         }
 
-        /**
-         * Simple wrapper to create icons using LineAwesome iconset. See
-         * https://icons8.com/line-awesome
-         */
-        @NpmPackage(value = "line-awesome", version = "1.3.0")
-        public static class LineAwesomeIcon extends Span {
-            public LineAwesomeIcon(String lineawesomeClassnames) {
-                addClassNames("menu-item-icon");
-                if (!lineawesomeClassnames.isEmpty()) {
-                    addClassNames(lineawesomeClassnames);
-                }
-            }
-        }
-
     }
 
     private H1 viewTitle;
 
-    private AuthenticatedUser authenticatedUser;
-    private AccessAnnotationChecker accessChecker;
+    private final AuthenticatedUser authenticatedUser;
+    private final AccessAnnotationChecker accessChecker;
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -107,10 +87,13 @@ public class MainLayout extends AppLayout {
     }
 
     private Component createDrawerContent() {
-        H2 appName = new H2("Zaurex");
+        Image appName = new Image("images/napis-zaurex-trans.png", "Zaurex");
+        RouterLink routerLink = new RouterLink();
+        routerLink.setRoute(HomePageView.class);
+        routerLink.add(appName);
         appName.addClassNames("app-name");
 
-        com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(appName,
+        com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(routerLink,
                 createNavigation(), createFooter());
         section.addClassNames("drawer-section");
         return section;
@@ -136,26 +119,26 @@ public class MainLayout extends AppLayout {
     }
 
     private MenuItemInfo[] createMenuItems() {
-        return new MenuItemInfo[]{ //
-                new MenuItemInfo("Hlavní strana", "la la-home", HlavnístranaView.class), //
+        return new MenuItemInfo[]{
+//                new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
-                new MenuItemInfo("Prodat", "la la-credit-card", ProdatView.class), //
+                new MenuItemInfo("Prodat", "la la-credit-card", ProdatView.class), 
 
-                new MenuItemInfo("Naskladnit", "la la-box", NaskladnitView.class), //
+                new MenuItemInfo("Naskladnit", "la la-box", NaskladnitView.class), 
 
-                new MenuItemInfo("Sklad", "la la-boxes", SkladView.class), //
+                new MenuItemInfo("Sklad", "la la-boxes", SkladView.class), 
 
-                new MenuItemInfo("Vaše směny", "la la-screwdriver", VašesměnyView.class), //
+                new MenuItemInfo("Vaše směny", "la la-screwdriver", VašesměnyView.class), 
 
-                new MenuItemInfo("Všechny směny", "la la-tools", VšechnysměnyView.class), //
+                new MenuItemInfo("Všechny směny", "la la-tools", VšechnysměnyView.class), 
 
-                new MenuItemInfo("Dovolená", "la la-gamepad", DovolenáView.class), //
+                new MenuItemInfo("Dovolená", "la la-mug-hot", DovolenáView.class), 
 
-                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", DovolenékeschváleníView.class), //
+                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", DovolenékeschváleníView.class), 
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", ZaměstnanciView.class), //
+                new MenuItemInfo("Zaměstnanci", "la la-users", ZaměstnanciView.class), 
 
-                new MenuItemInfo("Chat", "la la-comments", ChatView.class), //
+                new MenuItemInfo("Chat", "la la-comments", ChatView.class), 
 
         };
     }
@@ -167,22 +150,23 @@ public class MainLayout extends AppLayout {
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
-
-            Avatar avatar = new Avatar(user.getName(), user.getProfilePictureUrl());
+            //
+            Avatar avatar = new Avatar(user.getName());
             avatar.addClassNames("me-xs");
-
-            ContextMenu userMenu = new ContextMenu(avatar);
-            userMenu.setOpenOnClick(true);
-            userMenu.addItem("Logout", e -> {
-                authenticatedUser.logout();
-            });
-
+            //
             Span name = new Span(user.getName());
-            name.addClassNames("font-medium", "text-s", "text-secondary");
-
-            layout.add(avatar, name);
-        } else {
-            Anchor loginLink = new Anchor("login", "Sign in");
+            name.addClassNames("font-medium", "text-s", "text-secondary", "flex-auto");
+            //
+            LineAwesomeIcon lineAwesomeIcon = new LineAwesomeIcon("las la-power-off");
+            lineAwesomeIcon.addClassNames("font-medium");
+            Button logoutButton = new Button(lineAwesomeIcon,
+                    clickEvent -> authenticatedUser.logout());
+            logoutButton.addClassNames("px-xs");
+            //
+            layout.add(avatar, name, logoutButton);
+        }
+        else {
+            Anchor loginLink = new Anchor("login", "Přihlásit se");
             layout.add(loginLink);
         }
 
