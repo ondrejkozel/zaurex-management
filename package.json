@@ -2,6 +2,7 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@fontsource/lato": "4.5.0",
     "@polymer/iron-icon": "3.0.1",
     "@polymer/iron-iconset-svg": "3.0.1",
     "@polymer/iron-list": "3.1.0",
@@ -117,6 +118,7 @@
     "@webcomponents/shadycss": "1.9.6",
     "construct-style-sheets-polyfill": "3.0.4",
     "date-fns": "2.23.0",
+    "line-awesome": "1.3.0",
     "lit": "2.1.4"
   },
   "devDependencies": {
@@ -265,6 +267,7 @@
   },
   "vaadin": {
     "dependencies": {
+      "@fontsource/lato": "4.5.0",
       "@polymer/iron-icon": "3.0.1",
       "@polymer/iron-iconset-svg": "3.0.1",
       "@polymer/iron-list": "3.1.0",
@@ -379,6 +382,7 @@
       "@webcomponents/shadycss": "1.9.6",
       "construct-style-sheets-polyfill": "3.0.4",
       "date-fns": "2.23.0",
+      "line-awesome": "1.3.0",
       "lit": "2.1.4"
     },
     "devDependencies": {
@@ -403,6 +407,6 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "50f198761303325b5ec897d34120a7e1d7d04fc97ba9d5defa8d4339839d3f66"
+    "hash": "f973103aee897d6a948d43a3faf37230f83336e4331d6e80c789bd93d1f1539e"
   }
 }
