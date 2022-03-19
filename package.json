@@ -263,7 +263,9 @@
     "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
     "date-fns": "$date-fns",
     "lit": "$lit",
-    "chokidar": "$chokidar"
+    "chokidar": "$chokidar",
+    "@fontsource/lato": "$@fontsource/lato",
+    "line-awesome": "$line-awesome"
   },
   "vaadin": {
     "dependencies": {
