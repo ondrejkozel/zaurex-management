@@ -137,7 +137,7 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Všechny směny", "la la-tools", VšechnysměnyView.class), //
 
-                new MenuItemInfo("Dovolená", "la la-gamepad", DovolenáView.class), //
+                new MenuItemInfo("Dovolená", "la la-mug-hot", DovolenáView.class), //
 
                 new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", DovolenékeschváleníView.class), //
 
