@@ -17,7 +17,7 @@ public class HomePageView extends VerticalLayout {
     public HomePageView() {
         setSpacing(false);
         //
-        add(new Image("images/logo-trans.png", "Zaurex"));
+        add(new Image("images/logo-full.png", "Zaurex"));
         //
         add(new H2("Vítejte v Zaurex management"));
         add(new Paragraph("Lorem ipsum dolor sit amet"));
