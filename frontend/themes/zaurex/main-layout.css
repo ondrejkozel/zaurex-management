@@ -83,6 +83,10 @@
   font-size: var(--lumo-font-size-m);
 }
 
+.app-name-container {
+  text-align: center;
+}
+
 .drawer-section {
   align-items: stretch;
   display: flex;

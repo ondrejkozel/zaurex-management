@@ -91,6 +91,7 @@ public class MainLayout extends AppLayout {
         RouterLink routerLink = new RouterLink();
         routerLink.setRoute(HomePageView.class);
         routerLink.add(appName);
+        routerLink.addClassNames("app-name-container");
         appName.addClassNames("app-name");
 
         com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(routerLink,
