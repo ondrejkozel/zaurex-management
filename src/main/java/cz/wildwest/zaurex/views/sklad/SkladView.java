@@ -31,7 +31,7 @@ import javax.annotation.security.PermitAll;
 import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Sklad")
-@Route(value = "stock", layout = MainLayout.class)
+@Route(value = "stock/all", layout = MainLayout.class)
 @PermitAll
 public class SkladView extends Div {
 

@@ -24,7 +24,7 @@ import cz.wildwest.zaurex.views.MainLayout;
 import javax.annotation.security.RolesAllowed;
 
 @PageTitle("Naskladnit")
-@Route(value = "to-store", layout = MainLayout.class)
+@Route(value = "stock/add", layout = MainLayout.class)
 @RolesAllowed("USER")
 @Uses(Icon.class)
 public class NaskladnitView extends Div {
