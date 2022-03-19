@@ -1,6 +1,5 @@
 package cz.wildwest.zaurex.views.prodat;
 
-import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
