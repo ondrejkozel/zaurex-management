@@ -8,12 +8,12 @@
 @import url('./views/dovolenékeschválení-view.css');
 @import url('./views/zaměstnanci-view.css');
 @import url('line-awesome/dist/line-awesome/css/line-awesome.min.css');
-@import url('@fontsource/lato');    html {
+@import url('@fontsource/open-sans');    html {
+    --lumo-font-family: Open Sans;
       --lumo-primary-color-50pct: rgba(10,197,168, 0.5);
       --lumo-primary-color-10pct: rgba(10,197,168, 0.1);
       --lumo-primary-color: rgb(10,197,168);
       --lumo-primary-text-color: rgb(10,197,168);
---lumo-font-family: Lato;
 
     }
 
