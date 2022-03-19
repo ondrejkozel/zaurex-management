@@ -15,7 +15,7 @@ import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.chat.ChatView;
 import cz.wildwest.zaurex.views.dovolená.DovolenáView;
 import cz.wildwest.zaurex.views.dovolenékeschválení.DovolenékeschváleníView;
-import cz.wildwest.zaurex.views.hlavnístrana.HlavnístranaView;
+import cz.wildwest.zaurex.views.hlavnístrana.HomePageView;
 import cz.wildwest.zaurex.views.naskladnit.NaskladnitView;
 import cz.wildwest.zaurex.views.prodat.ProdatView;
 import cz.wildwest.zaurex.views.sklad.SkladView;
@@ -88,9 +88,12 @@ public class MainLayout extends AppLayout {
 
     private Component createDrawerContent() {
         Image appName = new Image("images/napis-zaurex-trans.png", "Zaurex");
+        RouterLink routerLink = new RouterLink();
+        routerLink.setRoute(HomePageView.class);
+        routerLink.add(appName);
         appName.addClassNames("app-name");
 
-        com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(appName,
+        com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(routerLink,
                 createNavigation(), createFooter());
         section.addClassNames("drawer-section");
         return section;
@@ -117,25 +120,25 @@ public class MainLayout extends AppLayout {
 
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{
-                new MenuItemInfo("Hlavní strana", "la la-home", HlavnístranaView.class), //
+//                new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
-                new MenuItemInfo("Prodat", "la la-credit-card", ProdatView.class), //
+                new MenuItemInfo("Prodat", "la la-credit-card", ProdatView.class), 
 
-                new MenuItemInfo("Naskladnit", "la la-box", NaskladnitView.class), //
+                new MenuItemInfo("Naskladnit", "la la-box", NaskladnitView.class), 
 
-                new MenuItemInfo("Sklad", "la la-boxes", SkladView.class), //
+                new MenuItemInfo("Sklad", "la la-boxes", SkladView.class), 
 
-                new MenuItemInfo("Vaše směny", "la la-screwdriver", VašesměnyView.class), //
+                new MenuItemInfo("Vaše směny", "la la-screwdriver", VašesměnyView.class), 
 
-                new MenuItemInfo("Všechny směny", "la la-tools", VšechnysměnyView.class), //
+                new MenuItemInfo("Všechny směny", "la la-tools", VšechnysměnyView.class), 
 
-                new MenuItemInfo("Dovolená", "la la-mug-hot", DovolenáView.class), //
+                new MenuItemInfo("Dovolená", "la la-mug-hot", DovolenáView.class), 
 
-                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", DovolenékeschváleníView.class), //
+                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", DovolenékeschváleníView.class), 
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", ZaměstnanciView.class), //
+                new MenuItemInfo("Zaměstnanci", "la la-users", ZaměstnanciView.class), 
 
-                new MenuItemInfo("Chat", "la la-comments", ChatView.class), //
+                new MenuItemInfo("Chat", "la la-comments", ChatView.class), 
 
         };
     }

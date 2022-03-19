@@ -77,7 +77,7 @@
 .app-name {
   height: var(--lumo-size-xl);
   padding-top: var(--lumo-space-xd);
-  padding-left: var(--lumo-space-m);
+  padding-left: var(--lumo-space-s);
   padding-right: var(--lumo-space-m);
   font-size: var(--lumo-font-size-m);
 }
