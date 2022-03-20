@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.všechnysměny;
+package cz.wildwest.zaurex.views.allShifts;
 
 public class Client {
 

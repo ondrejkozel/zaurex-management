@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.zaměstnanci;
+package cz.wildwest.zaurex.views.holidays;
 
 public class Client {
 

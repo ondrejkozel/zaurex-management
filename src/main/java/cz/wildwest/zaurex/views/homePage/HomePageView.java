@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.hlavnístrana;
+package cz.wildwest.zaurex.views.homePage;
 
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;

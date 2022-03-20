@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.zaměstnanci;
+package cz.wildwest.zaurex.views.warehouse;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -27,13 +27,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.security.RolesAllowed;
+import javax.annotation.security.PermitAll;
 import org.apache.commons.lang3.StringUtils;
 
-@PageTitle("Zaměstnanci")
-@Route(value = "employees", layout = MainLayout.class)
-@RolesAllowed("ADMIN")
-public class ZaměstnanciView extends Div {
+@PageTitle("Sklad")
+@Route(value = "warehouse/all", layout = MainLayout.class)
+@PermitAll
+public class WarehouseView extends Div {
 
     private GridPro<Client> grid;
     private GridListDataView<Client> gridListDataView;
@@ -43,8 +43,8 @@ public class ZaměstnanciView extends Div {
     private Grid.Column<Client> statusColumn;
     private Grid.Column<Client> dateColumn;
 
-    public ZaměstnanciView() {
-        addClassName("zaměstnanci-view");
+    public WarehouseView() {
+        addClassName("sklad-view");
         setSizeFull();
         createGrid();
         add(grid);

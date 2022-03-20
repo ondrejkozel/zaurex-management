@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.sklad;
+package cz.wildwest.zaurex.views.employees;
 
 public class Client {
 

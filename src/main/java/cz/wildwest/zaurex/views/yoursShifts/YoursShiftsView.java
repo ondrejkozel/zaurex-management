@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.dovolenékeschválení;
+package cz.wildwest.zaurex.views.yoursShifts;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -30,10 +30,10 @@ import java.util.Locale;
 import javax.annotation.security.PermitAll;
 import org.apache.commons.lang3.StringUtils;
 
-@PageTitle("Dovolené ke schválení")
-@Route(value = "holidays/approve", layout = MainLayout.class)
+@PageTitle("Vaše směny")
+@Route(value = "shifts/yours", layout = MainLayout.class)
 @PermitAll
-public class DovolenékeschváleníView extends Div {
+public class YoursShiftsView extends Div {
 
     private GridPro<Client> grid;
     private GridListDataView<Client> gridListDataView;
@@ -43,8 +43,8 @@ public class DovolenékeschváleníView extends Div {
     private Grid.Column<Client> statusColumn;
     private Grid.Column<Client> dateColumn;
 
-    public DovolenékeschváleníView() {
-        addClassName("dovolenékeschválení-view");
+    public YoursShiftsView() {
+        addClassName("vašesměny-view");
         setSizeFull();
         createGrid();
         add(grid);
