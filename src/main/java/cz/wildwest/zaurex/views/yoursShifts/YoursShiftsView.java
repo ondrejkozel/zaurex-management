@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.sklad;
+package cz.wildwest.zaurex.views.yoursShifts;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -28,12 +28,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
 
-@PageTitle("Sklad")
-@Route(value = "stock/all", layout = MainLayout.class)
-@PermitAll
-public class SkladView extends Div {
+@PageTitle("Vaše směny")
+@Route(value = "shifts/yours", layout = MainLayout.class)
+@RolesAllowed({"SALESMAN", "WAREHOUSEMAN"})
+public class YoursShiftsView extends Div {
 
     private GridPro<Client> grid;
     private GridListDataView<Client> gridListDataView;
@@ -43,8 +45,8 @@ public class SkladView extends Div {
     private Grid.Column<Client> statusColumn;
     private Grid.Column<Client> dateColumn;
 
-    public SkladView() {
-        addClassName("sklad-view");
+    public YoursShiftsView() {
+        addClassName("vašesměny-view");
         setSizeFull();
         createGrid();
         add(grid);

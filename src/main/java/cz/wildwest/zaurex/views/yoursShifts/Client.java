@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.dovolenékeschválení;
+package cz.wildwest.zaurex.views.yoursShifts;
 
 public class Client {
 

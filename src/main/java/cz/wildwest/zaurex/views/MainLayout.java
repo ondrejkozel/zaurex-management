@@ -13,15 +13,16 @@ import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.chat.ChatView;
-import cz.wildwest.zaurex.views.dovolená.DovolenáView;
-import cz.wildwest.zaurex.views.dovolenékeschválení.DovolenékeschváleníView;
-import cz.wildwest.zaurex.views.hlavnístrana.HomePageView;
-import cz.wildwest.zaurex.views.naskladnit.NaskladnitView;
-import cz.wildwest.zaurex.views.prodat.ProdatView;
-import cz.wildwest.zaurex.views.sklad.SkladView;
-import cz.wildwest.zaurex.views.vašesměny.VašesměnyView;
-import cz.wildwest.zaurex.views.všechnysměny.VšechnysměnyView;
-import cz.wildwest.zaurex.views.zaměstnanci.ZaměstnanciView;
+import cz.wildwest.zaurex.views.holidays.HolidaysView;
+import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
+import cz.wildwest.zaurex.views.homePage.HomePageView;
+import cz.wildwest.zaurex.views.addToWarehouse.AddToWarehouseView;
+import cz.wildwest.zaurex.views.invoices.InvoicesView;
+import cz.wildwest.zaurex.views.sell.SellView;
+import cz.wildwest.zaurex.views.warehouse.WarehouseView;
+import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
+import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
+import cz.wildwest.zaurex.views.employees.EmployeesView;
 import java.util.Optional;
 
 /**
@@ -123,23 +124,25 @@ public class MainLayout extends AppLayout {
         return new MenuItemInfo[]{
 //                new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
-                new MenuItemInfo("Prodat", "la la-credit-card", ProdatView.class), 
+                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
-                new MenuItemInfo("Naskladnit", "la la-box", NaskladnitView.class), 
+                new MenuItemInfo("Naskladnit", "la la-box", AddToWarehouseView.class),
 
-                new MenuItemInfo("Sklad", "la la-boxes", SkladView.class), 
+                new MenuItemInfo("Sklad", "la la-boxes", WarehouseView.class),
 
-                new MenuItemInfo("Vaše směny", "la la-screwdriver", VašesměnyView.class), 
+                new MenuItemInfo("Vaše směny", "la la-screwdriver", YoursShiftsView.class),
 
-                new MenuItemInfo("Všechny směny", "la la-tools", VšechnysměnyView.class), 
+                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
 
-                new MenuItemInfo("Dovolená", "la la-mug-hot", DovolenáView.class), 
+                new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class),
 
-                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", DovolenékeschváleníView.class), 
+                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", HolidaysForApprovalView.class),
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", ZaměstnanciView.class), 
+                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
-                new MenuItemInfo("Chat", "la la-comments", ChatView.class), 
+                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
+
+//                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
 
         };
     }

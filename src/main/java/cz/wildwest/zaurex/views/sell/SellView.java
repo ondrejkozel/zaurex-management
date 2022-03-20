@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.prodat;
+package cz.wildwest.zaurex.views.sell;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -22,8 +22,8 @@ import javax.annotation.security.RolesAllowed;
 
 @PageTitle("Prodat")
 @Route(value = "sell", layout = MainLayout.class)
-@RolesAllowed("USER")
-public class ProdatView extends Div {
+@RolesAllowed("SALESMAN")
+public class SellView extends Div {
 
     private static final Set<String> states = new LinkedHashSet<>();
     private static final Set<String> countries = new LinkedHashSet<>();
@@ -74,7 +74,7 @@ public class ProdatView extends Div {
                 "Zimbabwe"));
     }
 
-    public ProdatView() {
+    public SellView() {
         addClassNames("prodat-view", "flex", "flex-col", "h-full");
 
         Main content = new Main();

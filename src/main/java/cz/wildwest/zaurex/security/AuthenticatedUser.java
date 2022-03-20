@@ -32,6 +32,10 @@ public class AuthenticatedUser {
         return getAuthentication().map(authentication -> userRepository.findByUsername(authentication.getName()));
     }
 
+    public boolean isPresent() {
+        return get().isPresent();
+    }
+
     public void logout() {
         UI.getCurrent().getPage().setLocation(SecurityConfiguration.LOGOUT_URL);
         SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();

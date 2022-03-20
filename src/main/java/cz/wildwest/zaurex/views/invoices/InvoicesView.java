@@ -1,9 +1,8 @@
-package cz.wildwest.zaurex.views.zaměstnanci;
+package cz.wildwest.zaurex.views.invoices;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -11,7 +10,7 @@ import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -21,19 +20,21 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.views.MainLayout;
+import cz.wildwest.zaurex.views.warehouse.Client;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.security.RolesAllowed;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.security.RolesAllowed;
-import org.apache.commons.lang3.StringUtils;
 
-@PageTitle("Zaměstnanci")
-@Route(value = "employees", layout = MainLayout.class)
-@RolesAllowed("ADMIN")
-public class ZaměstnanciView extends Div {
+@PageTitle("Sklad")
+@Route(value = "invoices", layout = MainLayout.class)
+@RolesAllowed({"SHIFT_LEADER"})
+public class InvoicesView extends Div {
 
     private GridPro<Client> grid;
     private GridListDataView<Client> gridListDataView;
@@ -43,8 +44,8 @@ public class ZaměstnanciView extends Div {
     private Grid.Column<Client> statusColumn;
     private Grid.Column<Client> dateColumn;
 
-    public ZaměstnanciView() {
-        addClassName("zaměstnanci-view");
+    public InvoicesView() {
+        addClassName("sklad-view");
         setSizeFull();
         createGrid();
         add(grid);
@@ -58,7 +59,7 @@ public class ZaměstnanciView extends Div {
 
     private void createGridComponent() {
         grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.MULTI);
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
         grid.setHeight("100%");
 
@@ -76,7 +77,7 @@ public class ZaměstnanciView extends Div {
     private void createClientColumn() {
         clientColumn = grid.addColumn(new ComponentRenderer<>(client -> {
             HorizontalLayout hl = new HorizontalLayout();
-            hl.setAlignItems(Alignment.CENTER);
+            hl.setAlignItems(FlexComponent.Alignment.CENTER);
             Image img = new Image(client.getImg(), "");
             Span span = new Span();
             span.setClassName("name");
@@ -96,11 +97,11 @@ public class ZaměstnanciView extends Div {
 
     private void createStatusColumn() {
         statusColumn = grid.addEditColumn(Client::getClient, new ComponentRenderer<>(client -> {
-            Span span = new Span();
-            span.setText(client.getStatus());
-            span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
-            return span;
-        })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("Pending", "Success", "Error"))
+                    Span span = new Span();
+                    span.setText(client.getStatus());
+                    span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
+                    return span;
+                })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("Pending", "Success", "Error"))
                 .setComparator(client -> client.getStatus()).setHeader("Status");
     }
 
@@ -201,3 +202,4 @@ public class ZaměstnanciView extends Div {
         return c;
     }
 };
+

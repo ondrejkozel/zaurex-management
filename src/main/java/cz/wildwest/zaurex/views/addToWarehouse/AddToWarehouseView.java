@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.naskladnit;
+package cz.wildwest.zaurex.views.addToWarehouse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -24,10 +24,10 @@ import cz.wildwest.zaurex.views.MainLayout;
 import javax.annotation.security.RolesAllowed;
 
 @PageTitle("Naskladnit")
-@Route(value = "stock/add", layout = MainLayout.class)
-@RolesAllowed("USER")
+@Route(value = "warehouse/add", layout = MainLayout.class)
+@RolesAllowed("WAREHOUSEMAN")
 @Uses(Icon.class)
-public class NaskladnitView extends Div {
+public class AddToWarehouseView extends Div {
 
     private TextField firstName = new TextField("First name");
     private TextField lastName = new TextField("Last name");
@@ -41,7 +41,7 @@ public class NaskladnitView extends Div {
 
     private Binder<SamplePerson> binder = new Binder(SamplePerson.class);
 
-    public NaskladnitView(SamplePersonService personService) {
+    public AddToWarehouseView(SamplePersonService personService) {
         addClassName("naskladnit-view");
 
         add(createTitle());

@@ -1,5 +1,5 @@
 package cz.wildwest.zaurex.data;
 
 public enum Role {
-    USER, ADMIN;
+    SALESMAN, WAREHOUSEMAN, SHIFT_LEADER, MANAGER
 }

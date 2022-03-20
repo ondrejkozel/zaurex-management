@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.dovolená;
+package cz.wildwest.zaurex.views.warehouse;
 
 public class Client {
 
