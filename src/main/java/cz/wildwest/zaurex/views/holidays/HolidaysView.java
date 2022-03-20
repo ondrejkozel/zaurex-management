@@ -21,16 +21,15 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.views.MainLayout;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.security.RolesAllowed;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-
-import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Dovolená")
 @Route(value = "holidays/yours", layout = MainLayout.class)
@@ -65,7 +64,7 @@ public class HolidaysView extends Div {
         grid.setHeight("100%");
 
         List<Client> clients = getClients();
-        gridListDataView = grid.setItems(clients);
+//        gridListDataView = grid.setItems(clients);
     }
 
     private void addColumnsToGrid() {
@@ -85,15 +84,15 @@ public class HolidaysView extends Div {
             span.setText(client.getClient());
             hl.add(img, span);
             return hl;
-        })).setComparator(client -> client.getClient()).setHeader("Client");
+        })).setHeader("Client");
     }
 
     private void createAmountColumn() {
         amountColumn = grid
                 .addEditColumn(Client::getAmount,
-                        new NumberRenderer<>(client -> client.getAmount(), NumberFormat.getCurrencyInstance(Locale.US)))
+                        new NumberRenderer<>(Client::getAmount, NumberFormat.getCurrencyInstance(Locale.US)))
                 .text((item, newValue) -> item.setAmount(Double.parseDouble(newValue)))
-                .setComparator(client -> client.getAmount()).setHeader("Amount");
+                .setComparator(Client::getAmount).setHeader("Amount");
     }
 
     private void createStatusColumn() {

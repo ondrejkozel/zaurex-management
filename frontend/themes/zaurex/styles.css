@@ -1,10 +1,9 @@
 @import url('./main-layout.css');
+@import url('./grid-pro.css');
 @import url('./views/prodat-view.css');
 @import url('./views/naskladnit-view.css');
-@import url('./views/sklad-view.css');
 @import url('./views/vašesměny-view.css');
 @import url('./views/všechnysměny-view.css');
-@import url('./views/dovolená-view.css');
 @import url('./views/dovolenékeschválení-view.css');
 @import url('./views/zaměstnanci-view.css');
 @import url('./views/home-page-view.css');

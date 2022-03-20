@@ -1,0 +1,30 @@
+.badge-container {
+  display: block;
+}
+
+.grid-pro-container {
+  padding: 0;
+  height: 100%;
+}
+
+.display-none {
+  display: none;
+}
+
+.grid-pro {
+  /*display: block;*/
+}
+.grid-pro vaadin-grid-pro {
+  /*flex: auto;*/
+}
+.grid-pro vaadin-grid-filter,
+.grid-pro vaadin-grid-filter > * {
+  width: 100%;
+}
+.grid-pro vaadin-grid-pro vaadin-horizontal-layout {
+  align-items: center;
+}
+.grid-pro span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

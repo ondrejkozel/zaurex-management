@@ -4,7 +4,9 @@ import cz.wildwest.zaurex.data.AbstractEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.Collections;
 import java.util.Set;
 
 @Entity
@@ -12,6 +14,7 @@ import java.util.Set;
 public class WarehouseItem extends AbstractEntity {
 
     @Size(max = 100, message = "Název může být dlouhý maximálně 100 znaků")
+    @NotBlank
     private String title;
 
     @Size(max = 500, message = "Krátký popis může být dlouhý maximálně 500 znaků")
@@ -57,12 +60,24 @@ public class WarehouseItem extends AbstractEntity {
     }
 
     public Set<Variant> getVariants() {
-        return variants;
+        return Collections.unmodifiableSet(variants);
     }
 
     public void setVariants(Set<Variant> variants) {
         variants.forEach(variant -> variant.setOf(this));
         this.variants = variants;
+    }
+
+    public int getTotalQuantity() {
+        return variants.stream().mapToInt(Variant::getQuantity).sum();
+    }
+
+    public float getTotalValue() {
+        return (float) variants.stream().mapToDouble(value -> value.getQuantity() * value.getPrice()).sum();
+    }
+
+    public boolean isOutOfStock() {
+        return variants.stream().anyMatch(variant -> variant.getQuantity() == 0);
     }
 
     @Entity
