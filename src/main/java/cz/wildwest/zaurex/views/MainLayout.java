@@ -142,7 +142,7 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
 
-                new MenuItemInfo("Chat", "la la-comments", ChatView.class), 
+//                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
 
         };
     }
