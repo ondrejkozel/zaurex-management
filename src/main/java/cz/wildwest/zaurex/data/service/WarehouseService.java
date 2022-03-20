@@ -5,9 +5,9 @@ import cz.wildwest.zaurex.data.service.repository.WarehouseItemRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WarehouseItemService extends GenericService<WarehouseItem, WarehouseItemRepository> {
+public class WarehouseService extends GenericService<WarehouseItem, WarehouseItemRepository> {
 
-    public WarehouseItemService(WarehouseItemRepository mainRepository) {
+    public WarehouseService(WarehouseItemRepository mainRepository) {
         super(mainRepository);
     }
 }

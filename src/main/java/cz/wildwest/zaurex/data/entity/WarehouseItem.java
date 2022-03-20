@@ -19,7 +19,7 @@ public class WarehouseItem extends AbstractEntity {
 
     private boolean sellable;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "of")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "of", cascade = CascadeType.ALL)
     private Set<Variant> variants;
 
     public WarehouseItem() {
@@ -56,14 +56,25 @@ public class WarehouseItem extends AbstractEntity {
         this.sellable = sellable;
     }
 
+    public Set<Variant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(Set<Variant> variants) {
+        variants.forEach(variant -> variant.setOf(this));
+        this.variants = variants;
+    }
+
     @Entity
     @Table(name = "warehouse_item_variants")
     public static class Variant extends AbstractEntity {
 
         public Variant(){}
 
-        private Variant(WarehouseItem of) {
-            this.of = of;
+        public Variant(String colour, int quantity, float price) {
+            this.colour = colour;
+            this.quantity = quantity;
+            this.price = price;
         }
 
         @ManyToOne
@@ -100,6 +111,10 @@ public class WarehouseItem extends AbstractEntity {
 
         public void setPrice(float price) {
             this.price = price;
+        }
+
+        private void setOf(WarehouseItem of) {
+            this.of = of;
         }
     }
 }
