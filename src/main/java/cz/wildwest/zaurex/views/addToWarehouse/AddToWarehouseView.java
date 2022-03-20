@@ -25,7 +25,7 @@ import javax.annotation.security.RolesAllowed;
 
 @PageTitle("Naskladnit")
 @Route(value = "warehouse/add", layout = MainLayout.class)
-@RolesAllowed("USER")
+@RolesAllowed("WAREHOUSEMAN")
 @Uses(Icon.class)
 public class AddToWarehouseView extends Div {
 

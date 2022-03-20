@@ -28,11 +28,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Vaše směny")
 @Route(value = "shifts/yours", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"SALESMAN", "WAREHOUSEMAN"})
 public class YoursShiftsView extends Div {
 
     private GridPro<Client> grid;

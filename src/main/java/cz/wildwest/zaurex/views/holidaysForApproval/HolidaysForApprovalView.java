@@ -28,11 +28,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Dovolené ke schválení")
 @Route(value = "holidays/approve", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed("MANAGER")
 public class HolidaysForApprovalView extends Div {
 
     private GridPro<Client> grid;

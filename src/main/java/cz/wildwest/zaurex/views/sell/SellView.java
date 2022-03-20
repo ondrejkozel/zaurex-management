@@ -22,7 +22,7 @@ import javax.annotation.security.RolesAllowed;
 
 @PageTitle("Prodat")
 @Route(value = "sell", layout = MainLayout.class)
-@RolesAllowed("USER")
+@RolesAllowed("SALESMAN")
 public class SellView extends Div {
 
     private static final Set<String> states = new LinkedHashSet<>();

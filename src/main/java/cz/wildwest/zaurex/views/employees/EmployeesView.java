@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Zaměstnanci")
 @Route(value = "employees", layout = MainLayout.class)
-@RolesAllowed("ADMIN")
+@RolesAllowed("MANAGER")
 public class EmployeesView extends Div {
 
     private GridPro<Client> grid;

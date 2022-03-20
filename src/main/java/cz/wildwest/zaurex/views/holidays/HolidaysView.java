@@ -28,11 +28,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
 
 @PageTitle("Dovolená")
 @Route(value = "holidays/yours", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"SALESMAN", "WAREHOUSEMAN"})
 public class HolidaysView extends Div {
 
     private GridPro<Client> grid;
