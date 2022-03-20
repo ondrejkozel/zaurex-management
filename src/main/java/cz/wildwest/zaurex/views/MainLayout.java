@@ -17,6 +17,7 @@ import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.addToWarehouse.AddToWarehouseView;
+import cz.wildwest.zaurex.views.invoices.InvoicesView;
 import cz.wildwest.zaurex.views.sell.SellView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
@@ -123,7 +124,7 @@ public class MainLayout extends AppLayout {
         return new MenuItemInfo[]{
 //                new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
-                new MenuItemInfo("Prodat", "la la-credit-card", SellView.class),
+                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
                 new MenuItemInfo("Naskladnit", "la la-box", AddToWarehouseView.class),
 
@@ -136,6 +137,8 @@ public class MainLayout extends AppLayout {
                 new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class),
 
                 new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", HolidaysForApprovalView.class),
+
+                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
                 new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
 
