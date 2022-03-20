@@ -27,7 +27,7 @@ public class DataGenerator {
             //
             logger.info("Generating demo data");
             //
-            logger.info("... generating 4 User entities...");
+            logger.info("... generating 5 User entities...");
             User salesman = new User();
             salesman.setName("Prodavač");
             salesman.setUsername("prodavac");
@@ -52,7 +52,13 @@ public class DataGenerator {
             manager.setHashedPassword(passwordEncoder.encode("manazer"));
             manager.setRoles(Set.of(Role.values()));
             //
-            userRepository.saveAll(List.of(salesman, warehouseman, shiftLeader, manager));
+            User shiftLeader2 = new User();
+            shiftLeader2.setName("Vedocí směny prodavač");
+            shiftLeader2.setUsername("vedoucismeny2");
+            shiftLeader2.setHashedPassword(passwordEncoder.encode("vedoucismeny2"));
+            shiftLeader2.setRoles(Set.of(Role.SHIFT_LEADER, Role.SALESMAN));
+            //
+            userRepository.saveAll(List.of(salesman, warehouseman, shiftLeader, manager, shiftLeader2));
             //
             logger.info("Generated demo data");
         };
