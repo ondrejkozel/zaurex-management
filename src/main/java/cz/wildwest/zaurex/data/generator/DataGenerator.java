@@ -3,7 +3,9 @@ package cz.wildwest.zaurex.data.generator;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.User;
-import cz.wildwest.zaurex.data.service.UserRepository;
+import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.WarehouseItemService;
+import cz.wildwest.zaurex.data.service.repository.UserRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseItemService warehouseItemService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userRepository.count() != 0L) {
@@ -61,6 +63,8 @@ public class DataGenerator {
             userRepository.saveAll(List.of(salesman, warehouseman, shiftLeader, manager, shiftLeader2));
             //
             logger.info("Generated demo data");
+            //
+            warehouseItemService.save(new WarehouseItem("Bunda Tilak", "Zimní bunda Tilak vás zahřeje v každém ročním období!"));
         };
     }
 

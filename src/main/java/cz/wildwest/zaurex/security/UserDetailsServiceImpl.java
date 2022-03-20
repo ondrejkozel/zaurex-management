@@ -1,7 +1,7 @@
 package cz.wildwest.zaurex.security;
 
 import cz.wildwest.zaurex.data.entity.User;
-import cz.wildwest.zaurex.data.service.UserRepository;
+import cz.wildwest.zaurex.data.service.repository.UserRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
