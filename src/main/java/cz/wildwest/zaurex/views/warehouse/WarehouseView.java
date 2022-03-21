@@ -1,5 +1,6 @@
 package cz.wildwest.zaurex.views.warehouse;
 
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -79,16 +80,19 @@ public class WarehouseView extends VerticalLayout {
     private TextField title;
     @SuppressWarnings("FieldCanBeLocal")
     private TextArea briefDescription;
+    @SuppressWarnings("FieldCanBeLocal")
+    private Checkbox sellable;
 
     private void configureEditor() {
         title = new TextField("Název");
         title.setRequired(true);
         briefDescription = new TextArea("Krátký popis");
         briefDescription.setClearButtonVisible(true);
+        sellable = new Checkbox("Prodejné");
         //
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);
-        CrudEditor<WarehouseItem> editor = new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription));
+        CrudEditor<WarehouseItem> editor = new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription, sellable));
         grid.setEditor(editor, "Nová položka", "Upravit položku", "Odstranit položku");
     }
 
