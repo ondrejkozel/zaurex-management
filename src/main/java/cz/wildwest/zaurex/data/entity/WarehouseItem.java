@@ -32,6 +32,7 @@ public class WarehouseItem extends AbstractEntity {
 
     public WarehouseItem() {
         sellable = true;
+        variants = Collections.emptySet();
     }
 
     public WarehouseItem(String title, String briefDescription) {
@@ -85,8 +86,8 @@ public class WarehouseItem extends AbstractEntity {
         return variants.stream().mapToInt(Variant::getQuantity).sum();
     }
 
-    public float getTotalValue() {
-        return (float) variants.stream().mapToDouble(value -> value.getQuantity() * value.getPrice()).sum();
+    public double getTotalValue() {
+        return variants.stream().mapToDouble(value -> value.getQuantity() * value.getPrice()).sum();
     }
 
     public boolean isOutOfStock() {
@@ -97,9 +98,13 @@ public class WarehouseItem extends AbstractEntity {
     @Table(name = "warehouse_item_variants")
     public static class Variant extends AbstractEntity {
 
-        public Variant(){}
+        public Variant(){
+            colour = "";
+            quantity = 1;
+            price = 0;
+        }
 
-        public Variant(String colour, int quantity, float price) {
+        public Variant(String colour, int quantity, double price) {
             this.colour = colour;
             this.quantity = quantity;
             this.price = price;
@@ -110,12 +115,13 @@ public class WarehouseItem extends AbstractEntity {
         private WarehouseItem of;
 
         @Size(max = 50, message = "Barva může mít maximálně 50 znaků")
+        @NotBlank
         private String colour;
 
         @Min(value = 0, message = "Počet kusů nemůže být záporný")
         private int quantity;
 
-        private float price;
+        private double price;
 
         public String getColour() {
             return colour;
@@ -133,11 +139,11 @@ public class WarehouseItem extends AbstractEntity {
             this.quantity = quantity;
         }
 
-        public float getPrice() {
+        public double getPrice() {
             return price;
         }
 
-        public void setPrice(float price) {
+        public void setPrice(double price) {
             this.price = price;
         }
 

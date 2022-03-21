@@ -66,8 +66,8 @@ public class DataGenerator {
             //
             WarehouseItem bunda_tilak = new WarehouseItem("Bunda Tilak", "Zimní bunda Tilak vás zahřeje v každém ročním období!");
             bunda_tilak.setVariants(Set.of(
-                    new WarehouseItem.Variant("zelená", 84, 499.9f),
-                    new WarehouseItem.Variant("černá", 10, 514.9f)
+                    new WarehouseItem.Variant("zelená", 84, 499.9),
+                    new WarehouseItem.Variant("černá", 10, 514.9)
             ));
             bunda_tilak.setCategory(WarehouseItem.Category.HIKING);
             warehouseService.save(bunda_tilak);

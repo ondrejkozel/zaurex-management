@@ -54,7 +54,6 @@ public class AddToWarehouseView extends Div {
         cancel.addClickListener(e -> clearForm());
         save.addClickListener(e -> {
             personService.save(binder.getBean());
-            Notification.show(binder.getBean().getClass().getSimpleName() + " details stored.");
             clearForm();
         });
     }
