@@ -2,7 +2,6 @@ package cz.wildwest.zaurex.views.warehouse;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
-import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -30,24 +29,24 @@ import javax.annotation.security.RolesAllowed;
 @RolesAllowed({"SALESMAN", "MANAGER"})
 public class WarehouseView extends VerticalLayout {
 
-    private final WarehouseService warehouseService;
     private final Gridd<WarehouseItem> grid;
 
     public WarehouseView(WarehouseService warehouseService) {
-        this.warehouseService = warehouseService;
         //
         setSizeFull();
         //
-        grid = new Gridd<>(WarehouseItem.class);
-        grid.setDataProvider(new GenericDataProvider<>(warehouseService, WarehouseItem.class));
-        grid.setNewObjectSupplier(WarehouseItem::new);
+        grid = new Gridd<>(WarehouseItem.class,
+                new GenericDataProvider<>(warehouseService, WarehouseItem.class),
+                WarehouseItem::new,
+                buildEditor(),
+                "Nové zboží",
+                "Upravit zboží",
+                "Odstranit zboží");
         configureColumns();
-        configureEditor();
         //
         add(grid);
     }
 
-    // TODO: 21.03.2022 převést všechny nastavovací metody do konstruktoru
     private void configureColumns() {
         grid.addEditColumn("Název", WarehouseItem::getTitle, new TextRenderer<>(WarehouseItem::getTitle))
                 .text((item, title) -> {
@@ -89,7 +88,7 @@ public class WarehouseView extends VerticalLayout {
     @SuppressWarnings("FieldCanBeLocal")
     private Checkbox sellable;
 
-    private void configureEditor() {
+    private BinderCrudEditor<WarehouseItem> buildEditor() {
         title = new TextField("Název");
         title.setRequired(true);
         briefDescription = new TextArea("Krátký popis");
@@ -101,8 +100,7 @@ public class WarehouseView extends VerticalLayout {
         //
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);
-        CrudEditor<WarehouseItem> editor = new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription, category, sellable));
-        grid.setEditor(editor, "Nová položka", "Upravit položku", "Odstranit položku");
+        return new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription, category, sellable));
     }
 
 

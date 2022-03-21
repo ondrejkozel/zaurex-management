@@ -48,20 +48,43 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
 
     private MenuBar menuBar;
 
-    public Gridd(Class<T> tClass) {
-        this.tClass = tClass;
+    /**
+     * Creates a new Gridd.
+     * <p>
+     * Don't forget to set columns also!
+     *
+     * @param tClass class of T type
+     * @param dataProvider data provider of items
+     * @param newItemSupplier instantiates new items created by crud editor
+     * @param editor crud editor, binds user set values to objects
+     * @param newItem new item translation
+     * @param edit edit item translation
+     * @param delete delete item translation
+     */
+    public Gridd(Class<T> tClass,
+                 GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> dataProvider,
+                 Supplier<T> newItemSupplier,
+                 CrudEditor<T> editor,
+                 String newItem,
+                 String edit,
+                 String delete) {
         addClassName("grid-pro-container");
+        this.tClass = tClass;
         //
         buildGrid();
         //
-        buildCrud();
+        buildBottomMenuBar();
+        //
+        buildCrud(newItemSupplier, editor, newItem, edit, delete);
         //
         buildMenuBar();
         //
-        buildBottomMenuBar();
-        //
         add(menuBar, grid, bottomMenuBarLayout);
+        //
+        this.dataProvider = dataProvider;
+        grid.setDataProvider(dataProvider);
     }
+
 
     public Editor<T> getEditor() {
         return grid.getEditor();
@@ -69,7 +92,10 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
 
     private void buildGrid() {
         grid = new GridPro<>();
-        style();
+        grid.addClassNames("grid-pro");
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
+        grid.setEditOnClick(true);
         //
         grid.addItemPropertyChangedListener(tItemPropertyChangedEvent -> dataProvider.save(tItemPropertyChangedEvent.getItem()));
         grid.getSelectionModel().addSelectionListener(selectionEvent -> {
@@ -77,16 +103,9 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         });
     }
 
-    private void style() {
-        grid.addClassNames("grid-pro");
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setEditOnClick(true);
-    }
-
     private Crud<T> crud;
 
-    private void buildCrud() {
+    private void buildCrud(Supplier<T> newItemSupplier, CrudEditor<T> editor, String newItem, String edit, String delete) {
         crud = new Crud<>();
         crud.setBeanType(tClass);
         crud.setDataProvider(new EmptyDataProvider());
@@ -106,17 +125,17 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
             dataProvider.delete(tDeleteEvent.getItem());
             refreshAll();
         });
+        //
+        this.newObjectSupplier = newItemSupplier;
+        //
+        crud.setEditor(editor);
+        crud.setI18n(buildCrudI18n(newItem, edit, delete));
+        newObjectButton.setText(newItem);
     }
 
     private void refreshAll() {
         dataProvider.refreshAll();
         grid.recalculateColumnWidths();
-    }
-
-    public void setEditor(CrudEditor<T> editor, String newItem, String edit, String delete) {
-        crud.setEditor(editor);
-        crud.setI18n(buildCrudI18n(newItem, edit, delete));
-        newObjectButton.setText(newItem);
     }
 
     private MenuItem multiselectMenuItem;
@@ -177,12 +196,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         menuItem.setChecked(visible);
     }
 
-    private GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> dataProvider;
-
-    public void setDataProvider(GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> dataProvider) {
-        this.dataProvider = dataProvider;
-        grid.setDataProvider(dataProvider);
-    }
+    private final GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> dataProvider;
 
     public List<T> getItems() {
         return dataProvider.fetch(new Query<>()).collect(Collectors.toList());
@@ -263,10 +277,6 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
     private Button newObjectButton;
 
     private Supplier<T> newObjectSupplier;
-
-    public void setNewObjectSupplier(Supplier<T> supplier) {
-        newObjectSupplier = supplier;
-    }
 
     private Button deleteSelectedButton;
 
