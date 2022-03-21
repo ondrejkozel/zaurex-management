@@ -89,7 +89,7 @@ public class WarehouseView extends VerticalLayout {
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);
         CrudEditor<WarehouseItem> editor = new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription));
-        grid.setEditor(editor, "Nové zboží", "Upravit zboží", "Odstranit zboží");
+        grid.setEditor(editor, "Nová položka", "Upravit položku", "Odstranit položku");
     }
 
 
