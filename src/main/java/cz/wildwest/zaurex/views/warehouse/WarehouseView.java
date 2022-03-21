@@ -6,6 +6,7 @@ import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -54,6 +55,8 @@ public class WarehouseView extends VerticalLayout {
         grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
         grid.addColumn("Celková hodnota", new NumberRenderer<>(WarehouseItem::getTotalValue, "%.2f Kč"));
         grid.addColumn("Celkový počet", new NumberRenderer<>(WarehouseItem::getTotalQuantity, "%d ks"));
+        grid.addEditColumn("Kategorie", WarehouseItem::getCategory, new TextRenderer<>(item -> item.getCategory().getTitle()))
+                        .select(WarehouseItem::setCategory, WarehouseItem.Category.class);
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
             HorizontalLayout badgeLayout = new HorizontalLayout();
             badgeLayout.addClassName("badge-container");
@@ -81,6 +84,8 @@ public class WarehouseView extends VerticalLayout {
     @SuppressWarnings("FieldCanBeLocal")
     private TextArea briefDescription;
     @SuppressWarnings("FieldCanBeLocal")
+    private Select<WarehouseItem.Category> category;
+    @SuppressWarnings("FieldCanBeLocal")
     private Checkbox sellable;
 
     private void configureEditor() {
@@ -88,11 +93,14 @@ public class WarehouseView extends VerticalLayout {
         title.setRequired(true);
         briefDescription = new TextArea("Krátký popis");
         briefDescription.setClearButtonVisible(true);
+        category = new Select<>(WarehouseItem.Category.values());
+        category.setLabel("Kategorie");
+        category.setRequiredIndicatorVisible(true);
         sellable = new Checkbox("Prodejné");
         //
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);
-        CrudEditor<WarehouseItem> editor = new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription, sellable));
+        CrudEditor<WarehouseItem> editor = new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription, category, sellable));
         grid.setEditor(editor, "Nová položka", "Upravit položku", "Odstranit položku");
     }
 

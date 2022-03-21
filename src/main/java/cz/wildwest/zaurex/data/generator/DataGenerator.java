@@ -69,6 +69,7 @@ public class DataGenerator {
                     new WarehouseItem.Variant("zelená", 84, 499.9f),
                     new WarehouseItem.Variant("černá", 10, 514.9f)
             ));
+            bunda_tilak.setCategory(WarehouseItem.Category.HIKING);
             warehouseService.save(bunda_tilak);
         };
     }

@@ -5,6 +5,7 @@ import cz.wildwest.zaurex.data.AbstractEntity;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.Set;
@@ -24,6 +25,10 @@ public class WarehouseItem extends AbstractEntity {
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "of", cascade = CascadeType.ALL)
     private Set<Variant> variants;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private Category category;
 
     public WarehouseItem() {
         sellable = true;
@@ -66,6 +71,14 @@ public class WarehouseItem extends AbstractEntity {
     public void setVariants(Set<Variant> variants) {
         variants.forEach(variant -> variant.setOf(this));
         this.variants = variants;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public int getTotalQuantity() {
@@ -130,6 +143,27 @@ public class WarehouseItem extends AbstractEntity {
 
         private void setOf(WarehouseItem of) {
             this.of = of;
+        }
+    }
+
+    public enum Category {
+
+        HIKING("turistika"), MOUNTAINEERING("lezectví"), RUNNING("běh"), OTHER("jiné");
+
+        private final String title;
+
+        Category(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+
+        @Override
+        public String toString() {
+            return title;
         }
     }
 }
