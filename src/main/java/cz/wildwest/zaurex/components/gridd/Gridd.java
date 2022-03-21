@@ -36,6 +36,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Custom component representing a table with a menu bar.
+ * <p>
+ * Uses Vaadin {@link GridPro}, {@link Crud} (because of it's {@link CrudEditor}) and {@link MenuBar}.
+ */
 public class Gridd<T extends AbstractEntity> extends VerticalLayout {
 
     private final Class<T> tClass;
@@ -217,6 +222,9 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         return confirmations;
     }
 
+    /**
+     * A blank {@link DataProvider}. It's purpose is to solace crud's need for a data provider.
+     */
     private class EmptyDataProvider implements DataProvider<T, Object> {
 
         @Override

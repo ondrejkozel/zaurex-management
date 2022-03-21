@@ -47,6 +47,7 @@ public class WarehouseView extends VerticalLayout {
         add(grid);
     }
 
+    // TODO: 21.03.2022 převést všechny nastavovací metody do konstruktoru
     private void configureColumns() {
         grid.addEditColumn("Název", WarehouseItem::getTitle, new TextRenderer<>(WarehouseItem::getTitle))
                 .text((item, title) -> {
