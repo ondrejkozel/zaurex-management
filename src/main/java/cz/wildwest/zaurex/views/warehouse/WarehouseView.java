@@ -10,6 +10,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
@@ -17,12 +18,17 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
+import cz.wildwest.zaurex.components.gridd.GridFilter;
 import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.WarehouseService;
+import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @PageTitle("Sklad")
 @Route(value = "warehouse/all", layout = MainLayout.class)
@@ -31,32 +37,38 @@ public class WarehouseView extends VerticalLayout {
 
     private final Gridd<WarehouseItem> grid;
 
-    public WarehouseView(WarehouseService warehouseService) {
+    public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser) {
+        Set<Role> roles = authenticatedUser.get().orElseThrow().getRoles();
         //
         setSizeFull();
         //
+        boolean editable = roles.contains(Role.MANAGER);
         grid = new Gridd<>(WarehouseItem.class,
-                new GenericDataProvider<>(warehouseService, WarehouseItem.class),
+                editable ?
+                        new GenericDataProvider<>(warehouseService, WarehouseItem.class) :
+                        new GenericDataProvider<>(warehouseService, WarehouseItem.class) {
+                            @Override
+                            //if manager isn't logged in, only sellable items are shown
+                            protected Stream<WarehouseItem> fetchFromBackEnd(Query<WarehouseItem, GridFilter> query) {
+                                return super.fetchFromBackEnd(query).filter(WarehouseItem::isSellable);
+                            }
+                        },
                 WarehouseItem::new,
-                buildEditor(),
+                editable,
+                buildEditor(editable),
                 "Nové zboží",
-                "Upravit zboží",
-                "Odstranit zboží");
+                "Zboží", "Odstranit zboží");
         configureColumns();
         //
         add(grid);
     }
 
     private void configureColumns() {
-        grid.addEditColumn("Název", WarehouseItem::getTitle, new TextRenderer<>(WarehouseItem::getTitle))
-                .text((item, title) -> {
-                    if (title.length() > 0 && title.length() <= 100) item.setTitle(title);
-                }).setFrozen(true);
+        grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
         grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
         grid.addColumn("Celková hodnota", new NumberRenderer<>(WarehouseItem::getTotalValue, "%.2f Kč"));
         grid.addColumn("Celkový počet", new NumberRenderer<>(WarehouseItem::getTotalQuantity, "%d ks"));
-        grid.addEditColumn("Kategorie", WarehouseItem::getCategory, new TextRenderer<>(item -> item.getCategory().getTitle()))
-                        .select(WarehouseItem::setCategory, WarehouseItem.Category.class);
+        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
             HorizontalLayout badgeLayout = new HorizontalLayout();
             badgeLayout.addClassName("badge-container");
@@ -88,7 +100,7 @@ public class WarehouseView extends VerticalLayout {
     @SuppressWarnings("FieldCanBeLocal")
     private Checkbox sellable;
 
-    private BinderCrudEditor<WarehouseItem> buildEditor() {
+    private BinderCrudEditor<WarehouseItem> buildEditor(boolean editable) {
         title = new TextField("Název");
         title.setRequired(true);
         briefDescription = new TextArea("Krátký popis");
@@ -97,6 +109,7 @@ public class WarehouseView extends VerticalLayout {
         category.setLabel("Kategorie");
         category.setRequiredIndicatorVisible(true);
         sellable = new Checkbox("Prodejné");
+        sellable.setVisible(editable);
         //
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);

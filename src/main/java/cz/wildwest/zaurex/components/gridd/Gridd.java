@@ -1,8 +1,6 @@
 package cz.wildwest.zaurex.components.gridd;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -13,7 +11,6 @@ import com.vaadin.flow.component.crud.CrudI18n;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.editor.Editor;
-import com.vaadin.flow.component.gridpro.EditColumnConfigurator;
 import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -25,7 +22,6 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataProviderListener;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.Renderer;
-import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.service.GenericService;
@@ -44,7 +40,7 @@ import java.util.stream.Stream;
 public class Gridd<T extends AbstractEntity> extends VerticalLayout {
 
     private final Class<T> tClass;
-    private GridPro<T> grid;
+    private Grid<T> grid;
 
     private MenuBar menuBar;
 
@@ -56,6 +52,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
      * @param tClass class of T type
      * @param dataProvider data provider of items
      * @param newItemSupplier instantiates new items created by crud editor
+     * @param editable if editor should be editable
      * @param editor crud editor, binds user set values to objects
      * @param newItem new item translation
      * @param edit edit item translation
@@ -64,6 +61,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
     public Gridd(Class<T> tClass,
                  GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> dataProvider,
                  Supplier<T> newItemSupplier,
+                 boolean editable,
                  CrudEditor<T> editor,
                  String newItem,
                  String edit,
@@ -79,10 +77,27 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         //
         buildMenuBar();
         //
+        setEditable(editable);
+        //
         add(menuBar, grid, bottomMenuBarLayout);
         //
         this.dataProvider = dataProvider;
         grid.setDataProvider(dataProvider);
+    }
+
+    private void setEditable(boolean editable) {
+        multiselectMenuItem.setEnabled(editable);
+        newObjectButton.setVisible(editable);
+        if (!editable) {
+            crud.getDeleteButton().setEnabled(false);
+            crud.getSaveButton().setEnabled(false);
+            crud.getDeleteButton().addClassName("display-none");
+            crud.getSaveButton().addClassName("display-none");
+            crud.getEditor().getView().getChildren().forEach(component -> {
+                if (component instanceof HasValueAndElement<?, ?> hasValueAndElement)
+                    hasValueAndElement.setReadOnly(true);
+            });
+        }
     }
 
 
@@ -95,9 +110,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         grid.addClassNames("grid-pro");
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setEditOnClick(true);
         //
-        grid.addItemPropertyChangedListener(tItemPropertyChangedEvent -> dataProvider.save(tItemPropertyChangedEvent.getItem()));
         grid.getSelectionModel().addSelectionListener(selectionEvent -> {
             if (selectionEvent.getFirstSelectedItem().isPresent() && !multiselect) crud.edit(selectionEvent.getFirstSelectedItem().get(), Crud.EditMode.EXISTING_ITEM);
         });
@@ -172,13 +185,6 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         Grid.Column<T> tColumn = grid.addColumn(renderer).setHeader(header);
         newColumnAdded(tColumn, header);
         return tColumn;
-    }
-
-    public EditColumnConfigurator<T> addEditColumn(String header, ValueProvider<T, ?> valueProvider, Renderer<T> renderer) {
-        EditColumnConfigurator<T> tEditColumnConfigurator = grid.addEditColumn(valueProvider, renderer);
-        tEditColumnConfigurator.getColumn().setHeader(header);
-        newColumnAdded(tEditColumnConfigurator.getColumn(), header);
-        return tEditColumnConfigurator;
     }
 
     private void newColumnAdded(Grid.Column<T> column, String header) {
