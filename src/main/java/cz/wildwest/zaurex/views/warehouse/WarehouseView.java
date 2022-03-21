@@ -100,7 +100,10 @@ public class WarehouseView extends VerticalLayout {
         //
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);
-        return new BinderCrudEditor<>(binder, new FormLayout(title, briefDescription, category, sellable));
+        FormLayout formLayout = new FormLayout(title, category, briefDescription, sellable);
+        formLayout.setColspan(briefDescription, 2);
+        formLayout.setColspan(sellable, 2);
+        return new BinderCrudEditor<>(binder, formLayout);
     }
 
 
