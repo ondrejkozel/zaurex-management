@@ -30,7 +30,9 @@ import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.service.GenericService;
 import cz.wildwest.zaurex.data.service.repository.GenericRepository;
 
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Gridd<T extends AbstractEntity> extends VerticalLayout {
@@ -174,6 +176,10 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
     public void setDataProvider(GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> dataProvider) {
         this.dataProvider = dataProvider;
         grid.setDataProvider(dataProvider);
+    }
+
+    public List<T> getItems() {
+        return dataProvider.fetch(new Query<>()).collect(Collectors.toList());
     }
 
     public static CrudI18n buildCrudI18n(String newItem, String edit, String delete) {
