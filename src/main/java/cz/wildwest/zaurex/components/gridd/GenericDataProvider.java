@@ -8,6 +8,7 @@ import cz.wildwest.zaurex.data.service.GenericService;
 import cz.wildwest.zaurex.data.service.repository.GenericRepository;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -86,11 +87,15 @@ public class GenericDataProvider <T extends AbstractEntity, S extends GenericSer
         return (int) count;
     }
 
-    public void save(T objekt) {
-        service.save(objekt);
+    public void save(T t) {
+        service.save(t);
     }
 
-    public void delete(T objekt) {
-        service.delete(objekt);
+    public void delete(T t) {
+        service.delete(t);
+    }
+
+    public void deleteAll(Collection<T> collection) {
+        service.deleteAll(collection);
     }
 }
