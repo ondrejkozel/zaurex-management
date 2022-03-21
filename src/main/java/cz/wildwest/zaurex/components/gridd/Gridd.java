@@ -5,6 +5,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
@@ -271,9 +272,24 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         deleteSelectedButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
         deleteSelectedButton.addClickShortcut(Key.DELETE);
         deleteSelectedButton.setVisible(multiselect);
+        deleteSelectedButton.addClickListener(this::deleteSelectedButtonClicked);
         //
         bottomMenuBarLayout = new HorizontalLayout(deleteSelectedButton, newObjectButton);
         bottomMenuBarLayout.setJustifyContentMode(JustifyContentMode.END);
         bottomMenuBarLayout.setWidth("100%");
+    }
+
+    private void deleteSelectedButtonClicked(ClickEvent<Button> clickEvent) {
+        ConfirmDialog dialog = new ConfirmDialog(
+                String.format("Odstranit vybrané objekty: %d", grid.getSelectedItems().size()),
+                "Opravdu si přejete smazat tyto objekty? Tato akce je nevratná.",
+                "Odstranit",
+                confirmEvent -> {
+                    dataProvider.deleteAll(grid.getSelectedItems());
+                    refreshAll();
+                });
+        dialog.setCancelable(true);
+        dialog.setCancelText("Zrušit");
+        dialog.open();
     }
 }
