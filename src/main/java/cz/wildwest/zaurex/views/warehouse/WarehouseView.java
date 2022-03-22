@@ -7,6 +7,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.customfield.CustomField;
+import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Label;
@@ -23,7 +24,6 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.Badge;
@@ -37,7 +37,6 @@ import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
-import org.aspectj.weaver.ast.Var;
 
 import javax.annotation.security.RolesAllowed;
 import java.util.*;
@@ -84,6 +83,8 @@ public class WarehouseView extends VerticalLayout {
         grid.getCrud().addSaveListener(saveListenerToAdd);
         grid.getCrud().addEditListener(event -> itemOpened.accept(event.getItem()));
         grid.getCrud().addNewListener(event -> itemOpened.accept(event.getItem()));
+        grid.getCrud().addEditListener(event -> variantsDetails.setOpened(false));
+        grid.getCrud().addNewListener(event -> variantsDetails.setOpened(true));
     }
 
     private void configureColumns() {
@@ -123,6 +124,10 @@ public class WarehouseView extends VerticalLayout {
     @SuppressWarnings("FieldCanBeLocal")
     private Checkbox sellable;
 
+    private Details variantsDetails;
+
+    private Badge variantsBadge;
+
     private BinderCrudEditor<WarehouseItem> buildEditor(boolean editable) {
         title = new TextField("Název");
         title.setRequired(true);
@@ -135,11 +140,13 @@ public class WarehouseView extends VerticalLayout {
         sellable.setVisible(editable);
         //
         variants = new VariantEditor();
+        variantsBadge = new Badge("0", Badge.BadgeVariant.COUNTER);
+        variantsDetails = new Details(new Span(new Span("Varianty "), variantsBadge), variants);
         //
         Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
         binder.bindInstanceFields(this);
         //
-        FormLayout formLayout = new FormLayout(title, category, briefDescription, variants, sellable);
+        FormLayout formLayout = new FormLayout(title, category, briefDescription, variantsDetails, sellable);
         formLayout.setColspan(briefDescription, 2);
         return new BinderCrudEditor<>(binder, formLayout);
     }
@@ -214,6 +221,7 @@ public class WarehouseView extends VerticalLayout {
         private void refresh() {
             variantLayout.removeAll();
             value.forEach(this::createRow);
+            variantsBadge.setText(String.valueOf(value.size()));
         }
 
         private void createRow(WarehouseItem.Variant variant) {
