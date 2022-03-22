@@ -137,7 +137,6 @@ public class WarehouseView extends VerticalLayout {
         category.setLabel("Kategorie");
         category.setRequiredIndicatorVisible(true);
         sellable = new Checkbox("Prodejné");
-        sellable.setVisible(editable);
         //
         variants = new VariantEditor();
         variantsBadge = new Badge("0", Badge.BadgeVariant.COUNTER);
@@ -147,8 +146,16 @@ public class WarehouseView extends VerticalLayout {
         binder.bindInstanceFields(this);
         //
         FormLayout formLayout = new FormLayout(title, category, briefDescription, variantsDetails, sellable);
+        if (!editable) {
+            formLayout.remove(sellable);
+            makeVariantsDetailsReadOnly();
+        }
         formLayout.setColspan(briefDescription, 2);
         return new BinderCrudEditor<>(binder, formLayout);
+    }
+
+    private void makeVariantsDetailsReadOnly() {
+
     }
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -200,6 +207,8 @@ public class WarehouseView extends VerticalLayout {
             addVariantButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
             addVariantButton.addClickListener(event -> addNew());
             addVariantButton.addClickListener(event -> grid.setDirty());
+            addVariantButton.setEnabled(editable);
+            addVariantButton.setVisible(editable);
             //
             Scroller scroller = new Scroller(variantLayout, Scroller.ScrollDirection.VERTICAL);
             scroller.setMaxHeight("400px");
@@ -237,6 +246,8 @@ public class WarehouseView extends VerticalLayout {
             Button button = new Button(VaadinIcon.CLOSE.create());
             button.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
             button.addClickListener(event -> deleteVariant(variant));
+            button.setVisible(editable);
+            button.setEnabled(editable);
             return button;
         }
 
@@ -248,7 +259,7 @@ public class WarehouseView extends VerticalLayout {
             refresh();
         }
 
-        private static class VariantField extends CustomField<WarehouseItem.Variant> {
+        private class VariantField extends CustomField<WarehouseItem.Variant> {
 
             private WarehouseItem.Variant variant;
 
@@ -287,6 +298,11 @@ public class WarehouseView extends VerticalLayout {
                 note.setPattern("^.{0,50}$");
                 note.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 note.addValueChangeListener(event -> variant.setNote(event.getValue()));
+                //
+                colour.setReadOnly(!editable);
+                quantity.setReadOnly(!editable);
+                price.setReadOnly(!editable);
+                note.setReadOnly(!editable);
                 updateFields();
                 add(colour, new Span(" "), quantity, new Span(" "), price, new Span(" "), note);
             }
