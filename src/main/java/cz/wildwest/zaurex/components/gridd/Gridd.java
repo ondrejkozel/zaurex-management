@@ -213,8 +213,8 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         crud.setDirty(true);
     }
 
-    public Registration addSaveListener(ComponentEventListener<Crud.SaveEvent<T>> listener) {
-        return crud.addSaveListener(listener);
+    public Crud<T> getCrud() {
+        return crud;
     }
 
     public static CrudI18n buildCrudI18n(String newItem, String edit, String delete) {

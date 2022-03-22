@@ -1,8 +1,6 @@
 package cz.wildwest.zaurex.views.warehouse;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -15,6 +13,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.*;
@@ -27,7 +26,6 @@ import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.GridFilter;
@@ -35,13 +33,15 @@ import cz.wildwest.zaurex.components.gridd.Gridd;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
-import cz.wildwest.zaurex.data.service.repository.WarehouseItemVariantRepository;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
+import org.aspectj.weaver.ast.Var;
 
 import javax.annotation.security.RolesAllowed;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,23 +51,26 @@ import java.util.stream.Stream;
 public class WarehouseView extends VerticalLayout {
 
     private final Gridd<WarehouseItem> grid;
-    private final WarehouseItemVariantRepository warehouseItemVariantRepository;
+    private final WarehouseItemVariantService warehouseItemVariantService;
 
-    public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantRepository warehouseItemVariantRepository) {
-        this.warehouseItemVariantRepository = warehouseItemVariantRepository;
+    private boolean editable;
+
+    public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantService warehouseItemVariantService) {
+        this.warehouseItemVariantService = warehouseItemVariantService;
         Set<Role> roles = authenticatedUser.get().orElseThrow().getRoles();
         //
         setSizeFull();
         //
-        boolean editable = roles.contains(Role.MANAGER);
+        editable = roles.contains(Role.MANAGER);
         grid = new Gridd<>(WarehouseItem.class,
-                editable ?
-                        new GenericDataProvider<>(warehouseService, WarehouseItem.class) :
                         new GenericDataProvider<>(warehouseService, WarehouseItem.class) {
                             @Override
-                            //if manager isn't logged in, only sellable items are shown
                             protected Stream<WarehouseItem> fetchFromBackEnd(Query<WarehouseItem, GridFilter> query) {
-                                return super.fetchFromBackEnd(query).filter(WarehouseItem::isSellable);
+                                Stream<WarehouseItem> warehouseItemStream = super.fetchFromBackEnd(query);
+                                //if manager isn't logged in, only sellable items are shown
+                                if (!editable) warehouseItemStream.filter(WarehouseItem::isSellable);
+                                List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
+                                return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet())));
                             }
                         },
                 WarehouseItem::new,
@@ -78,24 +81,26 @@ public class WarehouseView extends VerticalLayout {
         configureColumns();
         //
         add(grid);
-        grid.addSaveListener(listenerToAdd);
+        grid.getCrud().addSaveListener(saveListenerToAdd);
+        grid.getCrud().addEditListener(event -> itemOpened.accept(event.getItem()));
+        grid.getCrud().addNewListener(event -> itemOpened.accept(event.getItem()));
     }
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
         grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
-        grid.addColumn("Celková hodnota", new NumberRenderer<>(WarehouseItem::getTotalValue, "%.2f Kč"));
-        grid.addColumn("Celkový počet", new NumberRenderer<>(WarehouseItem::getTotalQuantity, "%d ks"));
+        grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"));
+        grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"));
         grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
             HorizontalLayout badgeLayout = new HorizontalLayout();
             badgeLayout.addClassName("badge-container");
-            if (item.isOutOfStock()) {
+            if (item.isOutOfStock().orElseThrow()) {
                 Badge soldOut = new Badge("Vyprodáno", Badge.BadgeVariant.ERROR);
                 soldOut.setTitle("Některá z variant produktu byla vyprodána.");
                 badgeLayout.add(soldOut);
             }
-            if (item.getVariants().isEmpty()) {
+            if (item.getTransientVariants().orElseThrow().isEmpty()) {
                 Badge noVariants = new Badge("Žádné varianty", Badge.BadgeVariant.DEFAULT);
                 noVariants.setTitle("Nebyly vytvořeny žádné varianty produktu.");
                 badgeLayout.add(noVariants);
@@ -136,70 +141,78 @@ public class WarehouseView extends VerticalLayout {
         //
         FormLayout formLayout = new FormLayout(title, category, briefDescription, variants, sellable);
         formLayout.setColspan(briefDescription, 2);
-//        formLayout.setColspan(sellable, 2);
-//        formLayout.setColspan(variants, 2);
         return new BinderCrudEditor<>(binder, formLayout);
     }
 
     @SuppressWarnings("FieldCanBeLocal")
     private VariantEditor variants;
 
-    private ComponentEventListener<Crud.SaveEvent<WarehouseItem>> listenerToAdd;
+    private ComponentEventListener<Crud.SaveEvent<WarehouseItem>> saveListenerToAdd;
+    private Consumer<WarehouseItem> itemOpened;
 
-    private class VariantEditor extends VerticalLayout implements HasValue<HasValue.ValueChangeEvent<Set<WarehouseItem.Variant>>, Set<WarehouseItem.Variant>> {
+    /**
+     * If you're reading this, I'm very sorry.
+     * I am awfully ashamed of this piece of code, but no time to make it better.
+     *
+     * Now i'm even more ashamed. Hope no one'll see this.
+     *
+     * Marku, ani se nepokoušej dívat níž a něco se z toho učit.
+     */
+    private class VariantEditor extends VerticalLayout {
 
-        Set<WarehouseItem.Variant> value = Collections.emptySet();
+        List<WarehouseItem.Variant> value = new ArrayList<>();
 
-        List<Component> refreshableComponents;
+        private  WarehouseItem currentItem;
 
         List<WarehouseItem.Variant> awaitingDeletion;
+
+        VerticalLayout variantLayout;
 
         public VariantEditor() {
             setPadding(false);
             setSpacing(false);
-            refreshableComponents = new ArrayList<>();
             awaitingDeletion = new ArrayList<>();
+            variantLayout = new VerticalLayout();
+            variantLayout.setPadding(false);
+            variantLayout.setSpacing(false);
             //
-            listenerToAdd = (event -> {
-                warehouseItemVariantRepository.deleteAll(awaitingDeletion.stream().filter(AbstractEntity::isPersisted).collect(Collectors.toList()));
-                // TODO: 22.03.2022 zde by to mělo odstranit dané itemy z databáze, ale nedělá to
+            saveListenerToAdd = event -> {
+                List<WarehouseItem.Variant> toDelete = new ArrayList<>(awaitingDeletion.stream().filter(AbstractEntity::isPersisted).toList());
+                warehouseItemVariantService.deleteAll(toDelete);
                 awaitingDeletion.clear();
-            });
-            // TODO: 22.03.2022 tlačítko pro novou variantu
+                //
+                value.removeAll(value.stream().filter(variant -> variant.getColour().isBlank()).toList());
+                warehouseItemVariantService.saveAll(value);
+            };
+            itemOpened = item -> {
+                this.currentItem = item;
+                setValue(item.getTransientVariants().orElse(new ArrayList<>()));
+            };
+            //
+            Button addVariantButton = new Button("Vytvořit variantu", VaadinIcon.PLUS.create());
+            addVariantButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+            addVariantButton.addClickListener(event -> addNew());
+            addVariantButton.addClickListener(event -> grid.setDirty());
+            //
+            Scroller scroller = new Scroller(variantLayout, Scroller.ScrollDirection.VERTICAL);
+            scroller.setMaxHeight("400px");
+            add(scroller, addVariantButton);
         }
 
-        @Override
-        public void setValue(Set<WarehouseItem.Variant> variants) {
-            Set<WarehouseItem.Variant> oldValue = getValue();
-            value = variants == null ? Collections.emptySet() : new HashSet<>(variants);
+        public void setValue(Collection<WarehouseItem.Variant> variants) {
+            value = variants == null ? new ArrayList<>() : new ArrayList<>(variants);
             refresh();
-            //
-            changeListeners.forEach(changeListener -> changeListener.valueChanged(new ValueChangeEvent<>() {
-                @Override
-                public HasValue<?, Set<WarehouseItem.Variant>> getHasValue() {
-                    return VariantEditor.this;
-                }
+        }
 
-                @Override
-                public boolean isFromClient() {
-                    return true;
-                }
-
-                @Override
-                public Set<WarehouseItem.Variant> getOldValue() {
-                    return oldValue;
-                }
-
-                @Override
-                public Set<WarehouseItem.Variant> getValue() {
-                    return VariantEditor.this.getValue();
-                }
-            }));
+        public void addNew() {
+            WarehouseItem.Variant variant = new WarehouseItem.Variant();
+            variant.setOf(currentItem);
+            value.add(0, variant);
+            refresh();
         }
 
         private void refresh() {
-            refreshableComponents.forEach(this::remove);
-            refreshableComponents.clear();
+            variantLayout.removeAll();
             value.forEach(this::createRow);
         }
 
@@ -209,9 +222,7 @@ public class WarehouseView extends VerticalLayout {
             HorizontalLayout horizontalLayout = new HorizontalLayout(variantField, buildDeleteVariantButton(variant));
             horizontalLayout.setAlignItems(Alignment.CENTER);
             Hr hr = new Hr();
-            add(horizontalLayout, hr);
-            refreshableComponents.add(horizontalLayout);
-            refreshableComponents.add(hr);
+            variantLayout.add(horizontalLayout, hr);
         }
 
         private Button buildDeleteVariantButton(WarehouseItem.Variant variant) {
@@ -244,21 +255,20 @@ public class WarehouseView extends VerticalLayout {
 
             private void build() {
                 colour = new TextField("Barva");
+                colour.setRequired(true);
                 colour.setPattern("^.{1,50}$");
                 colour.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 colour.addValueChangeListener(event -> variant.setColour(event.getValue()));
-                colour.addValueChangeListener(event -> {
-                    if (event.getValue().equals("")) colour.setValue("název");
-                });
-                colour.setValueChangeMode(ValueChangeMode.ON_BLUR);
                 //
                 quantity = new IntegerField("Počet");
+                quantity.setRequiredIndicatorVisible(true);
                 quantity.setHasControls(true);
                 quantity.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 quantity.setMin(0);
                 quantity.setWidth("100px");
                 quantity.addValueChangeListener(event -> variant.setQuantity(event.getValue()));
                 price = new NumberField("Cena");
+                price.setRequiredIndicatorVisible(true);
                 price.setSuffixComponent(new Label("Kč"));
                 price.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 price.setMin(0);
@@ -284,38 +294,6 @@ public class WarehouseView extends VerticalLayout {
                 quantity.setValue(variant.getQuantity());
                 price.setValue(variant.getPrice());
             }
-        }
-
-        @Override
-        public Set<WarehouseItem.Variant> getValue() {
-            return Collections.unmodifiableSet(value);
-        }
-
-        List<ValueChangeListener<? super ValueChangeEvent<Set<WarehouseItem.Variant>>>> changeListeners = new ArrayList<>();
-
-        @Override
-        public Registration addValueChangeListener(ValueChangeListener<? super ValueChangeEvent<Set<WarehouseItem.Variant>>> valueChangeListener) {
-            changeListeners.add(valueChangeListener);
-            return () -> changeListeners.remove(valueChangeListener);
-        }
-
-        @Override
-        public void setReadOnly(boolean b) {
-
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return false;
-        }
-
-        @Override
-        public void setRequiredIndicatorVisible(boolean b) {
-        }
-
-        @Override
-        public boolean isRequiredIndicatorVisible() {
-            return false;
         }
     }
 }

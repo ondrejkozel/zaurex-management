@@ -7,7 +7,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -23,8 +24,19 @@ public class WarehouseItem extends AbstractEntity {
 
     private boolean sellable;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "of", cascade = CascadeType.ALL)
-    private Set<Variant> variants;
+
+    /**
+     * only to inform other objects about it's variants
+     */
+    private transient Collection<Variant> variants;
+
+    public void setTransientVariants(Collection<Variant> variants) {
+        this.variants = variants;
+    }
+
+    public Optional<Collection<Variant>> getTransientVariants() {
+        return Optional.ofNullable(variants);
+    }
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -32,7 +44,6 @@ public class WarehouseItem extends AbstractEntity {
 
     public WarehouseItem() {
         sellable = true;
-        variants = Collections.emptySet();
     }
 
     public WarehouseItem(String title, String briefDescription) {
@@ -65,15 +76,6 @@ public class WarehouseItem extends AbstractEntity {
         this.sellable = sellable;
     }
 
-    public Set<Variant> getVariants() {
-        return Collections.unmodifiableSet(variants);
-    }
-
-    public void setVariants(Set<Variant> variants) {
-        variants.forEach(variant -> variant.setOf(this));
-        this.variants = variants;
-    }
-
     public Category getCategory() {
         return category;
     }
@@ -82,16 +84,19 @@ public class WarehouseItem extends AbstractEntity {
         this.category = category;
     }
 
-    public int getTotalQuantity() {
-        return variants.stream().mapToInt(Variant::getQuantity).sum();
+    public Optional<Integer> getTotalQuantity() {
+        if (getTransientVariants().isEmpty()) return Optional.empty();
+        return Optional.of(variants.stream().mapToInt(Variant::getQuantity).sum());
     }
 
-    public double getTotalValue() {
-        return variants.stream().mapToDouble(value -> value.getQuantity() * value.getPrice()).sum();
+    public Optional<Double> getTotalValue() {
+        if (getTransientVariants().isEmpty()) return Optional.empty();
+        return Optional.of(variants.stream().mapToDouble(value -> value.getQuantity() * value.getPrice()).sum());
     }
 
-    public boolean isOutOfStock() {
-        return variants.stream().anyMatch(variant -> variant.getQuantity() == 0);
+    public Optional<Boolean> isOutOfStock() {
+        if (getTransientVariants().isEmpty()) return Optional.empty();
+        return Optional.of(variants.stream().anyMatch(variant -> variant.getQuantity() == 0));
     }
 
     @Entity
@@ -104,7 +109,8 @@ public class WarehouseItem extends AbstractEntity {
             price = 0;
         }
 
-        public Variant(String colour, int quantity, double price) {
+        public Variant(WarehouseItem of, String colour, int quantity, double price) {
+            this.of = of;
             this.colour = colour;
             this.quantity = quantity;
             this.price = price;
@@ -147,13 +153,16 @@ public class WarehouseItem extends AbstractEntity {
             this.price = price;
         }
 
-        private void setOf(WarehouseItem of) {
+        public void setOf(WarehouseItem of) {
             this.of = of;
+        }
+
+        public WarehouseItem getOf() {
+            return of;
         }
     }
 
     public enum Category {
-
         HIKING("turistika"), MOUNTAINEERING("lezectví"), RUNNING("běh"), OTHER("jiné");
 
         private final String title;
