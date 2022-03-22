@@ -131,7 +131,6 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         crud.addCancelListener(tCancelEvent -> grid.getSelectionModel().deselectAll());
         //
         crud.addSaveListener(tSaveEvent -> {
-            System.out.println();
             dataProvider.save(tSaveEvent.getItem());
             refreshAll();
         });
