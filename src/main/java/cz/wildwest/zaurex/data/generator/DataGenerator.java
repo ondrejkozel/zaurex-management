@@ -2,10 +2,13 @@ package cz.wildwest.zaurex.data.generator;
 
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import cz.wildwest.zaurex.data.Role;
+import cz.wildwest.zaurex.data.entity.Holiday;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.HolidayService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.data.service.repository.UserRepository;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseService warehouseService) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseService warehouseService, HolidayService holidayService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userRepository.count() != 0L) {
@@ -71,6 +74,8 @@ public class DataGenerator {
             ));
             bunda_tilak.setCategory(WarehouseItem.Category.HIKING);
             warehouseService.save(bunda_tilak);
+            //
+            holidayService.save(new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now(), LocalDate.now().plusWeeks(1)));
         };
     }
 
