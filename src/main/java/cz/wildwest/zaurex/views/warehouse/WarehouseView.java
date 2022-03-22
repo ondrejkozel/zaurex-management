@@ -53,7 +53,7 @@ public class WarehouseView extends VerticalLayout {
     private final Gridd<WarehouseItem> grid;
     private final WarehouseItemVariantService warehouseItemVariantService;
 
-    private boolean editable;
+    private final boolean editable;
 
     public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantService warehouseItemVariantService) {
         this.warehouseItemVariantService = warehouseItemVariantService;
@@ -252,6 +252,7 @@ public class WarehouseView extends VerticalLayout {
             TextField colour;
             IntegerField quantity;
             NumberField price;
+            TextField note;
 
             private void build() {
                 colour = new TextField("Barva");
@@ -265,16 +266,21 @@ public class WarehouseView extends VerticalLayout {
                 quantity.setHasControls(true);
                 quantity.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 quantity.setMin(0);
-                quantity.setWidth("100px");
                 quantity.addValueChangeListener(event -> variant.setQuantity(event.getValue()));
+                //
                 price = new NumberField("Cena");
                 price.setRequiredIndicatorVisible(true);
                 price.setSuffixComponent(new Label("Kč"));
                 price.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 price.setMin(0);
                 price.addValueChangeListener(event -> variant.setPrice(event.getValue()));
+                //
+                note = new TextField("Poznámka/velikost");
+                note.setPattern("^.{0,50}$");
+                note.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+                note.addValueChangeListener(event -> variant.setNote(event.getValue()));
                 updateFields();
-                add(colour, new Span(" "), quantity, new Span(" "), price);
+                add(colour, new Span(" "), quantity, new Span(" "), price, new Span(" "), note);
             }
 
             @Override
@@ -293,6 +299,7 @@ public class WarehouseView extends VerticalLayout {
                 colour.setValue(variant.getColour());
                 quantity.setValue(variant.getQuantity());
                 price.setValue(variant.getPrice());
+                note.setValue(variant.getNote());
             }
         }
     }

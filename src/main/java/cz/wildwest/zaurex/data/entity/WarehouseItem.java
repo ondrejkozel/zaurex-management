@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 @Entity
 @Table(name = "warehouse_items")
@@ -23,20 +22,6 @@ public class WarehouseItem extends AbstractEntity {
     private String briefDescription;
 
     private boolean sellable;
-
-
-    /**
-     * only to inform other objects about it's variants
-     */
-    private transient Collection<Variant> variants;
-
-    public void setTransientVariants(Collection<Variant> variants) {
-        this.variants = variants;
-    }
-
-    public Optional<Collection<Variant>> getTransientVariants() {
-        return Optional.ofNullable(variants);
-    }
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -99,6 +84,18 @@ public class WarehouseItem extends AbstractEntity {
         return Optional.of(variants.stream().anyMatch(variant -> variant.getQuantity() == 0));
     }
 
+    /**
+     * only to inform other objects about it's variants
+     */
+    private transient Collection<Variant> variants;
+
+    public void setTransientVariants(Collection<Variant> variants) {
+        this.variants = variants;
+    }
+
+    public Optional<Collection<Variant>> getTransientVariants() {
+        return Optional.ofNullable(variants);
+    }
     @Entity
     @Table(name = "warehouse_item_variants")
     public static class Variant extends AbstractEntity {
@@ -107,9 +104,11 @@ public class WarehouseItem extends AbstractEntity {
             colour = "";
             quantity = 1;
             price = 0;
+            note = "";
         }
 
         public Variant(WarehouseItem of, String colour, int quantity, double price) {
+            this();
             this.of = of;
             this.colour = colour;
             this.quantity = quantity;
@@ -128,6 +127,10 @@ public class WarehouseItem extends AbstractEntity {
         private int quantity;
 
         private double price;
+
+        @Size(max = 50, message = "Poznámka může mít maximálně 50 znaků")
+        @NotNull
+        private String note;
 
         public String getColour() {
             return colour;
@@ -159,6 +162,14 @@ public class WarehouseItem extends AbstractEntity {
 
         public WarehouseItem getOf() {
             return of;
+        }
+
+        public String getNote() {
+            return note;
+        }
+
+        public void setNote(String note) {
+            this.note = note;
         }
     }
 
