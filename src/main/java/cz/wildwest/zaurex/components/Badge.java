@@ -8,10 +8,11 @@ public class Badge extends Span {
         super(text);
         getElement().getThemeList().add("badge " + badgeVariant.clazz);
         addClassName("custom-badge");
+        if (badgeVariant == BadgeVariant.COUNTER) getStyle().set("margin-inline-start", "var(--lumo-space-s)");
     }
 
     public enum BadgeVariant {
-        DEFAULT(""), SUCCESS("success"), ERROR("error"), CONTRAST("contrast");
+        DEFAULT(""), SUCCESS("success"), ERROR("error"), CONTRAST("contrast"), COUNTER("badge pill small contrast");
 
         private final String clazz;
 
