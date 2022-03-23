@@ -25,13 +25,18 @@ public class Holiday extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Size(max = 150)
+    @Size(max = 400, message = "Odpověď může mít maximálně 400 znaků")
     @NotNull
-    private String message;
+    private String managerResponse;
+
+    @Size(max = 400, message = "Zpráva může mít maximálně 400 znaků")
+    @NotNull
+    private String userMessage;
 
     public Holiday(User owner, LocalDate fromDate, LocalDate toDate) {
         status = Status.PENDING;
-        message = "";
+        managerResponse = "";
+        userMessage = "";
         this.owner = owner;
         this.fromDate = fromDate;
         this.toDate = toDate;
@@ -72,12 +77,20 @@ public class Holiday extends AbstractEntity {
         this.status = status;
     }
 
-    public String getMessage() {
-        return message;
+    public String getManagerResponse() {
+        return managerResponse;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setManagerResponse(String message) {
+        this.managerResponse = message;
+    }
+
+    public String getUserMessage() {
+        return userMessage;
+    }
+
+    public void setUserMessage(String userMessage) {
+        this.userMessage = userMessage;
     }
 
     public enum Status {

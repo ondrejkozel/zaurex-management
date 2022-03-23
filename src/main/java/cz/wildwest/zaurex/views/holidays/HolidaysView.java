@@ -47,6 +47,7 @@ public class HolidaysView extends VerticalLayout {
     private void configureColumns() {
         grid.addColumn("Datum od", new TextRenderer<>(item -> item.getFromDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))));
         grid.addColumn("Datum do", new TextRenderer<>(item -> item.getToDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))));
+        grid.addColumn("Poznámka", new TextRenderer<>(Holiday::getUserMessage));
         grid.addColumn("Stav", new ComponentRenderer<>(holiday -> {
             Badge badge;
             if (holiday.getStatus() == Holiday.Status.APPROVED) badge = new Badge("Schválena", Badge.BadgeVariant.SUCCESS);
@@ -54,7 +55,7 @@ public class HolidaysView extends VerticalLayout {
             else badge = new Badge("Předáno ke schválení", Badge.BadgeVariant.CONTRAST);
             return badge;
         }));
-        grid.addColumn("Poznámka od manažera", new TextRenderer<>(Holiday::getMessage));
+        grid.addColumn("Odpověď manažera", new TextRenderer<>(Holiday::getManagerResponse));
     }
 
     private BinderCrudEditor<Holiday> buildEditor() {

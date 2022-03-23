@@ -77,7 +77,13 @@ public class DataGenerator {
                     new WarehouseItem.Variant(bunda_tilak, "černá", 10, 514.9)
             ));
             //
-            holidayService.save(new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now(), LocalDate.now().plusWeeks(1)));
+            Holiday holiday = new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now(), LocalDate.now().plusWeeks(1));
+            holiday.setUserMessage("Chci jet k moři.");
+            Holiday holiday2 = new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(1).plusWeeks(1));
+            holiday2.setUserMessage("Prosím pustťe mě \uD83D\uDE1E");
+            holiday2.setStatus(Holiday.Status.APPROVED);
+            holiday2.setManagerResponse("Tak jo :)");
+            holidayService.saveAll(List.of(holiday, holiday2));
         };
     }
 
