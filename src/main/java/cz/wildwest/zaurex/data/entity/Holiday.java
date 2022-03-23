@@ -2,10 +2,7 @@ package cz.wildwest.zaurex.data.entity;
 
 import cz.wildwest.zaurex.data.AbstractEntity;
 import java.time.LocalDate;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -23,13 +20,18 @@ public class Holiday extends AbstractEntity {
     @NotNull
     private LocalDate toDate;
 
-    public Holiday() {
-    }
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     public Holiday(User owner, LocalDate fromDate, LocalDate toDate) {
+        status = Status.PENDING;
         this.owner = owner;
         this.fromDate = fromDate;
         this.toDate = toDate;
+    }
+
+    public Holiday() {
     }
 
     public User getOwner() {
@@ -54,5 +56,17 @@ public class Holiday extends AbstractEntity {
 
     public void setToDate(LocalDate toDate) {
         this.toDate = toDate;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public enum Status {
+        PENDING, APPROVED, DENIED;
     }
 }
