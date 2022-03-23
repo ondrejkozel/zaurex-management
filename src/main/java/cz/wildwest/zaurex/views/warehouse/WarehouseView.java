@@ -146,16 +146,9 @@ public class WarehouseView extends VerticalLayout {
         binder.bindInstanceFields(this);
         //
         FormLayout formLayout = new FormLayout(title, category, briefDescription, variantsDetails, sellable);
-        if (!editable) {
-            formLayout.remove(sellable);
-            makeVariantsDetailsReadOnly();
-        }
+        if (!editable) formLayout.remove(sellable);
         formLayout.setColspan(briefDescription, 2);
         return new BinderCrudEditor<>(binder, formLayout);
-    }
-
-    private void makeVariantsDetailsReadOnly() {
-
     }
 
     @SuppressWarnings("FieldCanBeLocal")
