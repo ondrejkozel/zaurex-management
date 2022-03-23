@@ -4,6 +4,7 @@ import cz.wildwest.zaurex.data.AbstractEntity;
 import java.time.LocalDate;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "holidays")
@@ -24,8 +25,13 @@ public class Holiday extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Size(max = 150)
+    @NotNull
+    private String message;
+
     public Holiday(User owner, LocalDate fromDate, LocalDate toDate) {
         status = Status.PENDING;
+        message = "";
         this.owner = owner;
         this.fromDate = fromDate;
         this.toDate = toDate;
@@ -66,7 +72,15 @@ public class Holiday extends AbstractEntity {
         this.status = status;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public enum Status {
-        PENDING, APPROVED, DENIED;
+        PENDING, APPROVED, DENIED
     }
 }
