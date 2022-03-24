@@ -34,15 +34,21 @@ public class Holiday extends AbstractEntity {
     private String userMessage;
 
     public Holiday(User owner, LocalDate fromDate, LocalDate toDate) {
-        status = Status.PENDING;
-        managerResponse = "";
-        userMessage = "";
+        this(owner);
         this.owner = owner;
         this.fromDate = fromDate;
         this.toDate = toDate;
     }
 
+    public Holiday(User owner) {
+        this();
+        this.owner = owner;
+    }
+
     public Holiday() {
+        status = Status.PENDING;
+        managerResponse = "";
+        userMessage = "";
     }
 
     public User getOwner() {
