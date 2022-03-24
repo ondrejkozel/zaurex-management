@@ -1,5 +1,6 @@
 package cz.wildwest.zaurex.views.holidays;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -29,14 +30,12 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.TemporalAmount;
-import java.util.Optional;
+import java.util.List;
 
 @PageTitle("Dovolená")
 @Route(value = "holidays/yours", layout = MainLayout.class)
 @RolesAllowed({"SALESMAN", "WAREHOUSEMAN"})
 public class HolidaysView extends VerticalLayout {
-
-    // TODO: 24.03.2022 aby nešlo upravovat ani mazat probíhající nebo proběhlou dovolenou
 
     private static final TemporalAmount MAX_FROM_DATE_DISTANCE = Period.ofYears(1);
     
@@ -57,6 +56,8 @@ public class HolidaysView extends VerticalLayout {
         //
         setSizeFull();
         add(grid);
+        grid.getCrud().addNewListener(event -> makeReadonly(false));
+        grid.getCrud().addEditListener(event -> makeReadonly(event.getItem().getFromDate().isBefore(LocalDate.now())));
     }
 
     private void configureColumns() {
@@ -71,6 +72,12 @@ public class HolidaysView extends VerticalLayout {
             return badge;
         }));
         grid.addColumn("Odpověď manažera", new TextRenderer<>(Holiday::getManagerResponse));
+    }
+
+    private void makeReadonly(boolean readonly) {
+        List.<HasValue<?, ?>>of(fromDate, toDate, userMessage).forEach(field -> field.setReadOnly(readonly));
+        grid.getCrud().getDeleteButton().setEnabled(!readonly);
+        grid.getCrud().getSaveButton().setEnabled(!readonly);
     }
 
     private DatePicker fromDate;
