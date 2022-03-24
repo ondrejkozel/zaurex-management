@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface WarehouseItemVariantRepository extends GenericRepository<WarehouseItem.Variant> {
     List<WarehouseItem.Variant> findAllByOfEquals(WarehouseItem of);
+    void deleteAllByOfEquals(WarehouseItem of);
 }
