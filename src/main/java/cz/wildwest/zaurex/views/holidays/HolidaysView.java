@@ -1,7 +1,6 @@
 package cz.wildwest.zaurex.views.holidays;
 
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -27,7 +26,6 @@ import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.service.HolidayService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
-import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 
 import javax.annotation.security.RolesAllowed;
 import java.time.LocalDate;
@@ -61,10 +59,9 @@ public class HolidaysView extends VerticalLayout {
         //
         setSizeFull();
         add(grid);
-        if (user.getRoles().contains(Role.MANAGER)) UI.getCurrent().navigate(HolidaysForApprovalView.class);
         if (!user.getRoles().contains(Role.MANAGER)) {
             grid.getCrud().addNewListener(event -> makeReadonly(false));
-            grid.getCrud().addEditListener(event -> makeReadonly(event.getItem().getFromDate().isBefore(LocalDate.now())));
+            grid.getCrud().addEditListener(event -> makeReadonly(event.getItem().getFromDate().isBefore(LocalDate.now().plusDays(1))));
             grid.getCrud().addEditListener(event -> getStatus().setValue(Holiday.Status.PENDING));
             grid.getCrud().addSaveListener(event -> Notification.show("Váš požadavek byl odeslán manažerovi! 🏖️"));
         }

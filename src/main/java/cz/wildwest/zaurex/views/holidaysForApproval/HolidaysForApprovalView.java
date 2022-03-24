@@ -3,6 +3,7 @@ package cz.wildwest.zaurex.views.holidaysForApproval;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.gridd.Gridd;
@@ -27,24 +28,33 @@ public class HolidaysForApprovalView extends VerticalLayout {
 
     private boolean displayPendingOnly = true;
 
-    public HolidaysForApprovalView(HolidayService holidayService, UserService userService,  AuthenticatedUser authenticatedUser) {
+    public HolidaysForApprovalView(HolidayService holidayService, UserService userService, AuthenticatedUser authenticatedUser) {
         this.userService = userService;
         holidaysView = new HolidaysView(holidayService, authenticatedUser);
         //
         grid = holidaysView.getGrid();
-        configureDataProvider(holidayService, authenticatedUser);
+        configureDataProvider(holidayService);
         configureHolidaysView();
         //
         add(holidaysView);
         setPadding(false);
         setSizeFull();
         //
+        grid.getCrud().addNewListener(event -> setEditing(false));
+        grid.getCrud().addEditListener(event -> setEditing(true));
+        //
+        grid.addColumn("Osoba", new TextRenderer<>(item -> item.getOwner().getName()));
     }
 
-    private void configureDataProvider(HolidayService holidayService, AuthenticatedUser authenticatedUser) {
+    private void setEditing(boolean editing) {
+        holidaysView.getOwner().setReadOnly(editing);
+        holidaysView.getUserMessage().setReadOnly(editing);
+    }
+
+    private void configureDataProvider(HolidayService holidayService) {
         grid.getDataProvider().setFetchFunction(() -> {
             if (displayPendingOnly) return holidayService.findAllPending();
-            return holidayService.findAll(authenticatedUser.get().orElseThrow());
+            return holidayService.findAll();
         });
     }
 
@@ -63,6 +73,7 @@ public class HolidaysForApprovalView extends VerticalLayout {
         });
         pendingOnly.setCheckable(true);
         pendingOnly.setChecked(displayPendingOnly);
+        //
     }
 
 }
