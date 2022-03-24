@@ -1,10 +1,13 @@
 package cz.wildwest.zaurex.views.holidays;
 
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -18,11 +21,13 @@ import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
 import cz.wildwest.zaurex.data.DatePickerI18n;
+import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.Holiday;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.service.HolidayService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
+import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 
 import javax.annotation.security.RolesAllowed;
 import java.time.LocalDate;
@@ -44,7 +49,7 @@ public class HolidaysView extends VerticalLayout {
     public HolidaysView(HolidayService holidayService, AuthenticatedUser authenticatedUser) {
         User user = authenticatedUser.get().orElseThrow();
         grid = new Gridd<>(Holiday.class,
-                new GenericDataProvider<>(holidayService, Holiday.class, holidayService1 -> holidayService.findAll(user)),
+                new GenericDataProvider<>(holidayService, Holiday.class, () -> holidayService.findAll(user)),
                 () -> new Holiday(user),
                 true,
                 buildEditor(),
@@ -56,8 +61,13 @@ public class HolidaysView extends VerticalLayout {
         //
         setSizeFull();
         add(grid);
-        grid.getCrud().addNewListener(event -> makeReadonly(false));
-        grid.getCrud().addEditListener(event -> makeReadonly(event.getItem().getFromDate().isBefore(LocalDate.now())));
+        if (user.getRoles().contains(Role.MANAGER)) UI.getCurrent().navigate(HolidaysForApprovalView.class);
+        if (!user.getRoles().contains(Role.MANAGER)) {
+            grid.getCrud().addNewListener(event -> makeReadonly(false));
+            grid.getCrud().addEditListener(event -> makeReadonly(event.getItem().getFromDate().isBefore(LocalDate.now())));
+            grid.getCrud().addEditListener(event -> getStatus().setValue(Holiday.Status.PENDING));
+            grid.getCrud().addSaveListener(event -> Notification.show("Váš požadavek byl odeslán manažerovi! 🏖️"));
+        }
     }
 
     private void configureColumns() {
@@ -85,6 +95,14 @@ public class HolidaysView extends VerticalLayout {
     @SuppressWarnings("FieldCanBeLocal")
     private TextArea userMessage;
 
+    private Select<Holiday.Status> status;
+    private TextArea managerResponse;
+    private Select<User> owner;
+
+    private FormLayout formLayout;
+
+    private Binder<Holiday> binder;
+
     private BinderCrudEditor<Holiday> buildEditor() {
         fromDate = new DatePicker("Datum od");
         fromDate.setMin(LocalDate.now().plusDays(1));
@@ -100,31 +118,76 @@ public class HolidaysView extends VerticalLayout {
         fromDate.setI18n(DatePickerI18n.DATE_PICKER_I_18_N);
         toDate.setI18n(DatePickerI18n.DATE_PICKER_I_18_N);
         //
-        Binder<Holiday> binder = new BeanValidationBinder<>(Holiday.class);
+        status = new Select<>(Holiday.Status.values());
+        status.setLabel("Stav");
+        status.setRequiredIndicatorVisible(true);
+        managerResponse = new TextArea("Odpověď manažera");
+        owner = new Select<>();
+        owner.setLabel("Osoba");
+        owner.setRequiredIndicatorVisible(true);
+        owner.setRenderer(new TextRenderer<>(User::getName));
+        //
+        binder = new BeanValidationBinder<>(Holiday.class);
         binder.bindInstanceFields(this);
         binder.removeBinding(fromDate);
         binder.removeBinding(toDate);
+        binder.removeBinding(owner);
         binder.forField(fromDate)
                 .withValidator((Validator<LocalDate>) (value, context) -> {
-                    if (toDate.getValue() == null || value.minusDays(1).isBefore(toDate.getValue())) return ValidationResult.ok();
+                    if (value == null || toDate.getValue() == null || value.minusDays(1).isBefore(toDate.getValue())) return ValidationResult.ok();
                     else return ValidationResult.error("datum od nesmí být po datu do");
                 })
                 .asRequired()
                 .bind("fromDate");
         binder.forField(toDate)
                 .withValidator((Validator<LocalDate>) (value, context) -> {
-                    if (fromDate.getValue() == null || value.plusDays(1).isAfter(fromDate.getValue())) return ValidationResult.ok();
+                    if (value == null || fromDate.getValue() == null || value.plusDays(1).isAfter(fromDate.getValue())) return ValidationResult.ok();
                     else return ValidationResult.error("datum do nesmí být před datem od");
                 })
                 .asRequired()
                 .bind("toDate");
-        //
-        FormLayout formLayout = new FormLayout(fromDate, toDate, userMessage);
+        formLayout = new FormLayout(fromDate, toDate, userMessage);
         formLayout.setColspan(fromDate, 1);
         formLayout.setColspan(toDate, 1);
         formLayout.setColspan(userMessage, 2);
         return new BinderCrudEditor<>(binder, formLayout);
     }
-    
+
+    public void useOwnerField(List<User> users) {
+        owner.setItems(users);
+        binder.forField(owner).bind("owner");
+    }
+
+    public Gridd<Holiday> getGrid() {
+        return grid;
+    }
+
+    public DatePicker getFromDate() {
+        return fromDate;
+    }
+
+    public DatePicker getToDate() {
+        return toDate;
+    }
+
+    public TextArea getUserMessage() {
+        return userMessage;
+    }
+
+    public Select<Holiday.Status> getStatus() {
+        return status;
+    }
+
+    public TextArea getManagerResponse() {
+        return managerResponse;
+    }
+
+    public FormLayout getFormLayout() {
+        return formLayout;
+    }
+
+    public Select<User> getOwner() {
+        return owner;
+    }
 }
 

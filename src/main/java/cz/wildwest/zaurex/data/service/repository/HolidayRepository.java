@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface HolidayRepository extends GenericRepository<Holiday> {
     List<Holiday> findAllByOwnerEqualsOrderByFromDateDesc(User owner);
+    List<Holiday> findAllByStatusEqualsOrderByFromDateDesc(Holiday.Status status);
 }

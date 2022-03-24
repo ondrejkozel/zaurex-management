@@ -1,10 +1,11 @@
 package cz.wildwest.zaurex.data.entity;
 
 import cz.wildwest.zaurex.data.AbstractEntity;
-import java.time.LocalDate;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "holidays")
@@ -100,6 +101,22 @@ public class Holiday extends AbstractEntity {
     }
 
     public enum Status {
-        PENDING, APPROVED, DENIED
+        PENDING("nevyřízeno"), APPROVED("schváleno"), DENIED("zamítnuto");
+
+        private final String text;
+
+        Status(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 }

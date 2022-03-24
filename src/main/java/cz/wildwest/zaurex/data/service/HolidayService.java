@@ -18,4 +18,8 @@ public class HolidayService extends GenericService<Holiday, HolidayRepository> {
         return mainRepository.findAllByOwnerEqualsOrderByFromDateDesc(user);
     }
 
+    public List<Holiday> findAllPending() {
+        return mainRepository.findAllByStatusEqualsOrderByFromDateDesc(Holiday.Status.PENDING);
+    }
+
 }

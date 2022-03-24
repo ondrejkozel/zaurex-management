@@ -10,23 +10,27 @@ import cz.wildwest.zaurex.data.service.repository.GenericRepository;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class GenericDataProvider <T extends AbstractEntity, S extends GenericService<T, ? extends GenericRepository<T>>> extends AbstractBackEndDataProvider<T, GridFilter> {
 
     protected final S service;
     private final Class<T> tClass;
-    private final Function<S, Collection<T>> fetchFunction;
+    private Supplier<Collection<T>> fetchFunction;
 
-    public GenericDataProvider(S service, Class<T> tClass) {
-        this(service, tClass, s -> s.findAll());
-    }
-
-    public GenericDataProvider(S service, Class<T> tClass, Function<S, Collection<T>> fetchFunction) {
+    public GenericDataProvider(S service, Class<T> tClass, Supplier<Collection<T>> fetchFunction) {
         this.service = service;
         this.tClass = tClass;
+        this.fetchFunction = fetchFunction;
+    }
+
+    public GenericDataProvider(S service, Class<T> tClass) {
+        this(service, tClass, service::findAll);
+    }
+
+    public void setFetchFunction(Supplier<Collection<T>> fetchFunction) {
         this.fetchFunction = fetchFunction;
     }
 
@@ -35,7 +39,7 @@ public class GenericDataProvider <T extends AbstractEntity, S extends GenericSer
     protected Stream<T> fetchFromBackEnd(Query<T, GridFilter> query) {
         int offset = query.getOffset();
         int limit = query.getLimit();
-        Stream<T> stream = fetchFunction.apply(service).stream();
+        Stream<T> stream = fetchFunction.get().stream();
         if (query.getFilter().isPresent()) {
             stream = stream
                     .filter(predicate(query.getFilter().get()))
