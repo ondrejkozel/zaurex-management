@@ -1,6 +1,9 @@
 package cz.wildwest.zaurex.components.gridd;
 
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.HasValueAndElement;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -105,6 +108,10 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         return grid.getEditor();
     }
 
+    public MenuBar getMenuBar() {
+        return menuBar;
+    }
+
     private void buildGrid() {
         grid = new GridPro<>();
         grid.addClassNames("grid-pro");
@@ -146,7 +153,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         newObjectButton.setText(newItem);
     }
 
-    private void refreshAll() {
+    public void refreshAll() {
         dataProvider.refreshAll();
         grid.recalculateColumnWidths();
     }
@@ -168,6 +175,10 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         edit.getSubMenu().add(new Hr());
         edit.getSubMenu().addItem("Obnovit", menuItemClickEvent -> refreshAll()).addClickShortcut(Key.KEY_O, KeyModifier.ALT);
         //
+    }
+
+    public void setNewObjectButtonText(String text) {
+        newObjectButton.setText(text);
     }
 
     private boolean multiselect = false;
@@ -323,5 +334,9 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         dialog.setCancelable(true);
         dialog.setCancelText("Zrušit");
         dialog.open();
+    }
+
+    public GenericDataProvider<T, ? extends GenericService<T, ? extends GenericRepository<T>>> getDataProvider() {
+        return dataProvider;
     }
 }

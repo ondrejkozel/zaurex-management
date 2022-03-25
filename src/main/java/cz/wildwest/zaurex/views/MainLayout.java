@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.chat.ChatView;
@@ -23,6 +24,9 @@ import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
 import cz.wildwest.zaurex.views.employees.EmployeesView;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -120,9 +124,10 @@ public class MainLayout extends AppLayout {
         return nav;
     }
 
-    private MenuItemInfo[] createMenuItems() {
-        return new MenuItemInfo[]{
-//                new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
+    private List<MenuItemInfo> createMenuItems() {
+        MenuItemInfo holidays = new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class);
+        List<MenuItemInfo> menuItemInfos = new ArrayList<>(List.of(
+//              new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
                 new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
@@ -134,17 +139,18 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
 
-                new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class),
+                holidays,
 
                 new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", HolidaysForApprovalView.class),
 
                 new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
+                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class)
 
 //                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
-
-        };
+        ));
+        if (authenticatedUser.get().orElseThrow().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+        return menuItemInfos;
     }
 
     private Footer createFooter() {

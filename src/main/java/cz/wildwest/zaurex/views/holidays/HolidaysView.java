@@ -1,204 +1,190 @@
 package cz.wildwest.zaurex.views.holidays;
 
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.Badge;
+import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
+import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.data.DatePickerI18n;
+import cz.wildwest.zaurex.data.Role;
+import cz.wildwest.zaurex.data.entity.Holiday;
+import cz.wildwest.zaurex.data.entity.User;
+import cz.wildwest.zaurex.data.service.HolidayService;
+import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.security.RolesAllowed;
-import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.time.format.FormatStyle;
+import java.time.temporal.TemporalAmount;
 import java.util.List;
-import java.util.Locale;
 
 @PageTitle("Dovolená")
 @Route(value = "holidays/yours", layout = MainLayout.class)
 @RolesAllowed({"SALESMAN", "WAREHOUSEMAN"})
-public class HolidaysView extends Div {
+public class HolidaysView extends VerticalLayout {
 
-    private GridPro<Client> grid;
-    private GridListDataView<Client> gridListDataView;
+    private static final TemporalAmount MAX_FROM_DATE_DISTANCE = Period.ofYears(1);
+    
+    private final Gridd<Holiday> grid;
 
-    private Grid.Column<Client> clientColumn;
-    private Grid.Column<Client> amountColumn;
-    private Grid.Column<Client> statusColumn;
-    private Grid.Column<Client> dateColumn;
-
-    public HolidaysView() {
-        addClassName("dovolená-view");
+    public HolidaysView(HolidayService holidayService, AuthenticatedUser authenticatedUser) {
+        User user = authenticatedUser.get().orElseThrow();
+        grid = new Gridd<>(Holiday.class,
+                new GenericDataProvider<>(holidayService, Holiday.class, () -> holidayService.findAll(user)),
+                () -> new Holiday(user),
+                true,
+                buildEditor(),
+                "Požádat o dovolenou",
+                "Upravit požadavek",
+                "Zrušit požadavek"
+        );
+        configureColumns();
+        //
         setSizeFull();
-        createGrid();
         add(grid);
-    }
-
-    private void createGrid() {
-        createGridComponent();
-        addColumnsToGrid();
-        addFiltersToGrid();
-    }
-
-    private void createGridComponent() {
-        grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setHeight("100%");
-
-        List<Client> clients = getClients();
-//        gridListDataView = grid.setItems(clients);
-    }
-
-    private void addColumnsToGrid() {
-        createClientColumn();
-        createAmountColumn();
-        createStatusColumn();
-        createDateColumn();
-    }
-
-    private void createClientColumn() {
-        clientColumn = grid.addColumn(new ComponentRenderer<>(client -> {
-            HorizontalLayout hl = new HorizontalLayout();
-            hl.setAlignItems(Alignment.CENTER);
-            Image img = new Image(client.getImg(), "");
-            Span span = new Span();
-            span.setClassName("name");
-            span.setText(client.getClient());
-            hl.add(img, span);
-            return hl;
-        })).setHeader("Client");
-    }
-
-    private void createAmountColumn() {
-        amountColumn = grid
-                .addEditColumn(Client::getAmount,
-                        new NumberRenderer<>(Client::getAmount, NumberFormat.getCurrencyInstance(Locale.US)))
-                .text((item, newValue) -> item.setAmount(Double.parseDouble(newValue)))
-                .setComparator(Client::getAmount).setHeader("Amount");
-    }
-
-    private void createStatusColumn() {
-        statusColumn = grid.addEditColumn(Client::getClient, new ComponentRenderer<>(client -> {
-            Span span = new Span();
-            span.setText(client.getStatus());
-            span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
-            return span;
-        })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("Pending", "Success", "Error"))
-                .setComparator(client -> client.getStatus()).setHeader("Status");
-    }
-
-    private void createDateColumn() {
-        dateColumn = grid
-                .addColumn(new LocalDateRenderer<>(client -> LocalDate.parse(client.getDate()),
-                        DateTimeFormatter.ofPattern("M/d/yyyy")))
-                .setComparator(client -> client.getDate()).setHeader("Date").setWidth("180px").setFlexGrow(0);
-    }
-
-    private void addFiltersToGrid() {
-        HeaderRow filterRow = grid.appendHeaderRow();
-
-        TextField clientFilter = new TextField();
-        clientFilter.setPlaceholder("Filter");
-        clientFilter.setClearButtonVisible(true);
-        clientFilter.setWidth("100%");
-        clientFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        clientFilter.addValueChangeListener(event -> gridListDataView
-                .addFilter(client -> StringUtils.containsIgnoreCase(client.getClient(), clientFilter.getValue())));
-        filterRow.getCell(clientColumn).setComponent(clientFilter);
-
-        TextField amountFilter = new TextField();
-        amountFilter.setPlaceholder("Filter");
-        amountFilter.setClearButtonVisible(true);
-        amountFilter.setWidth("100%");
-        amountFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        amountFilter.addValueChangeListener(event -> gridListDataView.addFilter(client -> StringUtils
-                .containsIgnoreCase(Double.toString(client.getAmount()), amountFilter.getValue())));
-        filterRow.getCell(amountColumn).setComponent(amountFilter);
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.setItems(Arrays.asList("Pending", "Success", "Error"));
-        statusFilter.setPlaceholder("Filter");
-        statusFilter.setClearButtonVisible(true);
-        statusFilter.setWidth("100%");
-        statusFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areStatusesEqual(client, statusFilter)));
-        filterRow.getCell(statusColumn).setComponent(statusFilter);
-
-        DatePicker dateFilter = new DatePicker();
-        dateFilter.setPlaceholder("Filter");
-        dateFilter.setClearButtonVisible(true);
-        dateFilter.setWidth("100%");
-        dateFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areDatesEqual(client, dateFilter)));
-        filterRow.getCell(dateColumn).setComponent(dateFilter);
-    }
-
-    private boolean areStatusesEqual(Client client, ComboBox<String> statusFilter) {
-        String statusFilterValue = statusFilter.getValue();
-        if (statusFilterValue != null) {
-            return StringUtils.equals(client.getStatus(), statusFilterValue);
+        if (!user.getRoles().contains(Role.MANAGER)) {
+            grid.getCrud().addNewListener(event -> makeReadonly(false));
+            grid.getCrud().addEditListener(event -> makeReadonly(event.getItem().getFromDate().isBefore(LocalDate.now().plusDays(1))));
+            grid.getCrud().addEditListener(event -> getStatus().setValue(Holiday.Status.PENDING));
+            grid.getCrud().addSaveListener(event -> Notification.show("Váš požadavek byl odeslán manažerovi! 🏖️"));
         }
-        return true;
     }
 
-    private boolean areDatesEqual(Client client, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
-        if (dateFilterValue != null) {
-            LocalDate clientDate = LocalDate.parse(client.getDate());
-            return dateFilterValue.equals(clientDate);
-        }
-        return true;
+    private void configureColumns() {
+        grid.addColumn("Datum od", new TextRenderer<>(item -> item.getFromDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))));
+        grid.addColumn("Datum do", new TextRenderer<>(item -> item.getToDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))));
+        grid.addColumn("Poznámka", new TextRenderer<>(Holiday::getUserMessage));
+        grid.addColumn("Stav", new ComponentRenderer<>(holiday -> {
+            Badge badge;
+            if (holiday.getStatus() == Holiday.Status.APPROVED) badge = new Badge("Schválena", Badge.BadgeVariant.SUCCESS);
+            else if (holiday.getStatus() == Holiday.Status.DENIED) badge = new Badge("Zamítnuta", Badge.BadgeVariant.ERROR);
+            else badge = new Badge("Předáno ke schválení", Badge.BadgeVariant.CONTRAST);
+            return badge;
+        }));
+        grid.addColumn("Odpověď manažera", new TextRenderer<>(Holiday::getManagerResponse));
     }
 
-    private List<Client> getClients() {
-        return Arrays.asList(
-                createClient(4957, "https://randomuser.me/api/portraits/women/42.jpg", "Amarachi Nkechi", 47427.0,
-                        "Success", "2019-05-09"),
-                createClient(675, "https://randomuser.me/api/portraits/women/24.jpg", "Bonelwa Ngqawana", 70503.0,
-                        "Success", "2019-05-09"),
-                createClient(6816, "https://randomuser.me/api/portraits/men/42.jpg", "Debashis Bhuiyan", 58931.0,
-                        "Success", "2019-05-07"),
-                createClient(5144, "https://randomuser.me/api/portraits/women/76.jpg", "Jacqueline Asong", 25053.0,
-                        "Pending", "2019-04-25"),
-                createClient(9800, "https://randomuser.me/api/portraits/men/24.jpg", "Kobus van de Vegte", 7319.0,
-                        "Pending", "2019-04-22"),
-                createClient(3599, "https://randomuser.me/api/portraits/women/94.jpg", "Mattie Blooman", 18441.0,
-                        "Error", "2019-04-17"),
-                createClient(3989, "https://randomuser.me/api/portraits/men/76.jpg", "Oea Romana", 33376.0, "Pending",
-                        "2019-04-17"),
-                createClient(1077, "https://randomuser.me/api/portraits/men/94.jpg", "Stephanus Huggins", 75774.0,
-                        "Success", "2019-02-26"),
-                createClient(8942, "https://randomuser.me/api/portraits/men/16.jpg", "Torsten Paulsson", 82531.0,
-                        "Pending", "2019-02-21"));
+    private void makeReadonly(boolean readonly) {
+        List.<HasValue<?, ?>>of(fromDate, toDate, userMessage).forEach(field -> field.setReadOnly(readonly));
+        grid.getCrud().getDeleteButton().setEnabled(!readonly);
+        grid.getCrud().getSaveButton().setEnabled(!readonly);
     }
 
-    private Client createClient(int id, String img, String client, double amount, String status, String date) {
-        Client c = new Client();
-        c.setId(id);
-        c.setImg(img);
-        c.setClient(client);
-        c.setAmount(amount);
-        c.setStatus(status);
-        c.setDate(date);
+    private DatePicker fromDate;
+    private DatePicker toDate;
+    @SuppressWarnings("FieldCanBeLocal")
+    private TextArea userMessage;
 
-        return c;
+    private Select<Holiday.Status> status;
+    private TextArea managerResponse;
+    private Select<User> owner;
+
+    private FormLayout formLayout;
+
+    private Binder<Holiday> binder;
+
+    private BinderCrudEditor<Holiday> buildEditor() {
+        fromDate = new DatePicker("Datum od");
+        fromDate.setMin(LocalDate.now().plusDays(1));
+        fromDate.setMax(LocalDate.now().plus(MAX_FROM_DATE_DISTANCE));
+        toDate = new DatePicker("Datum do");
+        toDate.setMin(fromDate.getMin());
+        fromDate.addValueChangeListener(event -> toDate.setMin(fromDate.getValue()));
+        toDate.addValueChangeListener(event -> fromDate.setMax(toDate.getValue()));
+        toDate.setEnabled(false);
+        fromDate.addValueChangeListener(event -> toDate.setEnabled(event.getValue() != null));
+        userMessage = new TextArea("Poznámka");
+        //
+        fromDate.setI18n(DatePickerI18n.DATE_PICKER_I_18_N);
+        toDate.setI18n(DatePickerI18n.DATE_PICKER_I_18_N);
+        //
+        status = new Select<>(Holiday.Status.values());
+        status.setLabel("Stav");
+        status.setRequiredIndicatorVisible(true);
+        managerResponse = new TextArea("Odpověď manažera");
+        owner = new Select<>();
+        owner.setLabel("Osoba");
+        owner.setRequiredIndicatorVisible(true);
+        owner.setRenderer(new TextRenderer<>(User::getName));
+        //
+        binder = new BeanValidationBinder<>(Holiday.class);
+        binder.bindInstanceFields(this);
+        binder.removeBinding(fromDate);
+        binder.removeBinding(toDate);
+        binder.removeBinding(owner);
+        binder.forField(fromDate)
+                .withValidator((Validator<LocalDate>) (value, context) -> {
+                    if (value == null || toDate.getValue() == null || value.minusDays(1).isBefore(toDate.getValue())) return ValidationResult.ok();
+                    else return ValidationResult.error("datum od nesmí být po datu do");
+                })
+                .asRequired()
+                .bind("fromDate");
+        binder.forField(toDate)
+                .withValidator((Validator<LocalDate>) (value, context) -> {
+                    if (value == null || fromDate.getValue() == null || value.plusDays(1).isAfter(fromDate.getValue())) return ValidationResult.ok();
+                    else return ValidationResult.error("datum do nesmí být před datem od");
+                })
+                .asRequired()
+                .bind("toDate");
+        formLayout = new FormLayout(fromDate, toDate, userMessage);
+        formLayout.setColspan(fromDate, 1);
+        formLayout.setColspan(toDate, 1);
+        formLayout.setColspan(userMessage, 2);
+        return new BinderCrudEditor<>(binder, formLayout);
     }
-};
+
+    public void useOwnerField(List<User> users) {
+        owner.setItems(users);
+        binder.forField(owner).bind("owner");
+    }
+
+    public Gridd<Holiday> getGrid() {
+        return grid;
+    }
+
+    public DatePicker getFromDate() {
+        return fromDate;
+    }
+
+    public DatePicker getToDate() {
+        return toDate;
+    }
+
+    public TextArea getUserMessage() {
+        return userMessage;
+    }
+
+    public Select<Holiday.Status> getStatus() {
+        return status;
+    }
+
+    public TextArea getManagerResponse() {
+        return managerResponse;
+    }
+
+    public FormLayout getFormLayout() {
+        return formLayout;
+    }
+
+    public Select<User> getOwner() {
+        return owner;
+    }
+}
+

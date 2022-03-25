@@ -2,8 +2,10 @@ package cz.wildwest.zaurex.data.generator;
 
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import cz.wildwest.zaurex.data.Role;
+import cz.wildwest.zaurex.data.entity.Holiday;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.HolidayService;
 import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.data.service.repository.UserRepository;
@@ -13,6 +15,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +24,7 @@ import java.util.Set;
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userRepository.count() != 0L) {
@@ -73,6 +76,14 @@ public class DataGenerator {
                     new WarehouseItem.Variant(bunda_tilak, "zelená", 84, 499.9),
                     new WarehouseItem.Variant(bunda_tilak, "černá", 10, 514.9)
             ));
+            //
+            Holiday holiday = new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now(), LocalDate.now().plusWeeks(1));
+            holiday.setUserMessage("Chci jet k moři.");
+            Holiday holiday2 = new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(1).plusWeeks(1));
+            holiday2.setUserMessage("Prosím pustťe mě \uD83D\uDE1E");
+            holiday2.setStatus(Holiday.Status.APPROVED);
+            holiday2.setManagerResponse("Tak jo :)");
+            holidayService.saveAll(List.of(holiday, holiday2));
         };
     }
 

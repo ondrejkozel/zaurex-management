@@ -264,8 +264,8 @@
     "date-fns": "$date-fns",
     "lit": "$lit",
     "chokidar": "$chokidar",
-    "line-awesome": "$line-awesome",
-    "@fontsource/open-sans": "$@fontsource/open-sans"
+    "@fontsource/open-sans": "$@fontsource/open-sans",
+    "line-awesome": "$line-awesome"
   },
   "vaadin": {
     "dependencies": {
