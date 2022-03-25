@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-@PageTitle("Sklad")
+@PageTitle("Faktury")
 @Route(value = "invoices", layout = MainLayout.class)
 @RolesAllowed({"SHIFT_LEADER"})
 public class InvoicesView extends Div {

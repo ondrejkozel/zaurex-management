@@ -3,38 +3,17 @@ package cz.wildwest.zaurex.data.service;
 import cz.wildwest.zaurex.data.entity.User;
 import java.util.Optional;
 import java.util.UUID;
+
+import cz.wildwest.zaurex.data.service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class UserService extends GenericService<User, UserRepository> {
 
-    private final UserRepository repository;
-
-    public UserService(@Autowired UserRepository repository) {
-        this.repository = repository;
+    public UserService(UserRepository userRepository) {
+        super(userRepository);
     }
-
-    public Optional<User> get(UUID id) {
-        return repository.findById(id);
-    }
-
-    public User update(User entity) {
-        return repository.save(entity);
-    }
-
-    public void delete(UUID id) {
-        repository.deleteById(id);
-    }
-
-    public Page<User> list(Pageable pageable) {
-        return repository.findAll(pageable);
-    }
-
-    public int count() {
-        return (int) repository.count();
-    }
-
 }

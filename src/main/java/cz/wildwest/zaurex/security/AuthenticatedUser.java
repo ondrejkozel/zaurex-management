@@ -3,7 +3,7 @@ package cz.wildwest.zaurex.security;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import cz.wildwest.zaurex.data.entity.User;
-import cz.wildwest.zaurex.data.service.UserRepository;
+import cz.wildwest.zaurex.data.service.repository.UserRepository;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;

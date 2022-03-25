@@ -38,4 +38,8 @@ public abstract class AbstractEntity {
         }
         return super.equals(other);
     }
+
+    public boolean isPersisted() {
+        return id != 0;
+    }
 }

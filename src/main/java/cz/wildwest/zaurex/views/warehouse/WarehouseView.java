@@ -1,205 +1,323 @@
 package cz.wildwest.zaurex.views.warehouse;
 
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.crud.BinderCrudEditor;
+import com.vaadin.flow.component.crud.Crud;
+import com.vaadin.flow.component.customfield.CustomField;
+import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.*;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.Badge;
+import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
+import cz.wildwest.zaurex.components.gridd.GridFilter;
+import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.data.AbstractEntity;
+import cz.wildwest.zaurex.data.Role;
+import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
+import cz.wildwest.zaurex.data.service.WarehouseService;
+import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.annotation.security.RolesAllowed;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @PageTitle("Sklad")
 @Route(value = "warehouse/all", layout = MainLayout.class)
 @RolesAllowed({"SALESMAN", "MANAGER"})
-public class WarehouseView extends Div {
+public class WarehouseView extends VerticalLayout {
 
-    private GridPro<Client> grid;
-    private GridListDataView<Client> gridListDataView;
+    private final Gridd<WarehouseItem> grid;
+    private final WarehouseItemVariantService warehouseItemVariantService;
 
-    private Grid.Column<Client> clientColumn;
-    private Grid.Column<Client> amountColumn;
-    private Grid.Column<Client> statusColumn;
-    private Grid.Column<Client> dateColumn;
+    private final boolean editable;
 
-    public WarehouseView() {
-        addClassName("sklad-view");
+    public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantService warehouseItemVariantService) {
+        this.warehouseItemVariantService = warehouseItemVariantService;
+        Set<Role> roles = authenticatedUser.get().orElseThrow().getRoles();
+        //
         setSizeFull();
-        createGrid();
+        //
+        editable = roles.contains(Role.MANAGER);
+        grid = new Gridd<>(WarehouseItem.class,
+                        new GenericDataProvider<>(warehouseService, WarehouseItem.class) {
+                            @Override
+                            protected Stream<WarehouseItem> fetchFromBackEnd(Query<WarehouseItem, GridFilter> query) {
+                                Stream<WarehouseItem> warehouseItemStream = super.fetchFromBackEnd(query);
+                                //if manager isn't logged in, only sellable items are shown
+                                if (!editable) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
+                                List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
+                                return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet())));
+                            }
+                        },
+                WarehouseItem::new,
+                editable,
+                buildEditor(editable),
+                "Nové zboží",
+                "Zboží", "Odstranit zboží");
+        configureColumns();
+        //
         add(grid);
+        grid.getCrud().addSaveListener(saveListenerToAdd);
+        grid.getCrud().addEditListener(event -> itemOpened.accept(event.getItem()));
+        grid.getCrud().addNewListener(event -> itemOpened.accept(event.getItem()));
+        grid.getCrud().addEditListener(event -> variantsDetails.setOpened(false));
+        grid.getCrud().addNewListener(event -> variantsDetails.setOpened(true));
     }
 
-    private void createGrid() {
-        createGridComponent();
-        addColumnsToGrid();
-        addFiltersToGrid();
+    private void configureColumns() {
+        grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
+        grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
+        grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"));
+        grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"));
+        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
+        grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
+            HorizontalLayout badgeLayout = new HorizontalLayout();
+            badgeLayout.addClassName("badge-container");
+            if (item.isOutOfStock().orElseThrow()) {
+                Badge soldOut = new Badge("Vyprodáno", Badge.BadgeVariant.ERROR);
+                soldOut.setTitle("Některá z variant produktu byla vyprodána.");
+                badgeLayout.add(soldOut);
+            }
+            if (item.getTransientVariants().orElseThrow().isEmpty()) {
+                Badge noVariants = new Badge("Žádné varianty", Badge.BadgeVariant.DEFAULT);
+                noVariants.setTitle("Nebyly vytvořeny žádné varianty produktu.");
+                badgeLayout.add(noVariants);
+            }
+            if (!item.isSellable()) {
+                Badge notForSale = new Badge("Neprodejné", Badge.BadgeVariant.CONTRAST);
+                notForSale.setTitle("Tato položka není určena k prodeji.");
+                badgeLayout.add(notForSale);
+            }
+            return badgeLayout;
+        }));
     }
 
-    private void createGridComponent() {
-        grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setHeight("100%");
+    @SuppressWarnings("FieldCanBeLocal")
+    private TextField title;
+    @SuppressWarnings("FieldCanBeLocal")
+    private TextArea briefDescription;
+    @SuppressWarnings("FieldCanBeLocal")
+    private Select<WarehouseItem.Category> category;
+    @SuppressWarnings("FieldCanBeLocal")
+    private Checkbox sellable;
 
-        List<Client> clients = getClients();
-        gridListDataView = grid.setItems(clients);
+    private Details variantsDetails;
+
+    private Badge variantsBadge;
+
+    private BinderCrudEditor<WarehouseItem> buildEditor(boolean editable) {
+        title = new TextField("Název");
+        title.setRequired(true);
+        briefDescription = new TextArea("Krátký popis");
+        briefDescription.setClearButtonVisible(true);
+        category = new Select<>(WarehouseItem.Category.values());
+        category.setLabel("Kategorie");
+        category.setRequiredIndicatorVisible(true);
+        sellable = new Checkbox("Prodejné");
+        //
+        variants = new VariantEditor();
+        variantsBadge = new Badge("0", Badge.BadgeVariant.COUNTER);
+        variantsDetails = new Details(new Span(new Span("Varianty "), variantsBadge), variants);
+        //
+        Binder<WarehouseItem> binder = new BeanValidationBinder<>(WarehouseItem.class);
+        binder.bindInstanceFields(this);
+        //
+        FormLayout formLayout = new FormLayout(title, category, briefDescription, variantsDetails, sellable);
+        if (!editable) formLayout.remove(sellable);
+        formLayout.setColspan(briefDescription, 2);
+        return new BinderCrudEditor<>(binder, formLayout);
     }
 
-    private void addColumnsToGrid() {
-        createClientColumn();
-        createAmountColumn();
-        createStatusColumn();
-        createDateColumn();
-    }
+    @SuppressWarnings("FieldCanBeLocal")
+    private VariantEditor variants;
 
-    private void createClientColumn() {
-        clientColumn = grid.addColumn(new ComponentRenderer<>(client -> {
-            HorizontalLayout hl = new HorizontalLayout();
-            hl.setAlignItems(Alignment.CENTER);
-            Image img = new Image(client.getImg(), "");
-            Span span = new Span();
-            span.setClassName("name");
-            span.setText(client.getClient());
-            hl.add(img, span);
-            return hl;
-        })).setComparator(client -> client.getClient()).setHeader("Client");
-    }
+    private ComponentEventListener<Crud.SaveEvent<WarehouseItem>> saveListenerToAdd;
+    private Consumer<WarehouseItem> itemOpened;
 
-    private void createAmountColumn() {
-        amountColumn = grid
-                .addEditColumn(Client::getAmount,
-                        new NumberRenderer<>(client -> client.getAmount(), NumberFormat.getCurrencyInstance(Locale.US)))
-                .text((item, newValue) -> item.setAmount(Double.parseDouble(newValue)))
-                .setComparator(client -> client.getAmount()).setHeader("Amount");
-    }
+    /**
+     * If you're reading this, I'm very sorry.
+     * I am awfully ashamed of this piece of code, but no time to make it better.
+     *
+     * Now i'm even more ashamed. Hope no one'll see this.
+     *
+     * Marku, ani se nepokoušej dívat níž a něco se z toho učit.
+     */
+    private class VariantEditor extends VerticalLayout {
 
-    private void createStatusColumn() {
-        statusColumn = grid.addEditColumn(Client::getClient, new ComponentRenderer<>(client -> {
-            Span span = new Span();
-            span.setText(client.getStatus());
-            span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
-            return span;
-        })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("Pending", "Success", "Error"))
-                .setComparator(client -> client.getStatus()).setHeader("Status");
-    }
+        List<WarehouseItem.Variant> value = new ArrayList<>();
 
-    private void createDateColumn() {
-        dateColumn = grid
-                .addColumn(new LocalDateRenderer<>(client -> LocalDate.parse(client.getDate()),
-                        DateTimeFormatter.ofPattern("M/d/yyyy")))
-                .setComparator(client -> client.getDate()).setHeader("Date").setWidth("180px").setFlexGrow(0);
-    }
+        private  WarehouseItem currentItem;
 
-    private void addFiltersToGrid() {
-        HeaderRow filterRow = grid.appendHeaderRow();
+        List<WarehouseItem.Variant> awaitingDeletion;
 
-        TextField clientFilter = new TextField();
-        clientFilter.setPlaceholder("Filter");
-        clientFilter.setClearButtonVisible(true);
-        clientFilter.setWidth("100%");
-        clientFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        clientFilter.addValueChangeListener(event -> gridListDataView
-                .addFilter(client -> StringUtils.containsIgnoreCase(client.getClient(), clientFilter.getValue())));
-        filterRow.getCell(clientColumn).setComponent(clientFilter);
+        VerticalLayout variantLayout;
 
-        TextField amountFilter = new TextField();
-        amountFilter.setPlaceholder("Filter");
-        amountFilter.setClearButtonVisible(true);
-        amountFilter.setWidth("100%");
-        amountFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        amountFilter.addValueChangeListener(event -> gridListDataView.addFilter(client -> StringUtils
-                .containsIgnoreCase(Double.toString(client.getAmount()), amountFilter.getValue())));
-        filterRow.getCell(amountColumn).setComponent(amountFilter);
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.setItems(Arrays.asList("Pending", "Success", "Error"));
-        statusFilter.setPlaceholder("Filter");
-        statusFilter.setClearButtonVisible(true);
-        statusFilter.setWidth("100%");
-        statusFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areStatusesEqual(client, statusFilter)));
-        filterRow.getCell(statusColumn).setComponent(statusFilter);
-
-        DatePicker dateFilter = new DatePicker();
-        dateFilter.setPlaceholder("Filter");
-        dateFilter.setClearButtonVisible(true);
-        dateFilter.setWidth("100%");
-        dateFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areDatesEqual(client, dateFilter)));
-        filterRow.getCell(dateColumn).setComponent(dateFilter);
-    }
-
-    private boolean areStatusesEqual(Client client, ComboBox<String> statusFilter) {
-        String statusFilterValue = statusFilter.getValue();
-        if (statusFilterValue != null) {
-            return StringUtils.equals(client.getStatus(), statusFilterValue);
+        public VariantEditor() {
+            setPadding(false);
+            setSpacing(false);
+            awaitingDeletion = new ArrayList<>();
+            variantLayout = new VerticalLayout();
+            variantLayout.setPadding(false);
+            variantLayout.setSpacing(false);
+            //
+            saveListenerToAdd = event -> {
+                List<WarehouseItem.Variant> toDelete = new ArrayList<>(awaitingDeletion.stream().filter(AbstractEntity::isPersisted).toList());
+                warehouseItemVariantService.deleteAll(toDelete);
+                awaitingDeletion.clear();
+                //
+                value.removeAll(value.stream().filter(variant -> variant.getColour().isBlank()).toList());
+                warehouseItemVariantService.saveAll(value);
+            };
+            itemOpened = item -> {
+                this.currentItem = item;
+                setValue(item.getTransientVariants().orElse(new ArrayList<>()));
+            };
+            //
+            Button addVariantButton = new Button("Vytvořit variantu", VaadinIcon.PLUS.create());
+            addVariantButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+            addVariantButton.addClickListener(event -> addNew());
+            addVariantButton.addClickListener(event -> grid.setDirty());
+            addVariantButton.setEnabled(editable);
+            addVariantButton.setVisible(editable);
+            //
+            Scroller scroller = new Scroller(variantLayout, Scroller.ScrollDirection.VERTICAL);
+            scroller.setMaxHeight("400px");
+            add(scroller, addVariantButton);
         }
-        return true;
-    }
 
-    private boolean areDatesEqual(Client client, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
-        if (dateFilterValue != null) {
-            LocalDate clientDate = LocalDate.parse(client.getDate());
-            return dateFilterValue.equals(clientDate);
+        public void setValue(Collection<WarehouseItem.Variant> variants) {
+            value = variants == null ? new ArrayList<>() : new ArrayList<>(variants);
+            refresh();
         }
-        return true;
-    }
 
-    private List<Client> getClients() {
-        return Arrays.asList(
-                createClient(4957, "https://randomuser.me/api/portraits/women/42.jpg", "Amarachi Nkechi", 47427.0,
-                        "Success", "2019-05-09"),
-                createClient(675, "https://randomuser.me/api/portraits/women/24.jpg", "Bonelwa Ngqawana", 70503.0,
-                        "Success", "2019-05-09"),
-                createClient(6816, "https://randomuser.me/api/portraits/men/42.jpg", "Debashis Bhuiyan", 58931.0,
-                        "Success", "2019-05-07"),
-                createClient(5144, "https://randomuser.me/api/portraits/women/76.jpg", "Jacqueline Asong", 25053.0,
-                        "Pending", "2019-04-25"),
-                createClient(9800, "https://randomuser.me/api/portraits/men/24.jpg", "Kobus van de Vegte", 7319.0,
-                        "Pending", "2019-04-22"),
-                createClient(3599, "https://randomuser.me/api/portraits/women/94.jpg", "Mattie Blooman", 18441.0,
-                        "Error", "2019-04-17"),
-                createClient(3989, "https://randomuser.me/api/portraits/men/76.jpg", "Oea Romana", 33376.0, "Pending",
-                        "2019-04-17"),
-                createClient(1077, "https://randomuser.me/api/portraits/men/94.jpg", "Stephanus Huggins", 75774.0,
-                        "Success", "2019-02-26"),
-                createClient(8942, "https://randomuser.me/api/portraits/men/16.jpg", "Torsten Paulsson", 82531.0,
-                        "Pending", "2019-02-21"));
-    }
+        public void addNew() {
+            WarehouseItem.Variant variant = new WarehouseItem.Variant();
+            variant.setOf(currentItem);
+            value.add(0, variant);
+            refresh();
+        }
 
-    private Client createClient(int id, String img, String client, double amount, String status, String date) {
-        Client c = new Client();
-        c.setId(id);
-        c.setImg(img);
-        c.setClient(client);
-        c.setAmount(amount);
-        c.setStatus(status);
-        c.setDate(date);
+        private void refresh() {
+            variantLayout.removeAll();
+            value.forEach(this::createRow);
+            variantsBadge.setText(String.valueOf(value.size()));
+        }
 
-        return c;
+        private void createRow(WarehouseItem.Variant variant) {
+            VariantField variantField = new VariantField();
+            variantField.setPresentationValue(variant);
+            HorizontalLayout horizontalLayout = new HorizontalLayout(variantField, buildDeleteVariantButton(variant));
+            horizontalLayout.setAlignItems(Alignment.CENTER);
+            Hr hr = new Hr();
+            variantLayout.add(horizontalLayout, hr);
+        }
+
+        private Button buildDeleteVariantButton(WarehouseItem.Variant variant) {
+            Button button = new Button(VaadinIcon.CLOSE.create());
+            button.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+            button.addClickListener(event -> deleteVariant(variant));
+            button.setVisible(editable);
+            button.setEnabled(editable);
+            return button;
+        }
+
+        private void deleteVariant(WarehouseItem.Variant variant) {
+            value.remove(variant);
+            setValue(value);
+            awaitingDeletion.add(variant);
+            grid.setDirty();
+            refresh();
+        }
+
+        private class VariantField extends CustomField<WarehouseItem.Variant> {
+
+            private WarehouseItem.Variant variant;
+
+            public VariantField() {
+                variant = new WarehouseItem.Variant();
+                build();
+            }
+
+            TextField colour;
+            IntegerField quantity;
+            NumberField price;
+            TextField note;
+
+            private void build() {
+                colour = new TextField("Barva");
+                colour.setRequired(true);
+                colour.setPattern("^.{1,50}$");
+                colour.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+                colour.addValueChangeListener(event -> variant.setColour(event.getValue()));
+                //
+                quantity = new IntegerField("Počet");
+                quantity.setRequiredIndicatorVisible(true);
+                quantity.setHasControls(true);
+                quantity.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+                quantity.setMin(0);
+                quantity.addValueChangeListener(event -> variant.setQuantity(event.getValue()));
+                //
+                price = new NumberField("Cena");
+                price.setRequiredIndicatorVisible(true);
+                price.setSuffixComponent(new Label("Kč"));
+                price.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+                price.setMin(0);
+                price.addValueChangeListener(event -> variant.setPrice(event.getValue()));
+                //
+                note = new TextField("Poznámka/velikost");
+                note.setPattern("^.{0,50}$");
+                note.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+                note.addValueChangeListener(event -> variant.setNote(event.getValue()));
+                //
+                colour.setReadOnly(!editable);
+                quantity.setReadOnly(!editable);
+                price.setReadOnly(!editable);
+                note.setReadOnly(!editable);
+                updateFields();
+                add(colour, new Span(" "), quantity, new Span(" "), price, new Span(" "), note);
+            }
+
+            @Override
+            protected WarehouseItem.Variant generateModelValue() {
+                return variant;
+            }
+
+            @Override
+            protected void setPresentationValue(WarehouseItem.Variant variant) {
+                this.variant = variant;
+                updateFields();
+            }
+
+            private void updateFields() {
+                if (variant == null) return;
+                colour.setValue(variant.getColour());
+                quantity.setValue(variant.getQuantity());
+                price.setValue(variant.getPrice());
+                note.setValue(variant.getNote());
+            }
+        }
     }
-};
+}

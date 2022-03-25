@@ -3,21 +3,25 @@ package cz.wildwest.zaurex.data.generator;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.User;
-import cz.wildwest.zaurex.data.service.UserRepository;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
+import cz.wildwest.zaurex.data.service.WarehouseService;
+import cz.wildwest.zaurex.data.service.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 @SpringComponent
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userRepository.count() != 0L) {
@@ -61,6 +65,14 @@ public class DataGenerator {
             userRepository.saveAll(List.of(salesman, warehouseman, shiftLeader, manager, shiftLeader2));
             //
             logger.info("Generated demo data");
+            //
+            WarehouseItem bunda_tilak = new WarehouseItem("Bunda Tilak", "Zimní bunda Tilak vás zahřeje v každém ročním období!");
+            bunda_tilak.setCategory(WarehouseItem.Category.HIKING);
+            warehouseService.save(bunda_tilak);
+            warehouseItemVariantService.saveAll(Set.of(
+                    new WarehouseItem.Variant(bunda_tilak, "zelená", 84, 499.9),
+                    new WarehouseItem.Variant(bunda_tilak, "černá", 10, 514.9)
+            ));
         };
     }
 
