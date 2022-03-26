@@ -118,3 +118,8 @@
   padding-bottom: var(--lumo-space-xs);
   padding-top: var(--lumo-space-xs);
 }
+
+.help-button {
+  margin: 10px;
+  cursor: pointer;
+}

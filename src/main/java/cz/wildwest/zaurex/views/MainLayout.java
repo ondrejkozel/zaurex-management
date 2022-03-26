@@ -13,17 +13,16 @@ import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
-import cz.wildwest.zaurex.views.chat.ChatView;
+import cz.wildwest.zaurex.views.addToWarehouse.AddToWarehouseView;
+import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
+import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
-import cz.wildwest.zaurex.views.addToWarehouse.AddToWarehouseView;
 import cz.wildwest.zaurex.views.invoices.InvoicesView;
 import cz.wildwest.zaurex.views.sell.SellView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
-import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
-import cz.wildwest.zaurex.views.employees.EmployeesView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,9 +83,15 @@ public class MainLayout extends AppLayout {
         toggle.getElement().setAttribute("aria-label", "Menu toggle");
 
         viewTitle = new H1();
-        viewTitle.addClassNames("view-title");
+        viewTitle.addClassNames("view-title", "flex-auto");
 
-        Header header = new Header(toggle, viewTitle);
+        LineAwesomeIcon lineAwesomeIcon = new LineAwesomeIcon("las la-question");
+        lineAwesomeIcon.setTitle("Zobrazit nápovědu...");
+        Button helpButton = new Button(lineAwesomeIcon);
+        helpButton.setClassName("help-button");
+        helpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        Header header = new Header(toggle, viewTitle, helpButton);
         header.addClassNames("view-header");
         return header;
     }
@@ -168,9 +173,9 @@ public class MainLayout extends AppLayout {
             name.addClassNames("font-medium", "text-s", "text-secondary", "flex-auto");
             //
             LineAwesomeIcon lineAwesomeIcon = new LineAwesomeIcon("las la-power-off");
-            lineAwesomeIcon.addClassNames("font-medium");
             Button logoutButton = new Button(lineAwesomeIcon,
                     clickEvent -> authenticatedUser.logout());
+            lineAwesomeIcon.setTitle("Odhlásit se...");
             logoutButton.addClassNames("px-xs");
             //
             layout.add(avatar, name, logoutButton);
