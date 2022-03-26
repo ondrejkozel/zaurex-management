@@ -116,6 +116,7 @@ public class HolidaysView extends VerticalLayout {
         toDate.setI18n(DatePickerI18n.DATE_PICKER_I_18_N);
         //
         status = new Select<>(Holiday.Status.values());
+        status.setRenderer(new ComponentRenderer<>(status1 -> new Badge(status1.getText(), status1 == Holiday.Status.APPROVED ? Badge.BadgeVariant.SUCCESS : status1 == Holiday.Status.DENIED ? Badge.BadgeVariant.ERROR : Badge.BadgeVariant.CONTRAST)));
         status.setLabel("Stav");
         status.setRequiredIndicatorVisible(true);
         managerResponse = new TextArea("Odpověď manažera");
