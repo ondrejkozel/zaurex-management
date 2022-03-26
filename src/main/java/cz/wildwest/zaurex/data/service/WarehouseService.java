@@ -26,4 +26,10 @@ public class WarehouseService extends GenericService<WarehouseItem, WarehouseIte
         warehouseItemVariantService.deleteAll(item);
         super.delete(item);
     }
+
+    @Override
+    public void deleteAll(Iterable<WarehouseItem> objekty) {
+        objekty.forEach(warehouseItemVariantService::deleteAll);
+        super.deleteAll(objekty);
+    }
 }

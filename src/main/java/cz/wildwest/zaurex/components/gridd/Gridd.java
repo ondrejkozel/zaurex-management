@@ -19,6 +19,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -154,6 +155,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
     }
 
     public void refreshAll() {
+        grid.getSelectionModel().deselectAll();
         dataProvider.refreshAll();
         grid.recalculateColumnWidths();
     }
@@ -323,9 +325,13 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
     }
 
     private void deleteSelectedButtonClicked(ClickEvent<Button> clickEvent) {
+        if (grid.getSelectedItems().isEmpty()) {
+            Notification.show("Nebyly vybrány žádné položky");
+            return;
+        }
         ConfirmDialog dialog = new ConfirmDialog(
-                String.format("Odstranit vybrané objekty: %d", grid.getSelectedItems().size()),
-                "Opravdu si přejete smazat tyto objekty? Tato akce je nevratná.",
+                String.format("Odstranit vybrané položky: %d", grid.getSelectedItems().size()),
+                "Opravdu si přejete smazat tyto položky? Tato akce je nevratná.",
                 "Odstranit",
                 confirmEvent -> {
                     dataProvider.deleteAll(grid.getSelectedItems());
