@@ -11,7 +11,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -114,13 +114,14 @@ public class MainLayout extends AppLayout {
     }
 
     private void buildAndShowHelpDialog(Helper helper) {
-        VerticalLayout dialogLayout = new VerticalLayout();
-        dialogLayout.addClassNames("custom-dialog-layout");
-        dialogLayout.add(new Html("<span>" + helper.html() + "</span>"));
+        Scroller scroller = new Scroller();
+        scroller.setContent(new Html("<span>" + helper.html() + "</span>"));
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        scroller.setMaxHeight("75vh");
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
-        dialog.add(dialogLayout);
+        dialog.add(scroller);
         dialog.open();
     }
 
