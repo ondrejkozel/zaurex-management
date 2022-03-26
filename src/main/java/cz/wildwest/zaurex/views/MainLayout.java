@@ -116,7 +116,7 @@ public class MainLayout extends AppLayout {
     private void buildAndShowHelpDialog(Helper helper) {
         VerticalLayout dialogLayout = new VerticalLayout();
         dialogLayout.addClassNames("custom-dialog-layout");
-        dialogLayout.add(new Html(helper.html()));
+        dialogLayout.add(new Html("<span>" + helper.html() + "</span>"));
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
@@ -174,7 +174,7 @@ public class MainLayout extends AppLayout {
 
                 holidays,
 
-                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", HolidaysForApprovalView.class),
+                new MenuItemInfo("Dovolené", "la la-question-circle", HolidaysForApprovalView.class),
 
                 new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
