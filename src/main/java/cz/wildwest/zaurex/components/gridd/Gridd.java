@@ -23,7 +23,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataProviderListener;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.Renderer;
-import com.vaadin.flow.data.selection.SelectionListener;
+import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.service.GenericService;
@@ -108,12 +108,13 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         }
     }
 
-    public void addSelectionListener(SelectionListener<Grid<T>, T> selectionListener) {
-        grid.getSelectionModel().addSelectionListener(selectionListener);
+    public void addMultiSelectionListener(MultiSelectionListener<Grid<T>, T> selectionListener) {
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.asMultiSelect().addSelectionListener(selectionListener);
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 
     public void deselect(T toDeselect) {
-        Notification.show("Deselecting " + toDeselect);
         grid.getSelectionModel().deselect(toDeselect);
     }
 

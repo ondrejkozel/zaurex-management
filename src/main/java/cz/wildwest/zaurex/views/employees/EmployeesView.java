@@ -41,8 +41,8 @@ public class EmployeesView extends VerticalLayout {
         setSizeFull();
         //
         grid.getCrud().addEditListener(userEditEvent -> grid.getCrud().getDeleteButton().setEnabled(!userEditEvent.getItem().equals(user)));
-        grid.addSelectionListener(selectionEvent -> {
-            if (grid.isMultiselectActive() && selectionEvent.getAllSelectedItems().contains(user)) grid.deselect(user);
+        grid.addMultiSelectionListener(selectionEvent -> {
+            if (selectionEvent.getAllSelectedItems().contains(user)) grid.deselect(user);
         });
     }
 
