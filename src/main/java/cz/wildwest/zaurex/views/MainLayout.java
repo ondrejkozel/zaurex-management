@@ -2,6 +2,7 @@ package cz.wildwest.zaurex.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -115,7 +116,7 @@ public class MainLayout extends AppLayout {
     private void buildAndShowHelpDialog(Helper helper) {
         VerticalLayout dialogLayout = new VerticalLayout();
         dialogLayout.addClassNames("custom-dialog-layout");
-        dialogLayout.add(new Span(helper.html()));
+        dialogLayout.add(new Html(helper.html()));
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
