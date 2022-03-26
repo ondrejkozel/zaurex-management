@@ -31,10 +31,11 @@ public class WarehouseItem extends AbstractEntity {
         sellable = true;
     }
 
-    public WarehouseItem(String title, String briefDescription) {
+    public WarehouseItem(String title, String briefDescription, Category category) {
         this();
         this.title = title;
         this.briefDescription = briefDescription;
+        this.category = category;
     }
 
     public String getTitle() {

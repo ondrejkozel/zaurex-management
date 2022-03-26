@@ -77,12 +77,18 @@ public class DataGenerator {
     }
 
     private void createWarehouseItems(WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
-        WarehouseItem bunda_tilak = new WarehouseItem("Bunda Tilak", "Zimní bunda Tilak vás zahřeje v každém ročním období!");
-        bunda_tilak.setCategory(WarehouseItem.Category.HIKING);
-        warehouseService.save(bunda_tilak);
+        WarehouseItem bunda_tilak = new WarehouseItem("Bunda Tilak", "Zimní bunda Tilak vás zahřeje v každém ročním období!", WarehouseItem.Category.HIKING);
+        WarehouseItem energeticka_tycinka = new WarehouseItem("Energetická tyčinka Nevím", "Bla bla popis", WarehouseItem.Category.OTHER);
+        WarehouseItem celovka = new WarehouseItem("Čelovka Petzl Tikkina 250", "Nová verze kompaktní svítilny pro každodenní použití od firmy Petzl s názvem Tikkina má svítivost 250 lumenů a dosvit až 60 metrů.", WarehouseItem.Category.OTHER);
+        warehouseService.saveAll(List.of(bunda_tilak, energeticka_tycinka, celovka));
         warehouseItemVariantService.saveAll(Set.of(
                 new WarehouseItem.Variant(bunda_tilak, "zelená", 84, 499.9),
-                new WarehouseItem.Variant(bunda_tilak, "černá", 10, 514.9)
+                new WarehouseItem.Variant(bunda_tilak, "černá", 10, 514.9),
+                //
+                new WarehouseItem.Variant(energeticka_tycinka, "malá", 100, 35),
+                new WarehouseItem.Variant(energeticka_tycinka, "dvojitá", 34, 64),
+                //
+                new WarehouseItem.Variant(celovka, "varianta", 9, 519)
         ));
     }
 
