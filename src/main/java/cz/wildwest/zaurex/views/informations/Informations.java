@@ -12,7 +12,7 @@ import cz.wildwest.zaurex.views.MainLayout;
 import javax.annotation.security.PermitAll;
 
 @PageTitle("Informace k používání")
-@Route(value = "", layout = MainLayout.class)
+@Route(value = "informations", layout = MainLayout.class)
 @PermitAll
 public class Informations extends VerticalLayout {
 
