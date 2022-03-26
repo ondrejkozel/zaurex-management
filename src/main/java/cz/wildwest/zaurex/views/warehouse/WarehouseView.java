@@ -38,6 +38,7 @@ import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.security.RolesAllowed;
 import java.util.ArrayList;
@@ -93,7 +94,7 @@ public class WarehouseView extends VerticalLayout {
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 85)));
         grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"));
         grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"));
         grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
