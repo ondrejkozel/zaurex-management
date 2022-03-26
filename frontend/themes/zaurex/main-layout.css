@@ -123,3 +123,9 @@
   margin: 10px;
   cursor: pointer;
 }
+
+.custom-dialog-layout {
+  padding: 0;
+  gap: 0;
+  align-items: stretch;
+}
