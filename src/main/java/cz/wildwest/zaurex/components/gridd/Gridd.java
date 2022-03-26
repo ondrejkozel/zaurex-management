@@ -1,9 +1,6 @@
 package cz.wildwest.zaurex.components.gridd;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.HasValueAndElement;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -88,7 +85,13 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         //
         this.dataProvider = dataProvider;
         grid.setDataProvider(dataProvider);
+        //
+        workaroundButton = new Button("", (ComponentEventListener<ClickEvent<Button>>) clickEvent -> refreshAll());
+        workaroundButton.addClassName("display-none");
+        add(workaroundButton);
     }
+
+    private final Button workaroundButton;
 
     private void setEditable(boolean editable) {
         multiselectMenuItem.setEnabled(editable);
@@ -205,6 +208,15 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         multiselectMenuItem.setChecked(multiselect);
         grid.setSelectionMode(multiselect ? Grid.SelectionMode.MULTI : Grid.SelectionMode.SINGLE);
         deleteSelectedButton.setVisible(multiselect);
+        if (multiselect) {
+            List<T> items = getItems();
+            if (items.size() != 0) {
+                //noinspection unchecked
+                grid.asMultiSelect().select(items.get(1));
+                workaroundButton.clickInClient();
+            }
+            else refreshAll();
+        }
     }
 
     public Grid.Column<T> addColumn(String header, Renderer<T> renderer, boolean defaultVisibility) {
