@@ -63,7 +63,7 @@ public class HolidaysForApprovalView extends VerticalLayout {
         holidaysView.getFormLayout().add(holidaysView.getManagerResponse(), 2);
         grid.setNewObjectButtonText("Nová dovolená");
         //
-        grid.addColumn("Osoba", new TextRenderer<>(item -> item.getOwner().getName()));
+        grid.addColumn("Osoba", new TextRenderer<>(item -> item.getOwner().getName()), true);
         //
         MenuItem view = grid.getMenuBar().getItems().stream().filter(menuItem -> menuItem.getText().equals("Zobrazit")).findFirst().orElseThrow();
         view.getSubMenu().add(new Hr());

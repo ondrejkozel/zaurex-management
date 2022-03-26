@@ -194,19 +194,20 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         deleteSelectedButton.setVisible(multiselect);
     }
 
-    public Grid.Column<T> addColumn(String header, Renderer<T> renderer) {
+    public Grid.Column<T> addColumn(String header, Renderer<T> renderer, boolean defaultVisibility) {
         Grid.Column<T> tColumn = grid.addColumn(renderer).setHeader(header);
-        newColumnAdded(tColumn, header);
+        newColumnAdded(tColumn, header, defaultVisibility);
         return tColumn;
     }
 
-    private void newColumnAdded(Grid.Column<T> column, String header) {
+    private void newColumnAdded(Grid.Column<T> column, String header, boolean defaultVisibility) {
         column.setAutoWidth(true);
+        column.setVisible(defaultVisibility);
         //
         MenuItem menuItem = viewMenuItem.getSubMenu().addItem(header);
         menuItem.addClickListener(menuItemClickEvent -> toggleColumnVisibility(column, menuItem));
         menuItem.setCheckable(true);
-        menuItem.setChecked(true);
+        menuItem.setChecked(defaultVisibility);
     }
 
     private void toggleColumnVisibility(Grid.Column<T> column, MenuItem menuItem) {
