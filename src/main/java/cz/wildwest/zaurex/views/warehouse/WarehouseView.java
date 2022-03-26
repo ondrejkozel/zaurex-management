@@ -4,10 +4,12 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Label;
@@ -238,7 +240,16 @@ public class WarehouseView extends VerticalLayout {
         private Button buildDeleteVariantButton(WarehouseItem.Variant variant) {
             Button button = new Button(VaadinIcon.CLOSE.create());
             button.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
-            button.addClickListener(event -> deleteVariant(variant));
+            button.addClickListener(event -> {
+                if (!variant.isPersisted()) deleteVariant(variant);
+                else {
+                    ConfirmDialog dialog = new ConfirmDialog("Odstranit variantu", String.format("Opravdu si přejete smazat variantu %s?", variant.getColour()), "Odstranit", event1 -> deleteVariant(variant));
+                    dialog.setConfirmButtonTheme("error primary");
+                    dialog.setCancelText("Zrušit");
+                    dialog.setCancelable(true);
+                    dialog.open();
+                }
+            });
             button.setVisible(editable);
             button.setEnabled(editable);
             return button;
