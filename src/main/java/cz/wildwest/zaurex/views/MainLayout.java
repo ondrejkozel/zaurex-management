@@ -24,6 +24,7 @@ import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
 import cz.wildwest.zaurex.views.employees.EmployeesView;
+import cz.wildwest.zaurex.views.informations.Informations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,7 +146,9 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class)
+                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
+                
+                new MenuItemInfo("Informace", "Kdybych tušil co sem napsat", Informations.class)
 
 //                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
