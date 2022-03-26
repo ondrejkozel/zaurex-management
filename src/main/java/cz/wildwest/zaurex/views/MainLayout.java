@@ -2,14 +2,13 @@ package cz.wildwest.zaurex.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -33,6 +32,7 @@ import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,6 +121,10 @@ public class MainLayout extends AppLayout {
                 new Paragraph(helper.shortText()),
                 new Paragraph(helper.longText())
         );
+        for (Iterator<Component> iterator = dialogLayout.getChildren().iterator(); iterator.hasNext();) {
+            Component text = iterator.next();
+            if (text instanceof HasText && ((HasText) text).getText().isBlank()) dialogLayout.remove(text);
+        }
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
