@@ -9,9 +9,9 @@ public abstract class AbstractEntity {
 
     @Id
     @GeneratedValue
-    private Long id;
+    private long id;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
@@ -21,8 +21,8 @@ public abstract class AbstractEntity {
 
     @Override
     public int hashCode() {
-        if (id != null) {
-            return id.hashCode();
+        if (id != 0) {
+            return (int) id;
         }
         return super.hashCode();
     }
@@ -33,8 +33,8 @@ public abstract class AbstractEntity {
             return false; // null or other class
         }
 
-        if (id != null) {
-            return id.equals(other.id);
+        if (id != 0) {
+            return id == ((AbstractEntity) obj).id;
         }
         return super.equals(other);
     }

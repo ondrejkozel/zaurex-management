@@ -4,6 +4,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -37,9 +38,13 @@ import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.security.RolesAllowed;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -89,7 +94,7 @@ public class WarehouseView extends VerticalLayout {
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 85)));
         grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"));
         grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"));
         grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
@@ -238,7 +243,16 @@ public class WarehouseView extends VerticalLayout {
         private Button buildDeleteVariantButton(WarehouseItem.Variant variant) {
             Button button = new Button(VaadinIcon.CLOSE.create());
             button.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
-            button.addClickListener(event -> deleteVariant(variant));
+            button.addClickListener(event -> {
+                if (!variant.isPersisted()) deleteVariant(variant);
+                else {
+                    ConfirmDialog dialog = new ConfirmDialog("Odstranit variantu", String.format("Opravdu si přejete smazat variantu %s?", variant.getColour()), "Odstranit", event1 -> deleteVariant(variant));
+                    dialog.setConfirmButtonTheme("error primary");
+                    dialog.setCancelText("Zrušit");
+                    dialog.setCancelable(true);
+                    dialog.open();
+                }
+            });
             button.setVisible(editable);
             button.setEnabled(editable);
             return button;
