@@ -2,7 +2,6 @@ package cz.wildwest.zaurex.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -32,7 +31,6 @@ import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,14 +115,7 @@ public class MainLayout extends AppLayout {
     private void buildAndShowHelpDialog(Helper helper) {
         VerticalLayout dialogLayout = new VerticalLayout();
         dialogLayout.addClassNames("custom-dialog-layout");
-        dialogLayout.add(
-                new Paragraph(helper.shortText()),
-                new Paragraph(helper.longText())
-        );
-        for (Iterator<Component> iterator = dialogLayout.getChildren().iterator(); iterator.hasNext();) {
-            Component text = iterator.next();
-            if (text instanceof HasText && ((HasText) text).getText().isBlank()) dialogLayout.remove(text);
-        }
+        dialogLayout.add(new Span(helper.html()));
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
