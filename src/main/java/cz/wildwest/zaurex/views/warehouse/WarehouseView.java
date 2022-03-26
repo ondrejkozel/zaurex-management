@@ -9,7 +9,6 @@ import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.details.Details;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Label;
@@ -39,9 +38,13 @@ import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.MainLayout;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.security.RolesAllowed;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,7 +94,7 @@ public class WarehouseView extends VerticalLayout {
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(WarehouseItem::getBriefDescription));
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 85)));
         grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"));
         grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"));
         grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
