@@ -1,8 +1,11 @@
 package cz.wildwest.zaurex.views.employees;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
+import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -10,6 +13,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TextRenderer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
@@ -23,6 +27,10 @@ import cz.wildwest.zaurex.views.MainLayout;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @PageTitle("Zaměstnanci")
@@ -71,6 +79,21 @@ public class EmployeesView extends VerticalLayout {
             resetPasswordButton.setVisible(true);
             resetPasswordButton.setEnabled(true);
         });
+        grid.getCrud().addEditListener(userEditEvent -> roles.managerEnabled = !userEditEvent.getItem().equals(user));
+    }
+
+    private static int comparePrioritizeManager(Role o1, Role o2) {
+        if (o1.equals(o2)) return 0;
+        if (o1.equals(Role.MANAGER)) return -10;
+        if (o2.equals(Role.MANAGER)) return 10;
+        return o1.compareTo(o2);
+    }
+
+    private static int compareDoNotPrioritizeManager(Role o1, Role o2) {
+        if (o1.equals(o2)) return 0;
+        if (o1.equals(Role.MANAGER)) return 10;
+        if (o2.equals(Role.MANAGER)) return -10;
+        return o1.compareTo(o2);
     }
 
     private void showUserHasNewPasswordNotification(String name) {
@@ -82,24 +105,23 @@ public class EmployeesView extends VerticalLayout {
     private void configureColumns() {
         grid.addColumn("Jméno", new TextRenderer<>(User::getName), true);
         grid.addColumn("Uživatelské jméno", new TextRenderer<>(User::getUsername), false);
-        grid.addColumn("Role", new TextRenderer<>(user -> user.getRoles().stream().map(Role::getText).sorted((o1, o2) -> {
-            if (o1.equals(o2)) return 0;
-            if (o1.equals("manažer")) return -10;
-            if (o2.equals("manažer")) return 10;
-            return o1.compareTo(o2);
-        }).collect(Collectors.joining(", "))), true);
+        grid.addColumn("Role", new TextRenderer<>(user -> user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", "))), true);
     }
 
     @SuppressWarnings("FieldCanBeLocal")
     private TextField username;
     @SuppressWarnings("FieldCanBeLocal")
     private TextField name;
+    private RolesField roles;
 
     private Button resetPasswordButton;
 
     private BinderCrudEditor<User> buildEditor() {
         username = new TextField("Uživatelské jméno");
+        username.setRequired(true);
         name = new TextField("Jméno");
+        name.setRequired(true);
+        roles = new RolesField();
         //
         resetPasswordButton = new Button("Obnovit heslo", new LineAwesomeIcon("las la-redo-alt"));
         resetPasswordButton.setDisableOnClick(true);
@@ -112,7 +134,42 @@ public class EmployeesView extends VerticalLayout {
         });
         //
         binder.bindInstanceFields(this);
-        FormLayout formLayout = new FormLayout(username, name, new HorizontalLayout(resetPasswordButton));
+        FormLayout formLayout = new FormLayout(username, name);
+        formLayout.addFormItem(roles, "Role").addClassNames("role-form-item");
+        formLayout.add(new HorizontalLayout(resetPasswordButton));
         return new BinderCrudEditor<>(binder, formLayout);
+    }
+
+    private static class RolesField extends CustomField<Set<Role>> {
+
+        CheckboxGroup<Role> roleCheckboxGroup;
+
+        public RolesField() {
+            roleCheckboxGroup = new CheckboxGroup<>();
+            roleCheckboxGroup.setItems(Arrays.stream(Role.values()).sorted(EmployeesView::compareDoNotPrioritizeManager).collect(Collectors.toList()));
+            add(roleCheckboxGroup);
+            //
+            roleCheckboxGroup.addSelectionListener(event -> {
+                if (event.getAddedSelection().contains(Role.MANAGER)) roleCheckboxGroup.select(Role.values());
+            });
+            roleCheckboxGroup.setItemEnabledProvider((SerializablePredicate<Role>) role -> role != Role.MANAGER || managerEnabled);
+        }
+
+        private boolean managerEnabled;
+
+        public void setManagerCheckboxEnabled(boolean enabled) {
+            managerEnabled = enabled;
+        }
+
+        @Override
+        protected Set<Role> generateModelValue() {
+            return roleCheckboxGroup.getSelectedItems();
+        }
+
+        @Override
+        protected void setPresentationValue(Set<Role> roles) {
+            if (roles == null) roleCheckboxGroup.deselectAll();
+            else roleCheckboxGroup.select(roles);
+        }
     }
 }

@@ -11,13 +11,19 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
 public class User extends AbstractEntity {
 
+    @Size(min = 4, max = 50)
+    @NotBlank
     private String username;
 
+    @Size(min = 4, max = 50)
+    @NotBlank
     private String name;
 
     @JsonIgnore
