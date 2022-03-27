@@ -85,7 +85,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         //
         this.dataProvider = dataProvider;
         grid.setDataProvider(dataProvider);
-        //
+        //fixes #16
         workaroundButton = new Button("", (ComponentEventListener<ClickEvent<Button>>) clickEvent -> refreshAll());
         workaroundButton.addClassName("display-none");
         add(workaroundButton);
@@ -213,7 +213,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
             List<T> items = getItems();
             if (items.size() != 0) {
                 //noinspection unchecked
-                grid.asMultiSelect().select(items.get(1));
+                grid.asMultiSelect().select(items.get(0));
                 workaroundButton.clickInClient();
             }
             else refreshAll();
