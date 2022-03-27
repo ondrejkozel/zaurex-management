@@ -1,5 +1,7 @@
 package cz.wildwest.zaurex.help;
 
+import cz.wildwest.zaurex.views.holidays.HolidaysView;
+import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 
@@ -37,6 +39,43 @@ public class Helpers {
         HELPER_MAP.put(HomePageView.class, new Helper(
                     "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Také se tam dozvíte, jaké osoby na danou stránku mají přístup a jaké tam mají pravomoce. Na této stránce jsou základní informace o fungování systému.</p>"
         ));
+        HELPER_MAP.put(HolidaysView.class, new Helper(
+                    "<p>Zde můžete požádat o dovolenou</p>"
+            + "<h4>Kdo má jaké pravomoce?</h4>" +
+                    "<p>O dovolenou může požádat každý. Dovolené schvaluje manažer.</p>" +
+		 "<h4>Schvalování</h4>"+
+		"<p>Každá dovolená má tři různé stavy: Nevyřízen, Schváleno, zamítnuto. Manažer také může připojit vlastní poznámku, proč dovolenou zamítl, anebo schválil</p>" +
+            "<h4>Ovládací prvky</h4>" +
+                "<h5>Zobrazení</h5>" +
+                        "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví. </p>"+           
+                "<h5>Přidávání nové dovolené</h5>" +
+                        "<p>Nová dovolená se dá přidat tlačítkem v pravém dolním roku obrazovky Nová dovolená, anebo klávesovou zkratkou <span class\"kzkratka\">Alt + N</span>. U nové dovolené je potřeba nastavit datum a poznámku, kterou uvidí manažer. Poznámka je nepovinná</p>"
+                + "<h5>Upravování již existující žádosti o dovolenou</h5>"
+                        + "<p>Upravování vámi podané žádosti je možné po kliknutí na určitou žádost. Tato možnost je pouze, pokud dovolená ještě nenastala. Pokud dovolená již byla schválena a vy ji přesto upravíte, musí být znovu schválena. Pokud se vám okno na upravování dovolené nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost Vícenásobného výběru.</p>"
+                + "<h5>Odstraňování dovolené</h5>"
+                        + "<p>Dovolenou můžete odstranit. Jde to udělat tlačítkem \"Odstranit...\", které naleznete při levém dolním okraji okna na upravování žádosti o dovolenou. Další možnost jak žádost o dovolenou odstranit, je přes Vícenásobný výber, který je popsán níže.</p>"
+                + "<h5>Vícenásobný výběr</h5>"
+                        + "<p>Jde o možnost odstranit více žádostí o dovolenou zároveň. Dá se spusti buď stisknutím tlačítka \"Možnosti\", anebo klávesou zkratkou <span class\"kzkratka\">Alt + S</span>. Po aktivaci této možnosti by se měl u levého okraje řádku se žádostí o dovolené objevit čtvereček, do kterého pokud kliknete, danou položku označíte. Označené položky pak můžete snadno odstraniť červeným tlačítkem \"Odstranit vybrané\", které se objeví u dolního okraje obrazovky nalevo od tlačítka \"Nová dovolená\". </p>"
+
+ ));
+        HELPER_MAP.put(HolidaysForApprovalView.class, new Helper(
+                    "<p>Zde můžete nastavovat dovolenou a schvalovat žádosti o dovolené od zaměstnanců</p>"
+            + "<h4>Kdo má jaké pravomoce?</h4>" +
+                    "<p>O dovolenou může požádat každý. Dovolené schvaluje manažer.</p>" +
+		 
+            "<h4>Ovládací prvky</h4>" +
+                "<h5>Zobrazení</h5>" +
+                        "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví. Je tam i možnost \"Pouze nevyřízené\", která skryje vyřízené žádosti. </p>"+           
+                "<h5>Přidávání nové dovolené</h5>" +
+                        "<p>Nová dovolená se dá přidat tlačítkem v pravém dolním roku obrazovky Nová dovolená, anebo klávesovou zkratkou <span class\"kzkratka\">Alt + N</span>. U nové dovolené je potřeba nastavit datum. Jako manažer máte právo vytvářet jakémukoli zaměstnanci dovolenou.</p>"
+                + "<h5>Upravování již existující žádosti o dovolenou a schvalování</h5>"
+                        + "<p>Upravování žádostí je možné po kliknutí na určitou žádost. Stejným způsobem se dá žádost i schvalovat nebo zamítat. Pokud se vám okno na upravování dovolené nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost Vícenásobného výběru.</p>"
+                + "<h5>Odstraňování dovolené</h5>"
+                        + "<p>Dovolenou můžete odstranit. Jde to udělat tlačítkem \"Odstranit...\", které naleznete při levém dolním okraji okna na upravování žádosti o dovolenou. Další možnost jak žádost o dovolenou odstranit, je přes Vícenásobný výber, který je popsán níže.</p>"
+                + "<h5>Vícenásobný výběr</h5>"
+                        + "<p>Jde o možnost odstranit více žádostí o dovolenou zároveň. Dá se spusti buď stisknutím tlačítka \"Možnosti\", anebo klávesou zkratkou <span class\"kzkratka\">Alt + S</span>. Po aktivaci této možnosti by se měl u levého okraje řádku se žádostí o dovolené objevit čtvereček, do kterého pokud kliknete, danou položku označíte. Označené položky pak můžete snadno odstraniť červeným tlačítkem \"Odstranit vybrané\", které se objeví u dolního okraje obrazovky nalevo od tlačítka \"Nová dovolená\". </p>"
+
+ ));
     }
 
     public static Optional<Helper> getHelper(Class<?> view) {
