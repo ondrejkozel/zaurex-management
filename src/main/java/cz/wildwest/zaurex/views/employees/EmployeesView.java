@@ -1,11 +1,11 @@
 package cz.wildwest.zaurex.views.employees;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -28,8 +28,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.security.RolesAllowed;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,7 +77,14 @@ public class EmployeesView extends VerticalLayout {
             resetPasswordButton.setVisible(true);
             resetPasswordButton.setEnabled(true);
         });
-        grid.getCrud().addEditListener(userEditEvent -> roles.managerEnabled = !userEditEvent.getItem().equals(user));
+        grid.getCrud().addNewListener(userNewEvent -> {
+            roles.managerEnabled = true;
+            roles.refresh();
+        });
+        grid.getCrud().addEditListener(userEditEvent -> {
+            roles.managerEnabled = !userEditEvent.getItem().equals(user);
+            roles.refresh();
+        });
     }
 
     private static int comparePrioritizeManager(Role o1, Role o2) {
@@ -134,9 +139,7 @@ public class EmployeesView extends VerticalLayout {
         });
         //
         binder.bindInstanceFields(this);
-        FormLayout formLayout = new FormLayout(username, name);
-        formLayout.addFormItem(roles, "Role").addClassNames("role-form-item");
-        formLayout.add(new HorizontalLayout(resetPasswordButton));
+        FormLayout formLayout = new FormLayout(username, name, roles, new HorizontalLayout(resetPasswordButton));
         return new BinderCrudEditor<>(binder, formLayout);
     }
 
@@ -146,20 +149,24 @@ public class EmployeesView extends VerticalLayout {
 
         public RolesField() {
             roleCheckboxGroup = new CheckboxGroup<>();
+            roleCheckboxGroup.setLabel("Role");
             roleCheckboxGroup.setItems(Arrays.stream(Role.values()).sorted(EmployeesView::compareDoNotPrioritizeManager).collect(Collectors.toList()));
             add(roleCheckboxGroup);
             //
             roleCheckboxGroup.addSelectionListener(event -> {
                 if (event.getAddedSelection().contains(Role.MANAGER)) roleCheckboxGroup.select(Role.values());
             });
-            roleCheckboxGroup.setItemEnabledProvider((SerializablePredicate<Role>) role -> role != Role.MANAGER || managerEnabled);
+            roleCheckboxGroup.setItemEnabledProvider((SerializablePredicate<Role>) role -> {
+                if (role.equals(Role.MANAGER)) return managerEnabled;
+                return true;
+            });
+        }
+
+        private void addRenderedLabel(Checkbox item) {
+            item.setLabel(Role.valueOf(item.getLabel()).getText());
         }
 
         private boolean managerEnabled;
-
-        public void setManagerCheckboxEnabled(boolean enabled) {
-            managerEnabled = enabled;
-        }
 
         @Override
         protected Set<Role> generateModelValue() {
@@ -170,6 +177,11 @@ public class EmployeesView extends VerticalLayout {
         protected void setPresentationValue(Set<Role> roles) {
             if (roles == null) roleCheckboxGroup.deselectAll();
             else roleCheckboxGroup.select(roles);
+        }
+
+        public void refresh() {
+            roleCheckboxGroup.setReadOnly(false);
+            roleCheckboxGroup.getChildren().forEach(item -> addRenderedLabel((Checkbox) item));
         }
     }
 }
