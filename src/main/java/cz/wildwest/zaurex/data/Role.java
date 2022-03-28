@@ -1,5 +1,15 @@
 package cz.wildwest.zaurex.data;
 
 public enum Role {
-    SALESMAN, WAREHOUSEMAN, SHIFT_LEADER, MANAGER
+    SALESMAN("prodavač"), WAREHOUSEMAN("skladník"), SHIFT_LEADER("vedoucí směny"), MANAGER("manažer");
+
+    private final String text;
+
+    Role(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
 }

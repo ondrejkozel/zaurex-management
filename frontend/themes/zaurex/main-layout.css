@@ -119,6 +119,9 @@
   padding-top: var(--lumo-space-xs);
 }
 
+.role-form-item {
+  flex-wrap: wrap;
+}
 .help-button {
   margin: 10px;
   cursor: pointer;

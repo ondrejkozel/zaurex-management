@@ -1,203 +1,208 @@
 package cz.wildwest.zaurex.views.employees;
 
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.crud.BinderCrudEditor;
+import com.vaadin.flow.component.customfield.CustomField;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.data.renderer.TextRenderer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.Badge;
+import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
+import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.data.Role;
+import cz.wildwest.zaurex.data.entity.User;
+import cz.wildwest.zaurex.data.service.UserService;
+import cz.wildwest.zaurex.security.AuthenticatedUser;
+import cz.wildwest.zaurex.views.LineAwesomeIcon;
 import cz.wildwest.zaurex.views.MainLayout;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import javax.annotation.security.RolesAllowed;
-import org.apache.commons.lang3.StringUtils;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @PageTitle("Zaměstnanci")
 @Route(value = "employees", layout = MainLayout.class)
 @RolesAllowed("MANAGER")
-public class EmployeesView extends Div {
+public class EmployeesView extends VerticalLayout {
 
-    private GridPro<Client> grid;
-    private GridListDataView<Client> gridListDataView;
+    private static final String DEFAULT_PASSWORD = "heslo";
 
-    private Grid.Column<Client> clientColumn;
-    private Grid.Column<Client> amountColumn;
-    private Grid.Column<Client> statusColumn;
-    private Grid.Column<Client> dateColumn;
+    private final Gridd<User> grid;
+    private final PasswordEncoder passwordEncoder;
 
-    public EmployeesView() {
-        addClassName("zaměstnanci-view");
-        setSizeFull();
-        createGrid();
+    public EmployeesView(UserService userService, AuthenticatedUser authenticatedUser, PasswordEncoder passwordEncoder) {
+        User user = authenticatedUser.get().orElseThrow();
+        this.passwordEncoder = passwordEncoder;
+        grid = new Gridd<>(User.class,
+                new GenericDataProvider<>(userService, User.class),
+                User::new,
+                true,
+                buildEditor(),
+                "Nový zaměstnanec",
+                "Upravit zaměstnance",
+                "Odstranit zaměstnance"
+        );
         add(grid);
+        configureColumns();
+        setSizeFull();
+        //
+        grid.getCrud().addEditListener(userEditEvent -> grid.getCrud().getDeleteButton().setEnabled(!userEditEvent.getItem().equals(user)));
+        grid.getCrud().addEditListener(userEditEvent -> passwordReset = false);
+        grid.addMultiSelectionListener(selectionEvent -> {
+            if (selectionEvent.getAllSelectedItems().contains(user)) grid.deselect(user);
+        });
+        grid.getCrud().addSaveListener(userSaveEvent -> {
+            if (userSaveEvent.getItem().equals(user)) authenticatedUser.logout();
+        });
+        grid.getCrud().addNewListener(userNewEvent -> {
+            userNewEvent.getItem().setHashedPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+            passwordReset = true;
+        });
+        grid.getCrud().addSaveListener(userSaveEvent -> {
+            if (passwordReset) showUserHasNewPasswordNotification(userSaveEvent.getItem().getName());
+        });
+        grid.getCrud().addNewListener(userNewEvent -> resetPasswordButton.setVisible(false));
+        grid.getCrud().addEditListener(userEditEvent -> {
+            resetPasswordButton.setVisible(true);
+            resetPasswordButton.setEnabled(true);
+        });
+        grid.getCrud().addNewListener(userNewEvent -> {
+            roles.managerEnabled = true;
+            roles.refresh();
+        });
+        grid.getCrud().addEditListener(userEditEvent -> {
+            roles.managerEnabled = !userEditEvent.getItem().equals(user);
+            roles.refresh();
+        });
     }
 
-    private void createGrid() {
-        createGridComponent();
-        addColumnsToGrid();
-        addFiltersToGrid();
+    private static int comparePrioritizeManager(Role o1, Role o2) {
+        if (o1.equals(o2)) return 0;
+        if (o1.equals(Role.MANAGER)) return -10;
+        if (o2.equals(Role.MANAGER)) return 10;
+        return o1.compareTo(o2);
     }
 
-    private void createGridComponent() {
-        grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setHeight("100%");
-
-        List<Client> clients = getClients();
-        gridListDataView = grid.setItems(clients);
+    private static int compareDoNotPrioritizeManager(Role o1, Role o2) {
+        if (o1.equals(o2)) return 0;
+        if (o1.equals(Role.MANAGER)) return 10;
+        if (o2.equals(Role.MANAGER)) return -10;
+        return o1.compareTo(o2);
     }
 
-    private void addColumnsToGrid() {
-        createClientColumn();
-        createAmountColumn();
-        createStatusColumn();
-        createDateColumn();
+    private void showUserHasNewPasswordNotification(String name) {
+        Notification.show(String.format("Uživateli %s bylo nastaveno výchozí heslo: \"%s\"", name, DEFAULT_PASSWORD));
     }
 
-    private void createClientColumn() {
-        clientColumn = grid.addColumn(new ComponentRenderer<>(client -> {
-            HorizontalLayout hl = new HorizontalLayout();
-            hl.setAlignItems(Alignment.CENTER);
-            Image img = new Image(client.getImg(), "");
-            Span span = new Span();
-            span.setClassName("name");
-            span.setText(client.getClient());
-            hl.add(img, span);
-            return hl;
-        })).setComparator(client -> client.getClient()).setHeader("Client");
-    }
+    private boolean passwordReset;
 
-    private void createAmountColumn() {
-        amountColumn = grid
-                .addEditColumn(Client::getAmount,
-                        new NumberRenderer<>(client -> client.getAmount(), NumberFormat.getCurrencyInstance(Locale.US)))
-                .text((item, newValue) -> item.setAmount(Double.parseDouble(newValue)))
-                .setComparator(client -> client.getAmount()).setHeader("Amount");
-    }
-
-    private void createStatusColumn() {
-        statusColumn = grid.addEditColumn(Client::getClient, new ComponentRenderer<>(client -> {
-            Span span = new Span();
-            span.setText(client.getStatus());
-            span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
+    private void configureColumns() {
+        grid.addColumn("Jméno", new TextRenderer<>(User::getName), true);
+        grid.addColumn("Uživatelské jméno", new TextRenderer<>(User::getUsername), false);
+        grid.addColumn("Role", new ComponentRenderer<>(user -> {
+            if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyly nastaveny žádné oprávnění.");
+            return new Span(user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", ")));
+        }), true);
+        grid.addColumn("Registrován od", new ComponentRenderer<>(user -> {
+            Span span = new Span(user.getRegisteredSince().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
+            span.setTitle(user.getRegisteredSince().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
             return span;
-        })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("Pending", "Success", "Error"))
-                .setComparator(client -> client.getStatus()).setHeader("Status");
+        }), false);
+        grid.addColumn("Poslední přihlášení", new ComponentRenderer<>(user -> {
+            if (user.getLastLogIn() == null) return new Badge("nikdy", Badge.BadgeVariant.CONTRAST, "Uživatel se ještě nepřihlásil.");
+            Span span = new Span(user.getLastLogIn().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
+            span.setTitle(user.getLastLogIn().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
+            return span;
+        }), false);
     }
 
-    private void createDateColumn() {
-        dateColumn = grid
-                .addColumn(new LocalDateRenderer<>(client -> LocalDate.parse(client.getDate()),
-                        DateTimeFormatter.ofPattern("M/d/yyyy")))
-                .setComparator(client -> client.getDate()).setHeader("Date").setWidth("180px").setFlexGrow(0);
+    @SuppressWarnings("FieldCanBeLocal")
+    private TextField username;
+    @SuppressWarnings("FieldCanBeLocal")
+    private TextField name;
+    private RolesField roles;
+
+    private Button resetPasswordButton;
+
+    private BinderCrudEditor<User> buildEditor() {
+        username = new TextField("Uživatelské jméno");
+        username.setRequired(true);
+        name = new TextField("Jméno");
+        name.setRequired(true);
+        roles = new RolesField();
+        //
+        resetPasswordButton = new Button("Obnovit heslo", new LineAwesomeIcon("las la-redo-alt"));
+        resetPasswordButton.setDisableOnClick(true);
+        //
+        Binder<User> binder = new BeanValidationBinder<>(User.class);
+        resetPasswordButton.addClickListener(clickEvent -> {
+            grid.getCrud().getEditor().getItem().setHashedPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+            passwordReset = true;
+            grid.getCrud().setDirty(true);
+        });
+        //
+        binder.bindInstanceFields(this);
+        FormLayout formLayout = new FormLayout(username, name, roles, new HorizontalLayout(resetPasswordButton));
+        return new BinderCrudEditor<>(binder, formLayout);
     }
 
-    private void addFiltersToGrid() {
-        HeaderRow filterRow = grid.appendHeaderRow();
+    private static class RolesField extends CustomField<Set<Role>> {
 
-        TextField clientFilter = new TextField();
-        clientFilter.setPlaceholder("Filter");
-        clientFilter.setClearButtonVisible(true);
-        clientFilter.setWidth("100%");
-        clientFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        clientFilter.addValueChangeListener(event -> gridListDataView
-                .addFilter(client -> StringUtils.containsIgnoreCase(client.getClient(), clientFilter.getValue())));
-        filterRow.getCell(clientColumn).setComponent(clientFilter);
+        CheckboxGroup<Role> roleCheckboxGroup;
 
-        TextField amountFilter = new TextField();
-        amountFilter.setPlaceholder("Filter");
-        amountFilter.setClearButtonVisible(true);
-        amountFilter.setWidth("100%");
-        amountFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        amountFilter.addValueChangeListener(event -> gridListDataView.addFilter(client -> StringUtils
-                .containsIgnoreCase(Double.toString(client.getAmount()), amountFilter.getValue())));
-        filterRow.getCell(amountColumn).setComponent(amountFilter);
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.setItems(Arrays.asList("Pending", "Success", "Error"));
-        statusFilter.setPlaceholder("Filter");
-        statusFilter.setClearButtonVisible(true);
-        statusFilter.setWidth("100%");
-        statusFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areStatusesEqual(client, statusFilter)));
-        filterRow.getCell(statusColumn).setComponent(statusFilter);
-
-        DatePicker dateFilter = new DatePicker();
-        dateFilter.setPlaceholder("Filter");
-        dateFilter.setClearButtonVisible(true);
-        dateFilter.setWidth("100%");
-        dateFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areDatesEqual(client, dateFilter)));
-        filterRow.getCell(dateColumn).setComponent(dateFilter);
-    }
-
-    private boolean areStatusesEqual(Client client, ComboBox<String> statusFilter) {
-        String statusFilterValue = statusFilter.getValue();
-        if (statusFilterValue != null) {
-            return StringUtils.equals(client.getStatus(), statusFilterValue);
+        public RolesField() {
+            roleCheckboxGroup = new CheckboxGroup<>();
+            roleCheckboxGroup.setLabel("Role");
+            roleCheckboxGroup.setItems(Arrays.stream(Role.values()).sorted(EmployeesView::compareDoNotPrioritizeManager).collect(Collectors.toList()));
+            add(roleCheckboxGroup);
+            //
+            roleCheckboxGroup.addSelectionListener(event -> {
+                if (event.getAddedSelection().contains(Role.MANAGER) && event.isFromClient()) roleCheckboxGroup.select(Role.values());
+                refresh();
+            });
+            roleCheckboxGroup.setItemEnabledProvider((SerializablePredicate<Role>) role -> {
+                if (role.equals(Role.MANAGER)) return managerEnabled;
+                return true;
+            });
         }
-        return true;
-    }
 
-    private boolean areDatesEqual(Client client, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
-        if (dateFilterValue != null) {
-            LocalDate clientDate = LocalDate.parse(client.getDate());
-            return dateFilterValue.equals(clientDate);
+        private void addRenderedLabel(Checkbox item) {
+            item.setLabel(Role.valueOf(item.getLabel()).getText());
         }
-        return true;
-    }
 
-    private List<Client> getClients() {
-        return Arrays.asList(
-                createClient(4957, "https://randomuser.me/api/portraits/women/42.jpg", "Amarachi Nkechi", 47427.0,
-                        "Success", "2019-05-09"),
-                createClient(675, "https://randomuser.me/api/portraits/women/24.jpg", "Bonelwa Ngqawana", 70503.0,
-                        "Success", "2019-05-09"),
-                createClient(6816, "https://randomuser.me/api/portraits/men/42.jpg", "Debashis Bhuiyan", 58931.0,
-                        "Success", "2019-05-07"),
-                createClient(5144, "https://randomuser.me/api/portraits/women/76.jpg", "Jacqueline Asong", 25053.0,
-                        "Pending", "2019-04-25"),
-                createClient(9800, "https://randomuser.me/api/portraits/men/24.jpg", "Kobus van de Vegte", 7319.0,
-                        "Pending", "2019-04-22"),
-                createClient(3599, "https://randomuser.me/api/portraits/women/94.jpg", "Mattie Blooman", 18441.0,
-                        "Error", "2019-04-17"),
-                createClient(3989, "https://randomuser.me/api/portraits/men/76.jpg", "Oea Romana", 33376.0, "Pending",
-                        "2019-04-17"),
-                createClient(1077, "https://randomuser.me/api/portraits/men/94.jpg", "Stephanus Huggins", 75774.0,
-                        "Success", "2019-02-26"),
-                createClient(8942, "https://randomuser.me/api/portraits/men/16.jpg", "Torsten Paulsson", 82531.0,
-                        "Pending", "2019-02-21"));
-    }
+        private boolean managerEnabled;
 
-    private Client createClient(int id, String img, String client, double amount, String status, String date) {
-        Client c = new Client();
-        c.setId(id);
-        c.setImg(img);
-        c.setClient(client);
-        c.setAmount(amount);
-        c.setStatus(status);
-        c.setDate(date);
+        @Override
+        protected Set<Role> generateModelValue() {
+            return roleCheckboxGroup.getSelectedItems();
+        }
 
-        return c;
+        @Override
+        protected void setPresentationValue(Set<Role> roles) {
+            if (roles == null) roleCheckboxGroup.deselectAll();
+            else roleCheckboxGroup.select(roles);
+        }
+
+        public void refresh() {
+            roleCheckboxGroup.setReadOnly(false);
+            //workaround:
+            roleCheckboxGroup.getChildren().forEach(item -> addRenderedLabel((Checkbox) item));
+        }
     }
-};
+}
