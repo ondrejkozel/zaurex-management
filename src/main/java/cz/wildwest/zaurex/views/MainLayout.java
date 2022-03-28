@@ -155,7 +155,7 @@ public class MainLayout extends AppLayout {
 
 //                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
-        if (authenticatedUser.get().orElseThrow().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+        if (authenticatedUser.get().isPresent() && authenticatedUser.get().get().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
         return menuItemInfos;
     }
 
@@ -202,6 +202,6 @@ public class MainLayout extends AppLayout {
 
     private void checkChangePasswordNotifier() {
         if (authenticatedUser.get().isPresent() && !authenticatedUser.get().get().isHasChangedPassword())
-            Notification.show("Pro lepší zabezpečení si změňte heslo. 🔐");
+            Notification.show("Pro lepší zabezpečení si v nastavení změňte heslo. 🔐");
     }
 }

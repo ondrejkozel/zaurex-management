@@ -55,6 +55,7 @@ public class SettingsView extends VerticalLayout {
 
     private void changePassword(String unhashedPassword) {
         user.setHashedPassword(passwordEncoder.encode(unhashedPassword));
+        user.setHasChangedPassword(true);
         userService.save(user);
         Notification.show("Úspěšně jsme vám nastavili nové heslo! 🌞");
     }
