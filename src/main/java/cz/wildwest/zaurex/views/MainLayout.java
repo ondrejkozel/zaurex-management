@@ -117,7 +117,7 @@ public class MainLayout extends AppLayout {
         Scroller scroller = new Scroller();
         scroller.setContent(new Html("<span>" + helper.html() + "</span>"));
         scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        scroller.setMaxHeight("75vh");
+        scroller.setMaxHeight("60vh");
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
