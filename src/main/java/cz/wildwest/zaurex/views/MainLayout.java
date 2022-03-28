@@ -7,6 +7,7 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -72,10 +73,12 @@ public class MainLayout extends AppLayout {
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
-
+        //
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
         addToDrawer(createDrawerContent());
+        //
+        checkChangePasswordNotifier();
     }
 
     private Component createHeaderContent() {
@@ -195,5 +198,10 @@ public class MainLayout extends AppLayout {
     private String getCurrentPageTitle() {
         PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
+    }
+
+    private void checkChangePasswordNotifier() {
+        if (authenticatedUser.get().isPresent() && !authenticatedUser.get().get().isHasChangedPassword())
+            Notification.show("Pro lepší zabezpečení si změňte heslo. 🔐");
     }
 }
