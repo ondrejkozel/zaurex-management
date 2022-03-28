@@ -1,9 +1,6 @@
 package cz.wildwest.zaurex.components.gridd;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.HasValueAndElement;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -26,6 +23,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataProviderListener;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.Renderer;
+import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.service.GenericService;
@@ -87,7 +85,13 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         //
         this.dataProvider = dataProvider;
         grid.setDataProvider(dataProvider);
+        //fixes #16
+        workaroundButton = new Button("", (ComponentEventListener<ClickEvent<Button>>) clickEvent -> refreshAll());
+        workaroundButton.addClassName("display-none");
+        add(workaroundButton);
     }
+
+    private final Button workaroundButton;
 
     private void setEditable(boolean editable) {
         multiselectMenuItem.setEnabled(editable);
@@ -104,6 +108,19 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         }
     }
 
+    public void addMultiSelectionListener(MultiSelectionListener<Grid<T>, T> selectionListener) {
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.asMultiSelect().addSelectionListener(selectionListener);
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+    }
+
+    public void deselect(T toDeselect) {
+        grid.getSelectionModel().deselect(toDeselect);
+    }
+
+    public boolean isMultiselectActive() {
+        return multiselect;
+    }
 
     public Editor<T> getEditor() {
         return grid.getEditor();
@@ -192,21 +209,31 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         multiselectMenuItem.setChecked(multiselect);
         grid.setSelectionMode(multiselect ? Grid.SelectionMode.MULTI : Grid.SelectionMode.SINGLE);
         deleteSelectedButton.setVisible(multiselect);
+        if (multiselect) {
+            List<T> items = getItems();
+            if (items.size() != 0) {
+                //noinspection unchecked
+                grid.asMultiSelect().select(items.get(0));
+                workaroundButton.clickInClient();
+            }
+            else refreshAll();
+        }
     }
 
-    public Grid.Column<T> addColumn(String header, Renderer<T> renderer) {
+    public Grid.Column<T> addColumn(String header, Renderer<T> renderer, boolean defaultVisibility) {
         Grid.Column<T> tColumn = grid.addColumn(renderer).setHeader(header);
-        newColumnAdded(tColumn, header);
+        newColumnAdded(tColumn, header, defaultVisibility);
         return tColumn;
     }
 
-    private void newColumnAdded(Grid.Column<T> column, String header) {
+    private void newColumnAdded(Grid.Column<T> column, String header, boolean defaultVisibility) {
         column.setAutoWidth(true);
+        column.setVisible(defaultVisibility);
         //
         MenuItem menuItem = viewMenuItem.getSubMenu().addItem(header);
         menuItem.addClickListener(menuItemClickEvent -> toggleColumnVisibility(column, menuItem));
         menuItem.setCheckable(true);
-        menuItem.setChecked(true);
+        menuItem.setChecked(defaultVisibility);
     }
 
     private void toggleColumnVisibility(Grid.Column<T> column, MenuItem menuItem) {

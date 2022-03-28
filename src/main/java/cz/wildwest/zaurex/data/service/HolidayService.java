@@ -5,6 +5,7 @@ import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.service.repository.HolidayRepository;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,6 +24,11 @@ public class HolidayService extends GenericService<Holiday, HolidayRepository> {
 
     public List<Holiday> findAllPending() {
         return mainRepository.findAllByStatusEqualsOrderByFromDateDesc(Holiday.Status.PENDING);
+    }
+
+    @Transactional
+    public void deleteAll(User user) {
+        mainRepository.deleteAllByOwnerEquals(user);
     }
 
     @Override

@@ -93,11 +93,11 @@ public class WarehouseView extends VerticalLayout {
     }
 
     private void configureColumns() {
-        grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle)).setFrozen(true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 85)));
-        grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"));
-        grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"));
-        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()));
+        grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle), true).setFrozen(true);
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 85)), true);
+        grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"), true);
+        grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"), true);
+        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), true);
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
             HorizontalLayout badgeLayout = new HorizontalLayout();
             badgeLayout.addClassName("badge-container");
@@ -117,7 +117,7 @@ public class WarehouseView extends VerticalLayout {
                 badgeLayout.add(notForSale);
             }
             return badgeLayout;
-        }));
+        }), true);
     }
 
     @SuppressWarnings("FieldCanBeLocal")
