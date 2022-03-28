@@ -30,6 +30,8 @@ import cz.wildwest.zaurex.views.MainLayout;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.security.RolesAllowed;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -117,6 +119,17 @@ public class EmployeesView extends VerticalLayout {
             if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyly nastaveny žádné oprávnění.");
             return new Span(user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", ")));
         }), true);
+        grid.addColumn("Registrován od", new ComponentRenderer<>(user -> {
+            Span span = new Span(user.getRegisteredSince().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
+            span.setTitle(user.getRegisteredSince().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
+            return span;
+        }), false);
+        grid.addColumn("Poslední přihlášení", new ComponentRenderer<>(user -> {
+            if (user.getLastLogIn() == null) return new Badge("nikdy", Badge.BadgeVariant.CONTRAST, "Uživatel se ještě nepřihlásil.");
+            Span span = new Span(user.getLastLogIn().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
+            span.setTitle(user.getLastLogIn().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
+            return span;
+        }), false);
     }
 
     @SuppressWarnings("FieldCanBeLocal")
