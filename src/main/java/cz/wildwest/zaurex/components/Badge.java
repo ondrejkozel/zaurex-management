@@ -4,6 +4,11 @@ import com.vaadin.flow.component.html.Span;
 
 public class Badge extends Span {
 
+    public Badge(String text, BadgeVariant badgeVariant, String title) {
+        this(text, badgeVariant);
+        setTitle(title);
+    }
+
     public Badge(String text, BadgeVariant badgeVariant) {
         super(text);
         getElement().getThemeList().add("badge " + badgeVariant.clazz);
