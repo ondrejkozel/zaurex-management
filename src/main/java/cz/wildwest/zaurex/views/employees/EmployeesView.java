@@ -173,7 +173,7 @@ public class EmployeesView extends VerticalLayout {
             add(roleCheckboxGroup);
             //
             roleCheckboxGroup.addSelectionListener(event -> {
-                if (event.getAddedSelection().contains(Role.MANAGER)) roleCheckboxGroup.select(Role.values());
+                if (event.getAddedSelection().contains(Role.MANAGER) && event.isFromClient()) roleCheckboxGroup.select(Role.values());
                 refresh();
             });
             roleCheckboxGroup.setItemEnabledProvider((SerializablePredicate<Role>) role -> {
