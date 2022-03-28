@@ -73,9 +73,9 @@ public class HolidaysView extends VerticalLayout {
         grid.addColumn("Poznámka", new TextRenderer<>(Holiday::getUserMessage), true);
         grid.addColumn("Stav", new ComponentRenderer<>(holiday -> {
             Badge badge;
-            if (holiday.getStatus() == Holiday.Status.APPROVED) badge = new Badge("Schválena", Badge.BadgeVariant.SUCCESS);
-            else if (holiday.getStatus() == Holiday.Status.DENIED) badge = new Badge("Zamítnuta", Badge.BadgeVariant.ERROR);
-            else badge = new Badge("Předáno ke schválení", Badge.BadgeVariant.CONTRAST);
+            if (holiday.getStatus() == Holiday.Status.APPROVED) badge = new Badge("schválena", Badge.BadgeVariant.SUCCESS);
+            else if (holiday.getStatus() == Holiday.Status.DENIED) badge = new Badge("zamítnuta", Badge.BadgeVariant.ERROR);
+            else badge = new Badge("předána ke schválení", Badge.BadgeVariant.CONTRAST);
             return badge;
         }), true);
         grid.addColumn("Odpověď manažera", new TextRenderer<>(Holiday::getManagerResponse), true);
