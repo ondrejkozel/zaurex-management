@@ -6,16 +6,19 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
 import cz.wildwest.zaurex.data.Role;
@@ -110,7 +113,10 @@ public class EmployeesView extends VerticalLayout {
     private void configureColumns() {
         grid.addColumn("Jméno", new TextRenderer<>(User::getName), true);
         grid.addColumn("Uživatelské jméno", new TextRenderer<>(User::getUsername), false);
-        grid.addColumn("Role", new TextRenderer<>(user -> user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", "))), true);
+        grid.addColumn("Role", new ComponentRenderer<>(user -> {
+            if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyly nastaveny žádné oprávnění.");
+            return new Span(user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", ")));
+        }), true);
     }
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -155,6 +161,7 @@ public class EmployeesView extends VerticalLayout {
             //
             roleCheckboxGroup.addSelectionListener(event -> {
                 if (event.getAddedSelection().contains(Role.MANAGER)) roleCheckboxGroup.select(Role.values());
+                refresh();
             });
             roleCheckboxGroup.setItemEnabledProvider((SerializablePredicate<Role>) role -> {
                 if (role.equals(Role.MANAGER)) return managerEnabled;
@@ -181,6 +188,7 @@ public class EmployeesView extends VerticalLayout {
 
         public void refresh() {
             roleCheckboxGroup.setReadOnly(false);
+            //workaround:
             roleCheckboxGroup.getChildren().forEach(item -> addRenderedLabel((Checkbox) item));
         }
     }
