@@ -153,6 +153,7 @@ public class EmployeesView extends VerticalLayout {
         Binder<User> binder = new BeanValidationBinder<>(User.class);
         resetPasswordButton.addClickListener(clickEvent -> {
             grid.getCrud().getEditor().getItem().setHashedPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+            grid.getCrud().getEditor().getItem().setHasChangedPassword(false);
             passwordReset = true;
             grid.getCrud().setDirty(true);
         });

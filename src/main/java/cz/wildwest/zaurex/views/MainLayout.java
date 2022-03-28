@@ -7,6 +7,7 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -20,6 +21,7 @@ import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.addToWarehouse.AddToWarehouseView;
 import cz.wildwest.zaurex.views.invoices.InvoicesView;
 import cz.wildwest.zaurex.views.sell.SellView;
+import cz.wildwest.zaurex.views.settings.SettingsView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
@@ -71,10 +73,12 @@ public class MainLayout extends AppLayout {
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
-
+        //
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
         addToDrawer(createDrawerContent());
+        //
+        checkChangePasswordNotifier();
     }
 
     private Component createHeaderContent() {
@@ -145,11 +149,13 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class)
+                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
+
+                new MenuItemInfo("Nastavení", "la la-cog", SettingsView.class)
 
 //                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
-        if (authenticatedUser.get().orElseThrow().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+        if (authenticatedUser.get().isPresent() && authenticatedUser.get().get().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
         return menuItemInfos;
     }
 
@@ -192,5 +198,10 @@ public class MainLayout extends AppLayout {
     private String getCurrentPageTitle() {
         PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
+    }
+
+    private void checkChangePasswordNotifier() {
+        if (authenticatedUser.get().isPresent() && !authenticatedUser.get().get().isHasChangedPassword())
+            Notification.show("Pro lepší zabezpečení si v nastavení změňte heslo. 🔐");
     }
 }
