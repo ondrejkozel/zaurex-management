@@ -26,6 +26,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
@@ -55,7 +56,7 @@ public class WarehouseView extends VerticalLayout {
     private final Gridd<WarehouseItem> grid;
     private final WarehouseItemVariantService warehouseItemVariantService;
 
-    private final boolean editable;
+    private boolean editable;
 
     public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantService warehouseItemVariantService) {
         this.warehouseItemVariantService = warehouseItemVariantService;
@@ -83,8 +84,26 @@ public class WarehouseView extends VerticalLayout {
         grid.getCrud().addSaveListener(saveListenerToAdd);
         grid.getCrud().addEditListener(event -> itemOpened.accept(event.getItem()));
         grid.getCrud().addNewListener(event -> itemOpened.accept(event.getItem()));
-        grid.getCrud().addEditListener(event -> variantsDetails.setOpened(false));
-        grid.getCrud().addNewListener(event -> variantsDetails.setOpened(true));
+        List<Registration> variationsDetailsOpeners = List.of(
+                grid.getCrud().addEditListener(event -> variantsDetails.setOpened(false)),
+                grid.getCrud().addNewListener(event -> variantsDetails.setOpened(true))
+        );
+        //
+        if (roles.contains(Role.WAREHOUSEMAN) && !roles.contains(Role.MANAGER)) setWarehousemanMode(variationsDetailsOpeners);
+    }
+
+    private void setWarehousemanMode(List<Registration> variationsDetailsOpeners) {
+        variationsDetailsOpeners.forEach(Registration::remove);
+        variantsDetails.setOpened(true);
+        //
+        editable = true;
+        //
+        grid.getCrud().getSaveButton().setVisible(true);
+        grid.getCrud().getSaveButton().removeClassName("display-none");
+        //
+        grid.setNewObjectButtonVisible(true);
+        //
+        variants.setButtonsActive(true);
     }
 
     private void configureColumns() {
@@ -175,6 +194,9 @@ public class WarehouseView extends VerticalLayout {
 
         VerticalLayout variantLayout;
 
+        private boolean buttonsActive;
+        private final Button addVariantButton;
+
         public VariantEditor() {
             setPadding(false);
             setSpacing(false);
@@ -196,12 +218,11 @@ public class WarehouseView extends VerticalLayout {
                 setValue(item.getTransientVariants().orElse(new ArrayList<>()));
             };
             //
-            Button addVariantButton = new Button("Vytvořit variantu", VaadinIcon.PLUS.create());
+            addVariantButton = new Button("Vytvořit variantu", VaadinIcon.PLUS.create());
             addVariantButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
             addVariantButton.addClickListener(event -> addNew());
             addVariantButton.addClickListener(event -> grid.setDirty());
-            addVariantButton.setEnabled(editable);
-            addVariantButton.setVisible(editable);
+            setButtonsActive(editable);
             //
             Scroller scroller = new Scroller(variantLayout, Scroller.ScrollDirection.VERTICAL);
             scroller.setMaxHeight("400px");
@@ -248,9 +269,15 @@ public class WarehouseView extends VerticalLayout {
                     dialog.open();
                 }
             });
-            button.setVisible(editable);
-            button.setEnabled(editable);
+            button.setVisible(buttonsActive);
+            button.setEnabled(buttonsActive);
             return button;
+        }
+
+        public void setButtonsActive(boolean visible) {
+            buttonsActive = visible;
+            addVariantButton.setVisible(visible);
+            addVariantButton.setEnabled(visible);
         }
 
         private void deleteVariant(WarehouseItem.Variant variant) {
@@ -301,12 +328,16 @@ public class WarehouseView extends VerticalLayout {
                 note.addThemeVariants(TextFieldVariant.LUMO_SMALL);
                 note.addValueChangeListener(event -> variant.setNote(event.getValue()));
                 //
-                colour.setReadOnly(!editable);
-                quantity.setReadOnly(!editable);
-                price.setReadOnly(!editable);
-                note.setReadOnly(!editable);
+                setFieldsReadOnly(!editable);
                 updateFields();
                 add(colour, new Span(" "), quantity, new Span(" "), price, new Span(" "), note);
+            }
+
+            public void setFieldsReadOnly(boolean readOnly) {
+                colour.setReadOnly(readOnly);
+                quantity.setReadOnly(readOnly);
+                price.setReadOnly(readOnly);
+                note.setReadOnly(readOnly);
             }
 
             @Override
