@@ -65,11 +65,12 @@ public class WarehouseView extends VerticalLayout {
         setSizeFull();
         //
         editable = roles.contains(Role.MANAGER);
+        boolean editableAtTheBeggining = editable;
         grid = new Gridd<>(WarehouseItem.class,
                         new GenericDataProvider<>(warehouseService, WarehouseItem.class, () -> {
                             Stream<WarehouseItem> warehouseItemStream = warehouseService.findAll().stream();
                             //if manager isn't logged in, only sellable items are shown
-                            if (!editable) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
+                            if (!editableAtTheBeggining) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
                             List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
                             return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet()))).collect(Collectors.toList());
                         }),
@@ -104,11 +105,22 @@ public class WarehouseView extends VerticalLayout {
         grid.setNewObjectButtonVisible(true);
         //
         variants.setButtonsActive(true);
+        //
+        grid.getCrud().addNewListener(event -> setTopFieldsReadonly(false));
+        grid.getCrud().addEditListener(event -> setTopFieldsReadonly(true));
+    }
+
+    private void setTopFieldsReadonly(boolean readonly) {
+        title.setReadOnly(readonly);
+        briefDescription.setReadOnly(readonly);
+        category.setReadOnly(readonly);
+        if (readonly) briefDescription.setHelperText("Jste oprávněni pouze k úpravě variant.");
+        else briefDescription.setHelperText("");
     }
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle), true).setFrozen(true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 85)), true);
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 50)), true);
         grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"), true);
         grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"), true);
         grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), true);
