@@ -21,7 +21,6 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
@@ -29,7 +28,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
-import cz.wildwest.zaurex.components.gridd.GridFilter;
 import cz.wildwest.zaurex.components.gridd.Gridd;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.Role;
@@ -50,8 +48,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @PageTitle("Sklad")
-@Route(value = "warehouse/all", layout = MainLayout.class)
-@RolesAllowed({"SALESMAN", "SHIFT_LEADER", "MANAGER"})
+@Route(value = "warehouse", layout = MainLayout.class)
+@RolesAllowed({"SALESMAN", "SHIFT_LEADER", "WAREHOUSEMAN", "MANAGER"})
 public class WarehouseView extends VerticalLayout {
 
     private final Gridd<WarehouseItem> grid;
