@@ -1,8 +1,6 @@
 package cz.wildwest.zaurex.views;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -103,6 +101,7 @@ public class MainLayout extends AppLayout {
         helpButton.setClassName("help-button");
         helpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         helpButton.addClickListener(this::showHelpDialog);
+        helpButton.addClickShortcut(Key.KEY_H, KeyModifier.ALT);
         //
         Header header = new Header(toggle, viewTitle, helpButton);
         header.addClassNames("view-header");
@@ -226,7 +225,8 @@ public class MainLayout extends AppLayout {
     protected void afterNavigation() {
         super.afterNavigation();
         viewTitle.setText(getCurrentPageTitle());
-        helpButton.setVisible(Helpers.hasHelper(getContent().getClass()));
+        if (Helpers.hasHelper(getContent().getClass())) helpButton.removeClassName("display-none");
+        else if (!helpButton.hasClassName("display-none")) helpButton.addClassName("display-none");
     }
 
     private String getCurrentPageTitle() {
@@ -236,6 +236,6 @@ public class MainLayout extends AppLayout {
 
     private void checkChangePasswordNotifier() {
         if (authenticatedUser.get().isPresent() && !authenticatedUser.get().get().isHasChangedPassword())
-            Notification.show("Pro lepší zabezpečení si v nastavení změňte heslo. 🔐");
+            Notification.show("Pro lepší zabezpečení si v nastavení změňte heslo 🔐");
     }
 }
