@@ -1,8 +1,10 @@
 package cz.wildwest.zaurex.help;
 
+import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
+import cz.wildwest.zaurex.views.settings.SettingsView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 
 import java.util.HashMap;
@@ -36,6 +38,9 @@ public class Helpers {
                 + "<h5>Vícenásobný výběr</h5>"
                         + "<p>Jde o možnost odstranit více kusů zboží zároveň. Dá se spusti buď stisknutím tlačítka \"Možnosti\", anebo klávesou zkratkou <code>Alt + S</code>. Po aktivaci této možnosti by se měl u levého okraje řádku se zbožím objevit čtvereček, do kterého pokud kliknete, danou položku označíte. Označené položky pak můžete snadno odstraniť červeným tlačítkem \"Odstranit vybrané\", které se objeví u dolního okraje obrazovky nalevo od tlačítka \"Nové zboží\". </p>"
         ));
+        HELPER_MAP.put(SettingsView.class, new Helper(
+                    "<p>Na této stránce není zatím nic víc, než měnění hesla. Pro změnění hesla zadejte nové heslo do rámečku a stiskněte potvrdit.</p>"
+            ));
         HELPER_MAP.put(HomePageView.class, new Helper(
                     "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Také se tam dozvíte, jaké osoby na danou stránku mají přístup a jaké tam mají pravomoce. Na této stránce jsou základní informace o fungování systému.</p>"
         ));
@@ -56,6 +61,25 @@ public class Helpers {
                         + "<p>Dovolenou můžete odstranit. Jde to udělat tlačítkem \"Odstranit...\", které naleznete při levém dolním okraji okna na upravování žádosti o dovolenou. Další možnost jak žádost o dovolenou odstranit, je přes Vícenásobný výber, který je popsán níže.</p>"
                 + "<h5>Vícenásobný výběr</h5>"
                         + "<p>Jde o možnost odstranit více žádostí o dovolenou zároveň. Dá se spusti buď stisknutím tlačítka \"Možnosti\", anebo klávesou zkratkou <code>Alt + S</code>. Po aktivaci této možnosti by se měl u levého okraje řádku se žádostí o dovolené objevit čtvereček, do kterého pokud kliknete, danou položku označíte. Označené položky pak můžete snadno odstraniť červeným tlačítkem \"Odstranit vybrané\", které se objeví u dolního okraje obrazovky nalevo od tlačítka \"Nová dovolená\". </p>"
+
+        ));
+        HELPER_MAP.put(EmployeesView.class, new Helper(
+                    "<p>Zde můžete přidávat, upravovat a odstraňovat zaměstnance. Dají se zde také obnovit zapomenutá hesla.</p>"
+            + "<h4>Kdo sem může?</h4>" +
+                    "<p>Přístup na tuto stránku má pouze manažer</p>" +
+            "<h4>Ovládací prvky</h4>" +
+		"<h5>Zapomenuté heslo</h5>" +
+		"<p>Pokud zaměstnanec zapomněl heslo, stáčí jednoduše kliknout na jeho řádek a na pravé straně okna, které se vám objeví, možnost obnovit heslo. Pokud tuto možnost vyberete, heslo daného zaměstnance se změní na \"heslo\". Doporučte okamžitě po přihlášení zaměstnanci heslo změnit, protože \"heslo\" není nejbezpečnější heslo, obzlášť pokud by ho mělo více pracovníků.</h5>" +
+                "<h5>Zobrazení</h5>" +
+                        "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví. </p>"+           
+                "<h5>Přidávání nových zaměstnanců</h5>" +
+                        "<p>Nový zaměstnanci se dají přidat tlačítkem v pravém dolním roku obrazovky \"Nový zaměstnanec\", anebo klávesovou zkratkou <code>Alt + N</code>. U nového zaměstnance musíte vyplnit přihlašovací jméno (bude sloužit jako login) a jeho jméno (jak má být v seznamu veden). Mohou se mu nastavit role. Heslo takto vzniklého zaměstnance bude \"heslo\", dokud si to sám nezmění. Pokud tedy jste zaměstnavatel, tlačte na své zaměstnance, ať tento úkon udělají co nejdřív pro bezpečnost vaší firmy.</p>"
+                + "<h5>Upravování již existující zaměstnanců</h5>"
+                        + "<p>Upravování parametrů zaměstnance (login, jméno a role) je možné po kliknutí na určitou osobu. Pokud se vám okno na upravování záznamu zaměstnanců nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost Vícenásobného výběru.</p>"
+                + "<h5>Odstraňování zaměstnanců</h5>"
+                        + "<p>Nepohodlného zaměstnance můžete odstranit. Jde to udělat tlačítkem \"Odstranit...\", které naleznete při levém dolním okraji okna na upravování záznamech o zaměstnancích. Další možnost jak zaměstnance odstranit, je přes Vícenásobný výber, který je popsán níže.</p>"
+                + "<h5>Vícenásobný výběr</h5>"
+                        + "<p>Jde o možnost odstranit více zaměstnanců ze systému zároveň. Dá se spusti buď stisknutím tlačítka \"Možnosti\", anebo klávesou zkratkou <code>Alt + S</code>. Po aktivaci této možnosti by se měl u levého okraje řádků se záznamy zaměstnanců objevit čtvereček, do kterého pokud kliknete, danou položku označíte. Označené položky pak můžete snadno odstraniť červeným tlačítkem \"Odstranit vybrané\", které se objeví u dolního okraje obrazovky nalevo od tlačítka \"Nový zaměstnanec\". </p>"
 
         ));
         HELPER_MAP.put(HolidaysForApprovalView.class, new Helper(
