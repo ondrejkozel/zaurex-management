@@ -35,6 +35,7 @@ import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -163,12 +164,13 @@ public class MainLayout extends AppLayout {
 
     private List<MenuItemInfo> createMenuItems() {
         MenuItemInfo holidays = new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class);
+        MenuItemInfo addToWarehouse = new MenuItemInfo("Naskladnit", "la la-box", AddToWarehouseView.class);
         List<MenuItemInfo> menuItemInfos = new ArrayList<>(List.of(
 //              new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
                 new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
-                new MenuItemInfo("Naskladnit", "la la-box", AddToWarehouseView.class),
+                addToWarehouse,
 
                 new MenuItemInfo("Sklad", "la la-boxes", WarehouseView.class),
 
@@ -188,7 +190,11 @@ public class MainLayout extends AppLayout {
 
 //                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
-        if (authenticatedUser.get().isPresent() && authenticatedUser.get().get().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+        if (authenticatedUser.get().isPresent()) {
+            Set<Role> roles = authenticatedUser.get().get().getRoles();
+            if (roles.contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+            if (roles.contains(Role.WAREHOUSEMAN) && roles.contains(Role.MANAGER)) menuItemInfos.remove(addToWarehouse);
+        }
         return menuItemInfos;
     }
 
