@@ -13,6 +13,7 @@ import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
+import cz.wildwest.zaurex.views.aboutApp.AboutAppView;
 import cz.wildwest.zaurex.views.chat.ChatView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
@@ -141,11 +142,13 @@ public class MainLayout extends AppLayout {
 
                 holidays,
 
-                new MenuItemInfo("Dovolené ke schválení", "la la-question-circle", HolidaysForApprovalView.class),
+                new MenuItemInfo("Dovolené ke schválení", "la la-mug-hot", HolidaysForApprovalView.class),
 
                 new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
-                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class)
+                new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
+                
+                new MenuItemInfo("O aplikaci", "la la-question-circle", AboutAppView.class)
 
 //                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
