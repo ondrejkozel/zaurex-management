@@ -6,7 +6,7 @@
     <groupId>cz.wildwest.zaurex</groupId>
     <artifactId>zaurex</artifactId>
     <name>Zaurex</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1-deploy_test</version>
     <packaging>jar</packaging>
 
     <properties>
