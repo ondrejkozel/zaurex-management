@@ -2,7 +2,6 @@ package cz.wildwest.zaurex.views.aboutApp;
 
 
 import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
