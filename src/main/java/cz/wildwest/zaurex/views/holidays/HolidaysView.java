@@ -25,13 +25,12 @@ import cz.wildwest.zaurex.data.entity.Holiday;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.service.HolidayService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
+import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.time.temporal.TemporalAmount;
 import java.util.List;
 
@@ -68,8 +67,8 @@ public class HolidaysView extends VerticalLayout {
     }
 
     private void configureColumns() {
-        grid.addColumn("Datum od", new TextRenderer<>(item -> item.getFromDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))), true);
-        grid.addColumn("Datum do", new TextRenderer<>(item -> item.getToDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))), true);
+        grid.addColumn("Datum od", new TextRenderer<>(item -> item.getFromDate().format(LocalDateTimeFormatter.ofFullDate())), true);
+        grid.addColumn("Datum do", new TextRenderer<>(item -> item.getToDate().format(LocalDateTimeFormatter.ofFullDate())), true);
         grid.addColumn("Poznámka", new TextRenderer<>(Holiday::getUserMessage), true);
         grid.addColumn("Stav", new ComponentRenderer<>(holiday -> {
             Badge badge;

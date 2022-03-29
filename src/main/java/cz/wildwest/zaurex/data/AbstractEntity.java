@@ -29,14 +29,14 @@ public abstract class AbstractEntity {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof AbstractEntity other)) {
+        if (!(obj instanceof AbstractEntity)) {
             return false; // null or other class
         }
 
         if (id != 0) {
             return id == ((AbstractEntity) obj).id;
         }
-        return super.equals(other);
+        return super.equals(obj);
     }
 
     public boolean isPersisted() {

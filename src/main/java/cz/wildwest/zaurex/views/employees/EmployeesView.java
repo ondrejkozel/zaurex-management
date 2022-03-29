@@ -26,12 +26,11 @@ import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.service.UserService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
+import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.security.RolesAllowed;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -116,18 +115,18 @@ public class EmployeesView extends VerticalLayout {
         grid.addColumn("Jméno", new TextRenderer<>(User::getName), true);
         grid.addColumn("Uživatelské jméno", new TextRenderer<>(User::getUsername), false);
         grid.addColumn("Role", new ComponentRenderer<>(user -> {
-            if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyly nastaveny žádné oprávnění.");
+            if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyla nastavena žádné oprávnění.");
             return new Span(user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", ")));
         }), true);
         grid.addColumn("Registrován od", new ComponentRenderer<>(user -> {
-            Span span = new Span(user.getRegisteredSince().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
-            span.setTitle(user.getRegisteredSince().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
+            Span span = new Span(user.getRegisteredSince().format(LocalDateTimeFormatter.ofLongDate()));
+            span.setTitle(user.getRegisteredSince().format(LocalDateTimeFormatter.ofShortDateTime()));
             return span;
         }), false);
         grid.addColumn("Poslední přihlášení", new ComponentRenderer<>(user -> {
             if (user.getLastLogIn() == null) return new Badge("nikdy", Badge.BadgeVariant.CONTRAST, "Uživatel se ještě nepřihlásil.");
-            Span span = new Span(user.getLastLogIn().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
-            span.setTitle(user.getLastLogIn().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
+            Span span = new Span(user.getLastLogIn().format(LocalDateTimeFormatter.ofLongDate()));
+            span.setTitle(user.getLastLogIn().format(LocalDateTimeFormatter.ofShortDateTime()));
             return span;
         }), false);
     }

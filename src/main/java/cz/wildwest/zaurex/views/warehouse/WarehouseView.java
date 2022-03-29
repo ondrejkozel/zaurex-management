@@ -189,11 +189,11 @@ public class WarehouseView extends VerticalLayout {
             variantLayout.setSpacing(false);
             //
             saveListenerToAdd = event -> {
-                List<WarehouseItem.Variant> toDelete = new ArrayList<>(awaitingDeletion.stream().filter(AbstractEntity::isPersisted).toList());
+                List<WarehouseItem.Variant> toDelete = awaitingDeletion.stream().filter(AbstractEntity::isPersisted).collect(Collectors.toList());
                 warehouseItemVariantService.deleteAll(toDelete);
                 awaitingDeletion.clear();
                 //
-                value.removeAll(value.stream().filter(variant -> variant.getColour().isBlank()).toList());
+                value.removeAll(value.stream().filter(variant -> variant.getColour().isBlank()).collect(Collectors.toList()));
                 warehouseItemVariantService.saveAll(value);
             };
             itemOpened = item -> {
