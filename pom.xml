@@ -6,7 +6,7 @@
     <groupId>cz.wildwest.zaurex</groupId>
     <artifactId>zaurex</artifactId>
     <name>Zaurex</name>
-    <version>0.1-deploy_test</version>
+    <version>0.1-deploy_test2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -120,10 +120,6 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-testbench</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
