@@ -67,16 +67,13 @@ public class WarehouseView extends VerticalLayout {
         //
         editable = roles.contains(Role.MANAGER);
         grid = new Gridd<>(WarehouseItem.class,
-                        new GenericDataProvider<>(warehouseService, WarehouseItem.class) {
-                            @Override
-                            protected Stream<WarehouseItem> fetchFromBackEnd(Query<WarehouseItem, GridFilter> query) {
-                                Stream<WarehouseItem> warehouseItemStream = super.fetchFromBackEnd(query);
-                                //if manager isn't logged in, only sellable items are shown
-                                if (!editable) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
-                                List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
-                                return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet())));
-                            }
-                        },
+                        new GenericDataProvider<>(warehouseService, WarehouseItem.class, () -> {
+                            Stream<WarehouseItem> warehouseItemStream = warehouseService.findAll().stream();
+                            //if manager isn't logged in, only sellable items are shown
+                            if (!editable) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
+                            List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
+                            return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet()))).collect(Collectors.toList());
+                        }),
                 WarehouseItem::new,
                 editable,
                 buildEditor(editable),
