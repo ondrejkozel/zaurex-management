@@ -11,7 +11,7 @@ import cz.wildwest.zaurex.views.MainLayout;
 import javax.annotation.security.PermitAll;
 
 @PageTitle("O aplikaci")
-@Route(value = "", layout = MainLayout.class)
+@Route(value = "about", layout = MainLayout.class)
 @PermitAll
 public class AboutAppView extends VerticalLayout {
 
