@@ -116,7 +116,7 @@ public class EmployeesView extends VerticalLayout {
         grid.addColumn("Jméno", new TextRenderer<>(User::getName), true);
         grid.addColumn("Uživatelské jméno", new TextRenderer<>(User::getUsername), false);
         grid.addColumn("Role", new ComponentRenderer<>(user -> {
-            if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyly nastaveny žádné oprávnění.");
+            if (user.getRoles().isEmpty()) return new Badge("žádné role", Badge.BadgeVariant.ERROR, "Uživateli nebyla nastavena žádné oprávnění.");
             return new Span(user.getRoles().stream().sorted(EmployeesView::comparePrioritizeManager).map(Role::getText).collect(Collectors.joining(", ")));
         }), true);
         grid.addColumn("Registrován od", new ComponentRenderer<>(user -> {

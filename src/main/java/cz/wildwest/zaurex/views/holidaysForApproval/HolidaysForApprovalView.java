@@ -16,7 +16,7 @@ import cz.wildwest.zaurex.views.holidays.HolidaysView;
 
 import javax.annotation.security.RolesAllowed;
 
-@PageTitle("Dovolené ke schválení")
+@PageTitle("Dovolené")
 @Route(value = "holidays/approve", layout = MainLayout.class)
 @RolesAllowed("MANAGER")
 public class HolidaysForApprovalView extends VerticalLayout {

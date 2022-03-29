@@ -122,3 +122,13 @@
 .role-form-item {
   flex-wrap: wrap;
 }
+.help-button {
+  margin: 10px;
+  cursor: pointer;
+}
+
+code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+}
