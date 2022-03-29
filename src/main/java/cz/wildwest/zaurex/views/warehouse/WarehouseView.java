@@ -51,7 +51,7 @@ import java.util.stream.Stream;
 
 @PageTitle("Sklad")
 @Route(value = "warehouse/all", layout = MainLayout.class)
-@RolesAllowed({"SALESMAN", "MANAGER"})
+@RolesAllowed({"SALESMAN", "SHIFT_LEADER", "MANAGER"})
 public class WarehouseView extends VerticalLayout {
 
     private final Gridd<WarehouseItem> grid;
