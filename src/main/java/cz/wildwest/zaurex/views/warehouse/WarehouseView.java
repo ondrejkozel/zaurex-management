@@ -30,6 +30,7 @@ import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.components.gridd.NumberGriddCell;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
@@ -120,10 +121,10 @@ public class WarehouseView extends VerticalLayout {
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle), true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 50)), true);
-        grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"), true);
-        grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"), true);
-        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), true);
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 50)), false);
+        grid.addColumn("Celková hodnota", new ComponentRenderer<>(item -> new NumberGriddCell(String.format("%.2f Kč", item.getTotalValue().orElseThrow()))), true);
+        grid.addColumn("Celkový počet", new ComponentRenderer<>(item -> new NumberGriddCell(String.format("%d ks", item.getTotalQuantity().orElseThrow()))), true);
+        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), false);
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
             HorizontalLayout badgeLayout = new HorizontalLayout();
             badgeLayout.addClassName("badge-container");
