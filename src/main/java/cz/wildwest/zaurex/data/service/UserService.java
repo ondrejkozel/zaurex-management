@@ -23,6 +23,10 @@ public class UserService extends GenericService<User, UserRepository> {
         return super.findAll().stream().sorted(Comparator.comparing(User::getName)).collect(Collectors.toList());
     }
 
+    public User findByUsername(String username) {
+        return mainRepository.findByUsername(username);
+    }
+
     @Override
     public void delete(User objekt) {
         holidayService.deleteAll(objekt);
