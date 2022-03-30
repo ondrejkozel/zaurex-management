@@ -171,27 +171,25 @@ public class MainLayout extends AppLayout {
         MenuItemInfo holidays = new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class);
         MenuItemInfo warehouse = new MenuItemInfo("Sklad", "la la-boxes", WarehouseView.class);
         List<MenuItemInfo> menuItemInfos = new ArrayList<>(List.of(
-//              new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
-                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
+//                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
                 warehouse,
 
-                new MenuItemInfo("Vaše směny", "la la-screwdriver", YoursShiftsView.class),
+//                new MenuItemInfo("Vaše směny", "la la-screwdriver", YoursShiftsView.class),
 
-                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
+//                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
 
                 holidays,
 
                 new MenuItemInfo("Dovolené", "la la-question-circle", HolidaysForApprovalView.class),
 
-                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
+//                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
                 new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
 
                 new MenuItemInfo("Nastavení", "la la-cog", SettingsView.class)
 
-//                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
         if (authenticatedUser.get().isPresent()) {
             Set<Role> roles = authenticatedUser.get().get().getRoles();
