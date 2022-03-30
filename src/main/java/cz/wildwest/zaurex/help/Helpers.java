@@ -42,7 +42,7 @@ public class Helpers {
                     "<p>Na této stránce není zatím nic víc, než měnění hesla. Pro změnění hesla zadejte nové heslo do rámečku a stiskněte potvrdit.</p>"
             ));
         HELPER_MAP.put(HomePageView.class, new Helper(
-                    "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Také se tam dozvíte, jaké osoby na danou stránku mají přístup a jaké tam mají pravomoce. Na této stránce jsou základní informace o fungování systému.</p>"
+                    "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Dají se spustit buď otazníkem v pravém horním rohu nebo klávesovou zkratkou <code>Alt + H</code> Také se tam dozvíte, jaké osoby na danou stránku mají přístup a jaké tam mají pravomoce. Na této stránce jsou základní informace o fungování systému.</p>"
         ));
         HELPER_MAP.put(HolidaysView.class, new Helper(
                     "<p>Zde můžete požádat o dovolenou</p>"
