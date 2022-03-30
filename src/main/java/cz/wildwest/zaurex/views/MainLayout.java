@@ -184,7 +184,7 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Dovolené", "la la-question-circle", HolidaysForApprovalView.class),
 
-//                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
+                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
                 new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
 

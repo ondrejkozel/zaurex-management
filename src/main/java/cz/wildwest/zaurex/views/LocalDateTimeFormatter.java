@@ -20,4 +20,8 @@ public class LocalDateTimeFormatter {
     public static DateTimeFormatter ofShortDateTime() {
         return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).localizedBy(LOCALE);
     }
+
+    public static DateTimeFormatter ofMediumDateTime() {
+        return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).localizedBy(LOCALE);
+    }
 }

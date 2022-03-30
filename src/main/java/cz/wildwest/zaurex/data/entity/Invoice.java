@@ -28,7 +28,7 @@ public class Invoice extends AbstractEntity {
     public Invoice(User issuedBy, Collection<Item> items) {
         issuedAt = LocalDateTime.now();
         this.issuedBy = issuedBy.getName();
-        this.items = items.stream().peek(item -> item.setOf(this)).sorted(Comparator.comparing(Item::getLabel)).collect(Collectors.toList());
+        this.items = items.stream().peek(item -> item.setOf(this)).sorted(Comparator.comparing(Item::getVariantLabel)).collect(Collectors.toList());
     }
 
     public LocalDateTime getIssuedAt() {
@@ -43,6 +43,10 @@ public class Invoice extends AbstractEntity {
         return issuedBy;
     }
 
+    public double getTotalPrice() {
+        return items.stream().mapToDouble(Item::getTotalPrice).sum();
+    }
+
     @Entity
     @Table(name = "invoice_items")
     public static class Item extends AbstractEntity {
@@ -54,6 +58,9 @@ public class Invoice extends AbstractEntity {
         @NotBlank
         private String label;
 
+        @NotBlank
+        private String variantLabel;
+
         @Min(1)
         private int amount;
 
@@ -62,14 +69,15 @@ public class Invoice extends AbstractEntity {
         public Item() {
         }
 
-        public Item(String label, int amount, double pricePerOne) {
+        public Item(String label, String variantLabel, int amount, double pricePerOne) {
             this.label = label;
+            this.variantLabel = variantLabel;
             this.amount = amount;
             this.pricePerOne = pricePerOne;
         }
 
         public Item(WarehouseItem.Variant warehouseItemVariant, int amount) {
-            this(warehouseItemVariant.getColour(), amount, warehouseItemVariant.getPrice());
+            this(warehouseItemVariant.getOf().getTitle(), warehouseItemVariant.getColour(), amount, warehouseItemVariant.getPrice());
         }
 
         public Invoice getOf() {
@@ -80,8 +88,8 @@ public class Invoice extends AbstractEntity {
             this.of = of;
         }
 
-        public String getLabel() {
-            return label;
+        public String getVariantLabel() {
+            return variantLabel;
         }
 
         public int getAmount() {
@@ -90,6 +98,14 @@ public class Invoice extends AbstractEntity {
 
         public double getTotalPrice() {
             return pricePerOne * amount;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public double getPricePerOne() {
+            return pricePerOne;
         }
     }
 
