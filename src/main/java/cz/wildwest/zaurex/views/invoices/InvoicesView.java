@@ -53,7 +53,7 @@ public class InvoicesView extends VerticalLayout {
 
     private void configureColumns() {
         grid.addColumn("Datum vystavení", new TextRenderer<>(item -> item.getIssuedAt().format(LocalDateTimeFormatter.ofMediumDateTime())), true);
-        grid.addColumn("Vystavil", new TextRenderer<>(Invoice::getIssuedBy), false);
+        grid.addColumn("Vystavil", new TextRenderer<>(Invoice::getIssuedBy), true);
         grid.addColumn("Celkem k úhradě", new ComponentRenderer<>(item -> new NumberGriddCell(item.getTotalPrice() + " Kč")), true);
         grid.addColumn("Forma úhrady", new TextRenderer<>(item -> item.getPaymentForm().getText()), false);
         grid.addColumn("PDF", new ComponentRenderer<>(invoice -> new PdfAnchor(invoice, new Button(new LineAwesomeIcon("la la-file-pdf")))), true).setFlexGrow(0);
