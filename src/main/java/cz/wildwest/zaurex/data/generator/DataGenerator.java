@@ -48,30 +48,35 @@ public class DataGenerator {
         salesman.setUsername("prodavac");
         salesman.setHashedPassword(passwordEncoder.encode("prodavac"));
         salesman.setRoles(Collections.singleton(Role.SALESMAN));
+        salesman.setHasChangedPassword(true);
         //
         User warehouseman = new User();
         warehouseman.setName("Skladník");
         warehouseman.setUsername("skladnik");
         warehouseman.setHashedPassword(passwordEncoder.encode("skladnik"));
         warehouseman.setRoles(Collections.singleton(Role.WAREHOUSEMAN));
+        warehouseman.setHasChangedPassword(true);
         //
         User shiftLeader = new User();
         shiftLeader.setName("Vedoucí směny");
         shiftLeader.setUsername("vedoucismeny");
         shiftLeader.setHashedPassword(passwordEncoder.encode("vedoucismeny"));
         shiftLeader.setRoles(Collections.singleton(Role.SHIFT_LEADER));
+        shiftLeader.setHasChangedPassword(true);
         //
         User manager = new User();
         manager.setName("Manažer");
         manager.setUsername("manazer");
         manager.setHashedPassword(passwordEncoder.encode("manazer"));
         manager.setRoles(Set.of(Role.values()));
+        manager.setHasChangedPassword(true);
         //
         User shiftLeader2 = new User();
         shiftLeader2.setName("Vedocí směny prodavač");
         shiftLeader2.setUsername("vedoucismeny2");
         shiftLeader2.setHashedPassword(passwordEncoder.encode("vedoucismeny2"));
         shiftLeader2.setRoles(Set.of(Role.SHIFT_LEADER, Role.SALESMAN));
+        shiftLeader2.setHasChangedPassword(true);
         //
         userRepository.saveAll(List.of(salesman, warehouseman, shiftLeader, manager, shiftLeader2));
     }

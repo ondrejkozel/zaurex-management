@@ -6,11 +6,11 @@
     <groupId>cz.wildwest.zaurex</groupId>
     <artifactId>zaurex</artifactId>
     <name>Zaurex</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
         <vaadin.version>23.0.2</vaadin.version>
     </properties>
 
@@ -28,7 +28,14 @@
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central2</id>
+            <url>https://repo1.maven.org/maven2/</url>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
         <repository>
@@ -53,7 +60,14 @@
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>central2</id>
+            <url>https://repo1.maven.org/maven2/</url>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
         <pluginRepository>
@@ -122,8 +136,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Include JUnit 4 support for TestBench and others -->
@@ -201,6 +216,28 @@
                         <configuration>
                             <productionMode>true</productionMode>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>add-resource-ebextensions</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>add-resource</goal>
+                                </goals>
+                                <configuration>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/.ebextensions</directory>
+                                            <targetPath>.ebextensions</targetPath>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

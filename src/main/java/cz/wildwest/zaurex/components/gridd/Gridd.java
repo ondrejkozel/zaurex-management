@@ -98,14 +98,17 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
         newObjectButton.setVisible(editable);
         if (!editable) {
             crud.getDeleteButton().setEnabled(false);
-            crud.getSaveButton().setEnabled(false);
             crud.getDeleteButton().addClassName("display-none");
             crud.getSaveButton().addClassName("display-none");
             crud.getEditor().getView().getChildren().forEach(component -> {
-                if (component instanceof HasValueAndElement<?, ?> hasValueAndElement)
-                    hasValueAndElement.setReadOnly(true);
+                if (component instanceof HasValueAndElement<?, ?>)
+                    ((HasValueAndElement<?, ?>) component).setReadOnly(true);
             });
         }
+    }
+
+    public void setNewObjectButtonVisible(boolean visible) {
+        newObjectButton.setVisible(visible);
     }
 
     public void addMultiSelectionListener(MultiSelectionListener<Grid<T>, T> selectionListener) {
