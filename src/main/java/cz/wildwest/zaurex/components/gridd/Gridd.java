@@ -100,7 +100,7 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
             crud.getDeleteButton().setEnabled(false);
             crud.getDeleteButton().addClassName("display-none");
             crud.getSaveButton().addClassName("display-none");
-            crud.getEditor().getView().getChildren().forEach(component -> {
+            if (crud.getEditor().getView() != null) crud.getEditor().getView().getChildren().forEach(component -> {
                 if (component instanceof HasValueAndElement<?, ?>)
                     ((HasValueAndElement<?, ?>) component).setReadOnly(true);
             });

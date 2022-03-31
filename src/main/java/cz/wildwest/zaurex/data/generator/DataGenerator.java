@@ -2,13 +2,8 @@ package cz.wildwest.zaurex.data.generator;
 
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import cz.wildwest.zaurex.data.Role;
-import cz.wildwest.zaurex.data.entity.Holiday;
-import cz.wildwest.zaurex.data.entity.User;
-import cz.wildwest.zaurex.data.entity.WarehouseItem;
-import cz.wildwest.zaurex.data.service.HolidayService;
-import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
-import cz.wildwest.zaurex.data.service.WarehouseService;
-import cz.wildwest.zaurex.data.service.repository.UserRepository;
+import cz.wildwest.zaurex.data.entity.*;
+import cz.wildwest.zaurex.data.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -19,30 +14,40 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @SpringComponent
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserRepository userRepository, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
-            if (userRepository.count() != 0L) {
+            if (userService.count() != 0L) {
                 logger.info("Using existing database");
                 return;
             }
             //
             logger.info("Generating demo data");
             //
-            createUsers(passwordEncoder, userRepository);
+            createConfiguration(configurationService);
+            createUsers(passwordEncoder, userService);
             createWarehouseItems(warehouseService, warehouseItemVariantService);
-            createHolidays(userRepository, holidayService);
+            createHolidays(userService, holidayService);
+            createInvoices(invoiceService, warehouseItemVariantService, userService);
             //
             logger.info("Generated demo data");
         };
     }
 
-    private void createUsers(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    private void createConfiguration(ConfigurationService configurationService) {
+        configurationService.saveAll(List.of(
+                new Configuration(Configuration.StandardKey.ICO, "123456789"),
+                new Configuration(Configuration.StandardKey.BANK_ACCOUNT_NUMBER, "46816-486646/6210")
+        ));
+    }
+
+    private void createUsers(PasswordEncoder passwordEncoder, UserService userService) {
         User salesman = new User();
         salesman.setName("Prodavač");
         salesman.setUsername("prodavac");
@@ -78,7 +83,7 @@ public class DataGenerator {
         shiftLeader2.setRoles(Set.of(Role.SHIFT_LEADER, Role.SALESMAN));
         shiftLeader2.setHasChangedPassword(true);
         //
-        userRepository.saveAll(List.of(salesman, warehouseman, shiftLeader, manager, shiftLeader2));
+        userService.saveAll(List.of(salesman, warehouseman, shiftLeader, manager, shiftLeader2));
     }
 
     private void createWarehouseItems(WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
@@ -97,14 +102,21 @@ public class DataGenerator {
         ));
     }
 
-    private void createHolidays(UserRepository userRepository, HolidayService holidayService) {
-        Holiday holiday = new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now(), LocalDate.now().plusWeeks(1));
+    private void createHolidays(UserService userService, HolidayService holidayService) {
+        Holiday holiday = new Holiday(userService.findByUsername("skladnik"), LocalDate.now(), LocalDate.now().plusWeeks(1));
         holiday.setUserMessage("Chci jet k moři.");
-        Holiday holiday2 = new Holiday(userRepository.findByUsername("skladnik"), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(1).plusWeeks(1));
+        Holiday holiday2 = new Holiday(userService.findByUsername("skladnik"), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(1).plusWeeks(1));
         holiday2.setUserMessage("Prosím pustťe mě \uD83D\uDE1E");
         holiday2.setStatus(Holiday.Status.APPROVED);
         holiday2.setManagerResponse("Tak jo :)");
         holidayService.saveAll(List.of(holiday, holiday2));
+    }
+
+    private void createInvoices(InvoiceService invoiceService, WarehouseItemVariantService warehouseItemVariantService, UserService userService) {
+        Invoice invoice = new Invoice(userService.findAll().get(0), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 1)).collect(Collectors.toList()), Invoice.PaymentForm.CARD);
+        Invoice invoice2 = new Invoice(userService.findAll().get(1), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 2)).collect(Collectors.toList()), Invoice.PaymentForm.TRANSFER);
+        invoiceService.save(invoice);
+        invoiceService.save(invoice2);
     }
 
 }
