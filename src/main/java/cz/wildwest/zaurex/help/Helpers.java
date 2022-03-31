@@ -24,9 +24,7 @@ public class Helpers {
     private static void buildHelpers() {
         HELPER_MAP.put(WarehouseView.class, new Helper(
                     "<p>Zde můžete zjistit, jaké věci se aktuálně nachází na skladě. Mohou se zde přidávat i odstraňovat produkty a varianty.</p>"
-            + "<h4>Přístup</h4>" +
-                    "<p>Plný přístup sem má pouze manažer. Pokladník se sem může podívat kolik je kterého produktu, ale nemůže tu nic upravovat.</p>" +
-            "<h4>Ovládací prvky</h4>" +
+            + "<h4>Ovládací prvky</h4>" +
                 "<h5>Zobrazení</h5>" +
                         "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví.</p>"+           
                 "<h5>Přidávání nového zboží</h5>" +
@@ -42,13 +40,11 @@ public class Helpers {
                     "<p>Na této stránce není zatím nic víc, než měnění hesla. Pro změnění hesla zadejte nové heslo do rámečku a stiskněte potvrdit.</p>"
             ));
         HELPER_MAP.put(HomePageView.class, new Helper(
-                    "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Dají se spustit buď otazníkem v pravém horním rohu nebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;H</code> Také se tam dozvíte, jaké osoby na danou stránku mají přístup a jaké tam mají pravomoce. Na této stránce jsou základní informace o fungování systému.</p>"
+                    "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Dají se spustit buď otazníkem v pravém horním rohu nebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;H</code>. Na této stránce jsou základní informace o fungování systému.</p>"
         ));
         HELPER_MAP.put(HolidaysView.class, new Helper(
                     "<p>Zde můžete požádat o dovolenou</p>"
-            + "<h4>Kdo má jaké pravomoce?</h4>" +
-                    "<p>O dovolenou může požádat každý. Dovolené schvaluje manažer.</p>" +
-		 "<h4>Schvalování</h4>"+
+            +  "<h4>Schvalování</h4>"+
 		"<p>Každá dovolená má tři různé stavy: Nevyřízen, Schváleno, zamítnuto. Manažer také může připojit vlastní poznámku, proč dovolenou zamítl, anebo schválil</p>" +
             "<h4>Ovládací prvky</h4>" +
                 "<h5>Zobrazení</h5>" +
@@ -65,9 +61,7 @@ public class Helpers {
         ));
         HELPER_MAP.put(EmployeesView.class, new Helper(
                     "<p>Zde můžete přidávat, upravovat a odstraňovat zaměstnance. Dají se zde také obnovit zapomenutá hesla.</p>"
-            + "<h4>Kdo sem může?</h4>" +
-                    "<p>Přístup na tuto stránku má pouze manažer</p>" +
-            "<h4>Ovládací prvky</h4>" +
+            +  "<h4>Ovládací prvky</h4>" +
 		"<h5>Zapomenuté heslo</h5>" +
 		"<p>Pokud zaměstnanec zapomněl heslo, stáčí jednoduše kliknout na jeho řádek a na pravé straně okna, které se vám objeví, možnost obnovit heslo. Pokud tuto možnost vyberete, heslo daného zaměstnance se změní na \"heslo\". Doporučte okamžitě po přihlášení zaměstnanci heslo změnit, protože \"heslo\" není nejbezpečnější heslo, obzlášť pokud by ho mělo více pracovníků.</h5>" +
                 "<h5>Zobrazení</h5>" +
@@ -84,10 +78,7 @@ public class Helpers {
         ));
         HELPER_MAP.put(HolidaysForApprovalView.class, new Helper(
                     "<p>Zde můžete nastavovat dovolenou a schvalovat žádosti o dovolené od zaměstnanců</p>"
-            + "<h4>Kdo má jaké pravomoce?</h4>" +
-                    "<p>O dovolenou může požádat každý. Dovolené schvaluje manažer.</p>" +
-		 
-            "<h4>Ovládací prvky</h4>" +
+            + "<h4>Ovládací prvky</h4>" +
                 "<h5>Zobrazení</h5>" +
                         "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví. Je tam i možnost \"Pouze nevyřízené\", která skryje vyřízené žádosti. </p>"+           
                 "<h5>Přidávání nové dovolené</h5>" +
