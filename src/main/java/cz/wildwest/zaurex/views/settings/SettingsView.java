@@ -1,6 +1,5 @@
 package cz.wildwest.zaurex.views.settings;
 
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
@@ -37,9 +36,6 @@ public class SettingsView extends VerticalLayout {
         //
         setSpacing(false);
         setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        getStyle().set("text-align", "center");
     }
 
     private void buildChangePasswordField() {
