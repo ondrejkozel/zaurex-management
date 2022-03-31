@@ -20,7 +20,7 @@ import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.help.Helper;
 import cz.wildwest.zaurex.help.Helpers;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
-import cz.wildwest.zaurex.views.aboutApp.AboutAppView;
+import cz.wildwest.zaurex.views.about.AboutView;
 import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
@@ -187,7 +187,7 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Nastavení", "la la-cog", SettingsView.class),
 
-                new MenuItemInfo("O aplikaci", "la la-question-circle", AboutAppView.class)
+                new MenuItemInfo("O aplikaci", "la la-question-circle", AboutView.class)
 
         ));
         if (authenticatedUser.get().isPresent()) {
