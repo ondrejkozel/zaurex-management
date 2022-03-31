@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class HolidayService extends GenericService<Holiday, HolidayRepository> {
@@ -33,7 +34,7 @@ public class HolidayService extends GenericService<Holiday, HolidayRepository> {
 
     @Override
     public List<Holiday> findAll() {
-        List<Holiday> all = new ArrayList<>(super.findAll().stream().sorted(Comparator.comparing(Holiday::getFromDate)).toList());
+        List<Holiday> all = super.findAll().stream().sorted(Comparator.comparing(Holiday::getFromDate)).collect(Collectors.toList());
         Collections.reverse(all);
         return all;
     }

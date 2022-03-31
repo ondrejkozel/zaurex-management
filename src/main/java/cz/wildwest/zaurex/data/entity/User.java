@@ -22,6 +22,7 @@ import javax.validation.constraints.Size;
 public class User extends AbstractEntity {
 
     public User() {
+        hasChangedPassword = false;
         registeredSince = LocalDateTime.now();
     }
 
@@ -44,6 +45,8 @@ public class User extends AbstractEntity {
     private LocalDateTime registeredSince;
 
     private LocalDateTime lastLogIn;
+
+    private boolean hasChangedPassword;
 
     public String getUsername() {
         return username;
@@ -87,5 +90,13 @@ public class User extends AbstractEntity {
 
     public void setLastLogIn(LocalDateTime lastLogIn) {
         this.lastLogIn = lastLogIn;
+    }
+
+    public boolean isHasChangedPassword() {
+        return hasChangedPassword;
+    }
+
+    public void setHasChangedPassword(boolean hasChangedPassword) {
+        this.hasChangedPassword = hasChangedPassword;
     }
 }

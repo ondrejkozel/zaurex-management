@@ -22,7 +22,9 @@ public class HomePageView extends VerticalLayout {
         add(zaurex);
         //
         add(new H2("Vítejte v Zaurex management"));
-        add(new Paragraph("Lorem ipsum dolor sit amet"));
+        add(new Paragraph("Pokud jsou se systémem jakékoliv problémy, nebojte se nám napsat na zákaznickou podporu!"));
+        add(new Paragraph("E-mail: xkozel00@jaroska.cz"));
+        add(new Paragraph("Adresa: třída Kapitána Jaroše 1829, 602 00 Brno-střed-Černá Pole"));
         //
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
