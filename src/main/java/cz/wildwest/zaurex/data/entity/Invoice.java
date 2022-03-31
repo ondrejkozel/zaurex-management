@@ -28,7 +28,7 @@ public class Invoice extends AbstractEntity {
     public Invoice(User issuedBy, Collection<Item> items) {
         issuedAt = LocalDateTime.now();
         this.issuedBy = issuedBy.getName();
-        this.items = items.stream().peek(item -> item.setOf(this)).sorted(Comparator.comparing(Item::getVariantLabel)).collect(Collectors.toList());
+        this.items = items.stream().peek(item -> item.setOf(this)).sorted(Comparator.comparing(Item::getVariantLabel).reversed()).collect(Collectors.toList());
     }
 
     public LocalDateTime getIssuedAt() {
@@ -45,6 +45,10 @@ public class Invoice extends AbstractEntity {
 
     public double getTotalPrice() {
         return items.stream().mapToDouble(Item::getTotalPrice).sum();
+    }
+
+    public String getNumber() {
+        return String.valueOf(issuedAt.getYear()) + getId();
     }
 
     @Entity

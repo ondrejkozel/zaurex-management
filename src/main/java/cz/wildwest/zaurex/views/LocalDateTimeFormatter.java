@@ -9,6 +9,10 @@ public class LocalDateTimeFormatter {
 
     public static final Locale LOCALE = new Locale("cs", "CZ");
 
+    public static DateTimeFormatter ofShortDate() {
+        return DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).localizedBy(LOCALE);
+    }
+
     public static DateTimeFormatter ofLongDate() {
         return DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).localizedBy(LOCALE);
     }
