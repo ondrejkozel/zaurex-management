@@ -24,6 +24,7 @@ public class DataGenerator {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userService.count() != 0L) {
+                if (invoiceService.count() == 0) createInvoices(invoiceService, warehouseItemVariantService, userService);
                 logger.info("Using existing database");
                 return;
             }
