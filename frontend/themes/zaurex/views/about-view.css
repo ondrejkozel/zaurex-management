@@ -1,0 +1,21 @@
+.about-div {
+    max-width: 400px;
+    width: 100%;
+    margin: 10px;
+    padding: 10px;
+    gap: 0;
+}
+
+.about-div vaadin-accordion {
+    width: 100%;
+}
+
+.about-div vaadin-accordion p {
+    font-size: var(--lumo-font-size-s);
+    text-align: justify;
+}
+
+.made-by {
+    color: var(--lumo-contrast-50pct);
+    font-size: var(--lumo-font-size-s);
+}
