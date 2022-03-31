@@ -185,9 +185,9 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
 
-                new MenuItemInfo("O aplikaci", "la la-question-circle", AboutAppView.class),
+                new MenuItemInfo("Nastavení", "la la-cog", SettingsView.class),
 
-                new MenuItemInfo("Nastavení", "la la-cog", SettingsView.class)
+                new MenuItemInfo("O aplikaci", "la la-question-circle", AboutAppView.class)
 
         ));
         if (authenticatedUser.get().isPresent()) {
