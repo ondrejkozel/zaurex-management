@@ -18,7 +18,6 @@ import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.help.Helper;
 import cz.wildwest.zaurex.help.Helpers;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
-import cz.wildwest.zaurex.views.addToWarehouse.AddToWarehouseView;
 import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
 import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
@@ -33,6 +32,7 @@ import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -46,13 +46,15 @@ public class MainLayout extends AppLayout {
 
         private final Class<? extends Component> view;
 
+        Span text;
+
         public MenuItemInfo(String menuTitle, String iconClass, Class<? extends Component> view) {
             this.view = view;
             RouterLink link = new RouterLink();
             link.addClassNames("menu-item-link");
             link.setRoute(view);
             //
-            Span text = new Span(menuTitle);
+            text = new Span(menuTitle);
             text.addClassNames("menu-item-text");
             //
             LineAwesomeIcon lineAwesomeIcon = new LineAwesomeIcon(iconClass);
@@ -60,6 +62,10 @@ public class MainLayout extends AppLayout {
             //
             link.add(lineAwesomeIcon, text);
             add(link);
+        }
+
+        private void setTextValue(String text) {
+            this.text.setText(text);
         }
 
         public Class<?> getView() {
@@ -162,32 +168,33 @@ public class MainLayout extends AppLayout {
 
     private List<MenuItemInfo> createMenuItems() {
         MenuItemInfo holidays = new MenuItemInfo("Dovolená", "la la-mug-hot", HolidaysView.class);
+        MenuItemInfo warehouse = new MenuItemInfo("Sklad", "la la-boxes", WarehouseView.class);
         List<MenuItemInfo> menuItemInfos = new ArrayList<>(List.of(
-//              new MenuItemInfo("Hlavní strana", "la la-home", HomePageView.class),
 
-                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
+//                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
-                new MenuItemInfo("Naskladnit", "la la-box", AddToWarehouseView.class),
+                warehouse,
 
-                new MenuItemInfo("Sklad", "la la-boxes", WarehouseView.class),
+//                new MenuItemInfo("Vaše směny", "la la-screwdriver", YoursShiftsView.class),
 
-                new MenuItemInfo("Vaše směny", "la la-screwdriver", YoursShiftsView.class),
-
-                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
+//                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
 
                 holidays,
 
                 new MenuItemInfo("Dovolené", "la la-question-circle", HolidaysForApprovalView.class),
 
-                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
+//                new MenuItemInfo("Faktury", "la la-file-invoice-dollar", InvoicesView.class),
 
                 new MenuItemInfo("Zaměstnanci", "la la-users", EmployeesView.class),
 
                 new MenuItemInfo("Nastavení", "la la-cog", SettingsView.class)
 
-//                new MenuItemInfo("Chat", "la la-comments", ChatView.class),
         ));
-        if (authenticatedUser.get().isPresent() && authenticatedUser.get().get().getRoles().contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+        if (authenticatedUser.get().isPresent()) {
+            Set<Role> roles = authenticatedUser.get().get().getRoles();
+            if (roles.contains(Role.MANAGER)) menuItemInfos.remove(holidays);
+            if (roles.contains(Role.WAREHOUSEMAN) && !roles.contains(Role.MANAGER)) warehouse.setTextValue("Naskladnit");
+        }
         return menuItemInfos;
     }
 
