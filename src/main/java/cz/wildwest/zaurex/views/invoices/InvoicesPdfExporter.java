@@ -1,10 +1,7 @@
 package cz.wildwest.zaurex.views.invoices;
 
 import com.lowagie.text.*;
-import com.lowagie.text.pdf.ColumnText;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.*;
 import cz.wildwest.zaurex.data.entity.Invoice;
 import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 
@@ -23,10 +20,14 @@ public class InvoicesPdfExporter {
 
     private final Invoice invoice;
     private final String title;
+    private final String ico;
+    private final String bankAccountNumber;
 
-    public InvoicesPdfExporter(Invoice invoice) {
+    public InvoicesPdfExporter(Invoice invoice, String ico, String bankAccountNumber) {
         this.invoice = invoice;
         this.title = "Faktura – daňový doklad #" + invoice.getNumber();
+        this.ico = ico;
+        this.bankAccountNumber = bankAccountNumber;
     }
 
     public void export(HttpServletResponse response) throws DocumentException, IOException {
@@ -40,9 +41,26 @@ public class InvoicesPdfExporter {
         addInfo(document);
         addEmptyLines(document, 1);
         addItems(document);
+        addEmptyLines(document, 2);
+        addTotalPrice(document);
+        addEmptyLines(document, 4);
+        addIssuedBy(document);
         ColumnText.showTextAligned(pdfWriter.getDirectContent(), Element.ALIGN_LEFT, new Phrase("Vygenerováno " + LocalDateTime.now().format(LocalDateTimeFormatter.ofMediumDateTime())), 30, 30, 0);
         //
         document.close();
+    }
+
+    private void addTotalPrice(Document document) {
+        Paragraph paragraph = new Paragraph();
+        paragraph.add("Celková částka k úhradě: ");
+        paragraph.add(new Phrase(String.format("%.2f CZK", invoice.getTotalPrice()), BOLD));
+        document.add(paragraph);
+    }
+
+    private void addIssuedBy(Document document) {
+        Paragraph paragraph = new Paragraph("Vystavil: " + invoice.getIssuedBy());
+        paragraph.setAlignment(Element.ALIGN_RIGHT);
+        document.add(paragraph);
     }
 
     private void addMetaData(Document document) {
@@ -59,12 +77,36 @@ public class InvoicesPdfExporter {
     private void addInfo(Document document) {
         PdfPTable table = new PdfPTable(2);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.setTableEvent((table1, width, height, headerRows, rowStart, canvas) -> {
+            float[] widths = width[0];
+            float x1 = widths[0];
+            float x2 = widths[widths.length - 1];
+            float y1 = height[0];
+            float y2 = height[height.length - 1];
+            PdfContentByte cb = canvas[PdfPTable.LINECANVAS];
+            cb.rectangle(x1, y1, x2 - x1, y2 - y1 - 3);
+            cb.stroke();
+            cb.resetRGBColorStroke();
+        });
+        //
+        if (!ico.isBlank()) {
+            table.addCell(getLeftCell("IČO"));
+            table.addCell(getLeftCell(ico));
+        }
         //
         table.addCell(getLeftCell("Datum vystavení"));
         table.addCell(getLeftCell(invoice.getIssuedAt().format(LocalDateTimeFormatter.ofShortDate())));
         //
-        table.addCell(getLeftCell("Vystavil"));
-        table.addCell(getLeftCell(invoice.getIssuedBy()));
+        table.addCell(getLeftCell("Datum splatnosti"));
+        table.addCell(getLeftCell(invoice.getMaturityDate().format(LocalDateTimeFormatter.ofShortDate())));
+        //
+        table.addCell(getLeftCell("Forma úhrady"));
+        table.addCell(getLeftCell(invoice.getPaymentForm().getText()));
+        //
+        if (invoice.getPaymentForm() == Invoice.PaymentForm.TRANSFER && !bankAccountNumber.isBlank()) {
+            table.addCell(getLeftCell("Číslo účtu"));
+            table.addCell(getLeftCell(bankAccountNumber));
+        }
         //
         document.add(table);
     }

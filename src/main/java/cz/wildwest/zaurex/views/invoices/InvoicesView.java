@@ -1,6 +1,5 @@
 package cz.wildwest.zaurex.views.invoices;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.CrudEditor;
@@ -27,7 +26,6 @@ import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletResponse;
 
 @PageTitle("Faktury")
 @Route(value = "invoices", layout = MainLayout.class)
@@ -35,10 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 public class InvoicesView extends VerticalLayout {
 
     private final Gridd<Invoice> grid;
-    private final HttpServletResponse response;
 
-    public InvoicesView(InvoiceService invoiceService, HttpServletResponse response) {
-        this.response = response;
+    public InvoicesView(InvoiceService invoiceService) {
         grid = new Gridd<>(Invoice.class,
                 new GenericDataProvider<>(invoiceService, Invoice.class),
                 Invoice::new,
@@ -59,6 +55,7 @@ public class InvoicesView extends VerticalLayout {
         grid.addColumn("Datum vystavení", new TextRenderer<>(item -> item.getIssuedAt().format(LocalDateTimeFormatter.ofMediumDateTime())), true);
         grid.addColumn("Vystavil", new TextRenderer<>(Invoice::getIssuedBy), false);
         grid.addColumn("Celkem k úhradě", new ComponentRenderer<>(item -> new NumberGriddCell(item.getTotalPrice() + " Kč")), true);
+        grid.addColumn("Forma úhrady", new TextRenderer<>(item -> item.getPaymentForm().getText()), false);
         grid.addColumn("PDF", new ComponentRenderer<>(invoice -> new PdfAnchor(invoice, new Button(new LineAwesomeIcon("la la-file-pdf")))), true).setFlexGrow(0);
     }
 
@@ -67,8 +64,9 @@ public class InvoicesView extends VerticalLayout {
     private CrudEditor<Invoice> buildEditor() {
         TextField issuedBy = new TextField("Vystavil");
         DateTimePicker issuedAt = new DateTimePicker("Vystaveno");
-        TextArea details = new TextArea("Podrobnosti");
+        TextArea details = new TextArea("Položky");
         TextField totalPrice = new TextField("Celkem k úhradě");
+        totalPrice.setHelperText("Další informace získáte v PDF verzi faktury.");
         //
         Button buildPdfButton = new Button("Sestavit PDF", new LineAwesomeIcon("las la-file-pdf"));
         pdfAnchor = new PdfAnchor(buildPdfButton);

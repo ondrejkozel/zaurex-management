@@ -10,7 +10,7 @@ public class LocalDateTimeFormatter {
     public static final Locale LOCALE = new Locale("cs", "CZ");
 
     public static DateTimeFormatter ofShortDate() {
-        return DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).localizedBy(LOCALE);
+        return DateTimeFormatter.ofPattern("dd. MM. yyyy");
     }
 
     public static DateTimeFormatter ofLongDate() {

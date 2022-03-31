@@ -7,26 +7,42 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.Period;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "invoices")
 public class Invoice extends AbstractEntity {
 
+    public static final Period TRANSFER_MATURITY_LIMIT = Period.ofMonths(1);
+
     @NotNull
     private LocalDateTime issuedAt;
+
+    @NotNull
+    private LocalDateTime maturityDate;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "of")
     private List<Item> items;
 
     private String issuedBy;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private PaymentForm paymentForm;
+
     public Invoice() {
     }
 
-    public Invoice(User issuedBy, Collection<Item> items) {
+    public Invoice(User issuedBy, Collection<Item> items, PaymentForm paymentForm) {
+        this.paymentForm = paymentForm;
         issuedAt = LocalDateTime.now();
+        maturityDate = issuedAt;
+        if (paymentForm == PaymentForm.TRANSFER) maturityDate = maturityDate.plus(TRANSFER_MATURITY_LIMIT);
         this.issuedBy = issuedBy.getName();
         this.items = items.stream().peek(item -> item.setOf(this)).sorted(Comparator.comparing(Item::getVariantLabel).reversed()).collect(Collectors.toList());
     }
@@ -49,6 +65,14 @@ public class Invoice extends AbstractEntity {
 
     public String getNumber() {
         return String.valueOf(issuedAt.getYear()) + getId();
+    }
+
+    public PaymentForm getPaymentForm() {
+        return paymentForm;
+    }
+
+    public LocalDateTime getMaturityDate() {
+        return maturityDate;
     }
 
     @Entity
@@ -113,4 +137,17 @@ public class Invoice extends AbstractEntity {
         }
     }
 
+    public enum PaymentForm {
+        CASH("hotově"), CARD("kartou"), TRANSFER("převodem");
+
+        private final String text;
+
+        PaymentForm(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+    }
 }

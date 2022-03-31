@@ -2,10 +2,7 @@ package cz.wildwest.zaurex.data.generator;
 
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import cz.wildwest.zaurex.data.Role;
-import cz.wildwest.zaurex.data.entity.Holiday;
-import cz.wildwest.zaurex.data.entity.Invoice;
-import cz.wildwest.zaurex.data.entity.User;
-import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.entity.*;
 import cz.wildwest.zaurex.data.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +20,7 @@ import java.util.stream.Collectors;
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userService.count() != 0L) {
@@ -33,6 +30,7 @@ public class DataGenerator {
             //
             logger.info("Generating demo data");
             //
+            createConfiguration(configurationService);
             createUsers(passwordEncoder, userService);
             createWarehouseItems(warehouseService, warehouseItemVariantService);
             createHolidays(userService, holidayService);
@@ -40,6 +38,13 @@ public class DataGenerator {
             //
             logger.info("Generated demo data");
         };
+    }
+
+    private void createConfiguration(ConfigurationService configurationService) {
+        configurationService.saveAll(List.of(
+                new Configuration(Configuration.StandardKey.ICO, "123456789"),
+                new Configuration(Configuration.StandardKey.BANK_ACCOUNT_NUMBER, "46816-486646/6210")
+        ));
     }
 
     private void createUsers(PasswordEncoder passwordEncoder, UserService userService) {
@@ -108,8 +113,10 @@ public class DataGenerator {
     }
 
     private void createInvoices(InvoiceService invoiceService, WarehouseItemVariantService warehouseItemVariantService, UserService userService) {
-        Invoice invoice = new Invoice(userService.findAll().get(0), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 1)).collect(Collectors.toList()));
+        Invoice invoice = new Invoice(userService.findAll().get(0), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 1)).collect(Collectors.toList()), Invoice.PaymentForm.CARD);
+        Invoice invoice2 = new Invoice(userService.findAll().get(1), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 2)).collect(Collectors.toList()), Invoice.PaymentForm.TRANSFER);
         invoiceService.save(invoice);
+        invoiceService.save(invoice2);
     }
 
 }
