@@ -54,7 +54,7 @@ public class InvoicesView extends VerticalLayout {
     private void configureColumns() {
         grid.addColumn("Datum vystavení", new TextRenderer<>(item -> item.getIssuedAt().format(LocalDateTimeFormatter.ofMediumDateTime())), true);
         grid.addColumn("Vystavil", new TextRenderer<>(Invoice::getIssuedBy), true);
-        grid.addColumn("Celkem k úhradě", new ComponentRenderer<>(item -> new NumberGriddCell(item.getTotalPrice() + " Kč")), true);
+        grid.addColumn("Celkem k úhradě", new ComponentRenderer<>(item -> new NumberGriddCell(String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", item.getTotalPrice()))), true);
         grid.addColumn("Forma úhrady", new TextRenderer<>(item -> item.getPaymentForm().getText()), false);
         grid.addColumn("PDF", new ComponentRenderer<>(invoice -> new PdfAnchor(invoice, new Button(new LineAwesomeIcon("la la-file-pdf")))), true).setFlexGrow(0);
     }
@@ -83,7 +83,7 @@ public class InvoicesView extends VerticalLayout {
             invoice.getItems().forEach(item -> stringBuilder.append(item.getAmount()).append("x ").append(item.getLabel()).append(" – ").append(item.getVariantLabel()).append(", ").append(item.getTotalPrice()).append(" Kč\n"));
             return stringBuilder.toString();
         });
-        binder.forField(totalPrice).bindReadOnly(invoice -> invoice.getTotalPrice() + " Kč");
+        binder.forField(totalPrice).bindReadOnly(invoice -> String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", invoice.getTotalPrice()));
         return new BinderCrudEditor<>(binder, formLayout);
     }
 

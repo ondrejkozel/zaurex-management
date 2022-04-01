@@ -25,7 +25,7 @@ public class ExportInvoice {
     @GetMapping("/invoices/export")
     public void exportToPDF(HttpServletResponse response, @RequestParam String id) throws Exception {
         Optional<Invoice> invoice = invoiceService.find(Long.parseLong(id));
-        if (invoice.isEmpty()) throw new Exception("Ilegal inovice id.");
+        if (invoice.isEmpty()) throw new Exception("Ilegal invice id.");
         //
         response.setContentType("application/pdf");
         String headerKey = "Content-Disposition";

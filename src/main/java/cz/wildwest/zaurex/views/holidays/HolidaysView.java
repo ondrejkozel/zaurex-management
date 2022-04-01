@@ -101,9 +101,11 @@ public class HolidaysView extends VerticalLayout {
 
     private BinderCrudEditor<Holiday> buildEditor() {
         fromDate = new DatePicker("Datum od");
+        fromDate.setLocale(LocalDateTimeFormatter.LOCALE);
         fromDate.setMin(LocalDate.now().plusDays(1));
         fromDate.setMax(LocalDate.now().plus(MAX_FROM_DATE_DISTANCE));
         toDate = new DatePicker("Datum do");
+        toDate.setLocale(LocalDateTimeFormatter.LOCALE);
         toDate.setMin(fromDate.getMin());
         fromDate.addValueChangeListener(event -> toDate.setMin(fromDate.getValue()));
         toDate.addValueChangeListener(event -> fromDate.setMax(toDate.getValue()));
