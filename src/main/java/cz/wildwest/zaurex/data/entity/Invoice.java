@@ -55,6 +55,10 @@ public class Invoice extends AbstractEntity {
         return Collections.unmodifiableList(items);
     }
 
+    public int getTotalAmount() {
+        return items.stream().mapToInt(value -> value.amount).sum();
+    }
+
     public String getIssuedBy() {
         return issuedBy;
     }
