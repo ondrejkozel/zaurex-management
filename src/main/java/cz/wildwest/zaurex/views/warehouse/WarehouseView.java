@@ -1,10 +1,12 @@
 package cz.wildwest.zaurex.views.warehouse;
 
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -22,7 +24,6 @@ import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -37,6 +38,7 @@ import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
+import cz.wildwest.zaurex.views.LineAwesomeIcon;
 import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 import org.apache.commons.lang3.StringUtils;
@@ -93,6 +95,15 @@ public class WarehouseView extends VerticalLayout {
         );
         //
         if (roles.contains(Role.WAREHOUSEMAN) && !roles.contains(Role.MANAGER)) setWarehousemanMode(variationsDetailsOpeners);
+        if (roles.contains(Role.WAREHOUSEMAN) || roles.contains(Role.MANAGER)) addQuickAdditionMenuItem();
+    }
+
+    private void addQuickAdditionMenuItem() {
+        HorizontalLayout bottomMenuBarLayout = grid.getBottomMenuBarLayout();
+        Button button = new Button("Rychle naskladnit", new LineAwesomeIcon("las la-rocket"));
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        button.addClickListener(event -> UI.getCurrent().navigate(QuickAddView.class));
+        bottomMenuBarLayout.addComponentAsFirst(button);
     }
 
     private void setWarehousemanMode(List<Registration> variationsDetailsOpeners) {
