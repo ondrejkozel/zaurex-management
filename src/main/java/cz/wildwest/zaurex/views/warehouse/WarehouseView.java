@@ -1,6 +1,7 @@
 package cz.wildwest.zaurex.views.warehouse;
 
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -22,7 +23,6 @@ import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -30,12 +30,15 @@ import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.components.Badge;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.components.gridd.NumberGriddCell;
 import cz.wildwest.zaurex.data.AbstractEntity;
 import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
+import cz.wildwest.zaurex.views.LineAwesomeIcon;
+import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,11 +58,12 @@ public class WarehouseView extends VerticalLayout {
 
     private final Gridd<WarehouseItem> grid;
     private final WarehouseItemVariantService warehouseItemVariantService;
-
+    private final WarehouseService warehouseService;
     private boolean editable;
 
     public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantService warehouseItemVariantService) {
         this.warehouseItemVariantService = warehouseItemVariantService;
+        this.warehouseService = warehouseService;
         Set<Role> roles = authenticatedUser.get().orElseThrow().getRoles();
         //
         setSizeFull();
@@ -71,8 +75,7 @@ public class WarehouseView extends VerticalLayout {
                             Stream<WarehouseItem> warehouseItemStream = warehouseService.findAll().stream();
                             //if manager isn't logged in, only sellable items are shown
                             if (!editableAtTheBeggining) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
-                            List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
-                            return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet()))).collect(Collectors.toList());
+                            return warehouseService.fetchTransientVariants(warehouseItemStream).collect(Collectors.toList());
                         }),
                 WarehouseItem::new,
                 editable,
@@ -91,6 +94,25 @@ public class WarehouseView extends VerticalLayout {
         );
         //
         if (roles.contains(Role.WAREHOUSEMAN) && !roles.contains(Role.MANAGER)) setWarehousemanMode(variationsDetailsOpeners);
+        if (roles.contains(Role.WAREHOUSEMAN) || roles.contains(Role.MANAGER)) addQuickAdditionMenuItem();
+    }
+
+    private void addQuickAdditionMenuItem() {
+        HorizontalLayout bottomMenuBarLayout = grid.getBottomMenuBarLayout();
+        Button button = new Button("Rychle naskladnit", new LineAwesomeIcon("las la-rocket"));
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        button.addClickListener(event -> {
+            if (event.isAltKey()) UI.getCurrent().navigate(QuickAddView.class);
+            else showQuickAdditionDialog();
+        });
+        bottomMenuBarLayout.addComponentAsFirst(button);
+    }
+
+    private void showQuickAdditionDialog() {
+        ConfirmDialog dialog = new ConfirmDialog("Rychle naskladnit", "", "Zavřít", event -> {});
+        dialog.setConfirmButtonTheme("tertiary");
+        dialog.add(new QuickAddView(warehouseService, warehouseItemVariantService));
+        dialog.open();
     }
 
     private void setWarehousemanMode(List<Registration> variationsDetailsOpeners) {
@@ -120,10 +142,10 @@ public class WarehouseView extends VerticalLayout {
 
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle), true);
-        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 50)), true);
-        grid.addColumn("Celková hodnota", new NumberRenderer<>(item -> item.getTotalValue().orElseThrow(), "%.2f Kč"), true);
-        grid.addColumn("Celkový počet", new NumberRenderer<>(item -> item.getTotalQuantity().orElseThrow(), "%d ks"), true);
-        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), true);
+        grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 50)), false);
+        grid.addColumn("Celková hodnota", new ComponentRenderer<>(item -> new NumberGriddCell(String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", item.getTotalValue().orElseThrow()))), false);
+        grid.addColumn("Celkový počet", new ComponentRenderer<>(item -> new NumberGriddCell(String.format("%d ks", item.getTotalQuantity().orElseThrow()))), true);
+        grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), false);
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
             HorizontalLayout badgeLayout = new HorizontalLayout();
             badgeLayout.addClassName("badge-container");

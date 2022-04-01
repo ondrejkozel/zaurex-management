@@ -6,10 +6,14 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.data.Role;
+import cz.wildwest.zaurex.data.entity.Configuration;
 import cz.wildwest.zaurex.data.entity.User;
+import cz.wildwest.zaurex.data.service.ConfigurationService;
 import cz.wildwest.zaurex.data.service.UserService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
@@ -17,6 +21,7 @@ import cz.wildwest.zaurex.views.MainLayout;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.security.PermitAll;
+import java.util.Set;
 
 @PageTitle("Nastavení")
 @Route(value = "settings", layout = MainLayout.class)
@@ -25,17 +30,62 @@ public class SettingsView extends VerticalLayout {
 
     private final UserService userService;
     private final User user;
+    private final ConfigurationService configurationService;
     private final PasswordEncoder passwordEncoder;
 
-    public SettingsView(UserService userService, AuthenticatedUser authenticatedUser, PasswordEncoder passwordEncoder) {
+    public SettingsView(UserService userService, AuthenticatedUser authenticatedUser, PasswordEncoder passwordEncoder, ConfigurationService configurationService) {
         this.userService = userService;
         this.user = authenticatedUser.get().orElseThrow();
+        this.configurationService = configurationService;
+        Set<Role> roles = user.getRoles();
         this.passwordEncoder = passwordEncoder;
         //
+        if (roles.contains(Role.MANAGER)) buildInvoicing();
         buildChangePasswordField();
         //
         setSpacing(false);
         setSizeFull();
+    }
+
+    private void buildInvoicing() {
+        add(new H3("Fakturace"));
+        buildChangeIcoField();
+        buildChangeAccoutNumberField();
+        invoicingSubmit = new Button("Potvrdit", new LineAwesomeIcon("las la-check"));
+        invoicingSubmit.setDisableOnClick(true);
+        invoicingSubmit.setEnabled(false);
+        invoicingSubmit.addClickListener(event -> {
+            configurationService.save(Configuration.StandardKey.ICO, icoField.getValue());
+            configurationService.save(Configuration.StandardKey.BANK_ACCOUNT_NUMBER, accountNumberField.getValue());
+        });
+        add(invoicingSubmit);
+    }
+
+    private Button invoicingSubmit;
+
+    private void invoicingFieldsValueChanged() {
+        invoicingSubmit.setEnabled(!accountNumberField.isInvalid() && !icoField.isInvalid());
+    }
+
+    private void buildChangeAccoutNumberField() {
+        accountNumberField = new TextField("Číslo bankovního účtu");
+        accountNumberField.setPlaceholder("nenastaveno");
+        accountNumberField.setValueChangeMode(ValueChangeMode.EAGER);
+        accountNumberField.setValue(configurationService.getValue(Configuration.StandardKey.BANK_ACCOUNT_NUMBER).orElse(""));
+        accountNumberField.addValueChangeListener(event -> invoicingFieldsValueChanged());
+        add(accountNumberField);
+    }
+
+    private TextField accountNumberField;
+    private TextField icoField;
+
+    private void buildChangeIcoField() {
+        icoField = new TextField("Identifikační číslo");
+        icoField.setPlaceholder("nenastaveno");
+        icoField.setValueChangeMode(ValueChangeMode.EAGER);
+        icoField.setValue(configurationService.getValue(Configuration.StandardKey.ICO).orElse(""));
+        icoField.addValueChangeListener(event -> invoicingFieldsValueChanged());
+        add(icoField);
     }
 
     private void buildChangePasswordField() {
