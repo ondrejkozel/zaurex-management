@@ -58,11 +58,12 @@ public class WarehouseView extends VerticalLayout {
 
     private final Gridd<WarehouseItem> grid;
     private final WarehouseItemVariantService warehouseItemVariantService;
-
+    private final WarehouseService warehouseService;
     private boolean editable;
 
     public WarehouseView(WarehouseService warehouseService, AuthenticatedUser authenticatedUser, WarehouseItemVariantService warehouseItemVariantService) {
         this.warehouseItemVariantService = warehouseItemVariantService;
+        this.warehouseService = warehouseService;
         Set<Role> roles = authenticatedUser.get().orElseThrow().getRoles();
         //
         setSizeFull();
@@ -100,8 +101,18 @@ public class WarehouseView extends VerticalLayout {
         HorizontalLayout bottomMenuBarLayout = grid.getBottomMenuBarLayout();
         Button button = new Button("Rychle naskladnit", new LineAwesomeIcon("las la-rocket"));
         button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        button.addClickListener(event -> UI.getCurrent().navigate(QuickAddView.class));
+        button.addClickListener(event -> {
+            if (event.isAltKey()) UI.getCurrent().navigate(QuickAddView.class);
+            else showQuickAdditionDialog();
+        });
         bottomMenuBarLayout.addComponentAsFirst(button);
+    }
+
+    private void showQuickAdditionDialog() {
+        ConfirmDialog dialog = new ConfirmDialog("Rychle naskladnit", "", "Zavřít", event -> {});
+        dialog.setConfirmButtonTheme("tertiary");
+        dialog.add(new QuickAddView(warehouseService, warehouseItemVariantService));
+        dialog.open();
     }
 
     private void setWarehousemanMode(List<Registration> variationsDetailsOpeners) {

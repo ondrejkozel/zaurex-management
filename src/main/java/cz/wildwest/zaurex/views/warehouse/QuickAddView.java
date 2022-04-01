@@ -37,6 +37,7 @@ public class QuickAddView extends VerticalLayout {
         });
         //
         add(variantSelect);
+        setSizeFull();
     }
 
     private IntegerField buildAmountChange(VariantSelect variantSelect) {
