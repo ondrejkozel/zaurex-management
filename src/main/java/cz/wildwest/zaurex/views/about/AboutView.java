@@ -29,7 +29,7 @@ public class AboutView extends VerticalLayout {
         appName.setMaxWidth("100%");
         appName.setId("appname");
         Accordion accordion = new Accordion();
-        accordion.add("Zaurex management", new Html("<p>Aplikace byla vytvořena do nultého ročníku soutěže Tour de App. Aplikaci vytvořil tým <b>Brněnský divoký západ</b> z Gymnázia Brno, třída Kapitána Jaroše. Členy týmu jsou studenti třetího ročníku čtyletého studia Ondřej Kozel, který se zasloužil o funkčnost aplikace, a Marek Přibyl, který mu nosil pití.</p>"));
+        accordion.add("Zaurex management", new Html("<p>Aplikace byla vytvořena při nultém ročníku soutěže Tour de App. Aplikaci vytvořil tým <b>Brněnský divoký západ</b> z Gymnázia Brno, třída Kapitána Jaroše. Členy týmu jsou studenti třetího ročníku čtyletého studia Ondřej Kozel, který se zasloužil o funkčnost aplikace, a Marek Přibyl, který mu nosil pití.</p>"));
         accordion.add("Uživatelská příručka", new Html("<p>Na každé stránce se nachází jednoduché vysvětlení, co se na dané straně nachází a jak se obsluhuje. Toto vysvětlení se dá spustit buď kliknutím na ikonku otazníku v pravém horním rohu, anebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;H</code>.</p>"));
         accordion.add("Technické požadavky", new Html("<p>Ke spuštění aplikace stačí moderní webový prohlížeč. Jelikož je Management progresivní webová aplikace, můžete si ji stáhnout do svého zařízení a používat ji jako nativní aplikaci – stačí kliknout na tlačítko instalace v adresovém řádku (desktop) nebo kliknout na výzvu <i>Přidat na domovskou obrazovku</i> (mobilní zařízení).</p>"));
         accordion.add("Kontaktní údaje", new Html("<p>V případě jakýchkoli problémů s aplikací nás neváhejte kontaktovat, rádi vám pomůžeme:<br>" +
