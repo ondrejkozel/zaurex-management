@@ -6,7 +6,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -75,8 +74,7 @@ public class WarehouseView extends VerticalLayout {
                             Stream<WarehouseItem> warehouseItemStream = warehouseService.findAll().stream();
                             //if manager isn't logged in, only sellable items are shown
                             if (!editableAtTheBeggining) warehouseItemStream = warehouseItemStream.filter(WarehouseItem::isSellable);
-                            List<WarehouseItem.Variant> all = warehouseItemVariantService.findAll();
-                            return warehouseItemStream.peek(item -> item.setTransientVariants(all.stream().filter(variant -> variant.getOf().equals(item)).collect(Collectors.toSet()))).collect(Collectors.toList());
+                            return warehouseService.fetchTransientVariants(warehouseItemStream).collect(Collectors.toList());
                         }),
                 WarehouseItem::new,
                 editable,
