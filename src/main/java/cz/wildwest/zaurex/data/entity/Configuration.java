@@ -44,7 +44,7 @@ public class Configuration extends AbstractEntity {
     }
 
     public enum StandardKey {
-        ICO("ico"), BANK_ACCOUNT_NUMBER("bank_accout_number");
+        ICO("ic"), BANK_ACCOUNT_NUMBER("bank_accout_number");
 
         private final String key;
 

@@ -114,7 +114,7 @@ public class DataGenerator {
 
     private void createInvoices(InvoiceService invoiceService, WarehouseItemVariantService warehouseItemVariantService, UserService userService) {
         Invoice invoice = new Invoice(userService.findAll().get(0), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 1)).collect(Collectors.toList()), Invoice.PaymentForm.CARD);
-        Invoice invoice2 = new Invoice(userService.findAll().get(1), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 2)).collect(Collectors.toList()), Invoice.PaymentForm.TRANSFER);
+        Invoice invoice2 = new Invoice(userService.findAll().get(1), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 10)).collect(Collectors.toList()), Invoice.PaymentForm.TRANSFER);
         invoiceService.save(invoice);
         invoiceService.save(invoice2);
     }
