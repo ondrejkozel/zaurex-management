@@ -122,7 +122,7 @@ public class WarehouseView extends VerticalLayout {
     private void configureColumns() {
         grid.addColumn("Název", new TextRenderer<>(WarehouseItem::getTitle), true);
         grid.addColumn("Krátký popis", new TextRenderer<>(item -> StringUtils.abbreviate(item.getBriefDescription(), 50)), false);
-        grid.addColumn("Celková hodnota", new ComponentRenderer<>(item -> new NumberGriddCell(String.format("%.2f Kč", item.getTotalValue().orElseThrow()))), true);
+        grid.addColumn("Celková hodnota", new ComponentRenderer<>(item -> new NumberGriddCell(String.format("%.2f Kč", item.getTotalValue().orElseThrow()))), false);
         grid.addColumn("Celkový počet", new ComponentRenderer<>(item -> new NumberGriddCell(String.format("%d ks", item.getTotalQuantity().orElseThrow()))), true);
         grid.addColumn("Kategorie", new TextRenderer<>(item -> item.getCategory().getTitle()), false);
         grid.addColumn("Upozornění", new ComponentRenderer<>(item -> {
