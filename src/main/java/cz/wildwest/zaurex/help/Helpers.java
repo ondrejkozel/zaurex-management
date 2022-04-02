@@ -5,6 +5,7 @@ import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.settings.SettingsView;
+import cz.wildwest.zaurex.views.warehouse.QuickAddView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 
 import java.util.HashMap;
@@ -91,6 +92,12 @@ public class Helpers {
                         + "<p>Dovolenou můžete odstranit. Jde to udělat tlačítkem \"Odstranit...\", které naleznete při levém dolním okraji okna na upravování žádosti o dovolenou. Další možnost jak žádost o dovolenou odstranit, je přes Vícenásobný výber, který je popsán níže.</p>"
                 + "<h5>Vícenásobný výběr</h5>"
                         + "<p>Jde o možnost odstranit více žádostí o dovolenou zároveň. Dá se spusti buď stisknutím tlačítka \"Možnosti\", anebo klávesou zkratkou <code>Alt&nbsp;+&nbsp;S</code>. Po aktivaci této možnosti by se měl u levého okraje řádku se žádostí o dovolené objevit čtvereček, do kterého pokud kliknete, danou položku označíte. Označené položky pak můžete snadno odstraniť červeným tlačítkem \"Odstranit vybrané\", které se objeví u dolního okraje obrazovky nalevo od tlačítka \"Nová dovolená\". </p>"
+
+        ));
+        HELPER_MAP.put(QuickAddView.class, new Helper(
+                    "<p>Zde můžete rychle naskladňovat již existující zboží, nejde zde vytvářet nové zboží, ani nové varianty.</p>"
+            + "<h4>Ovládací prvky</h4>" +
+                 "<p>Naskladňovat již existující zboží zde můžete celkem jednoduše nejdříve vybráním názbu zboží, klávesnice vám může pomoct s vyhledáváním, následně musíte vyplnit variantu a na závěr počet. Takto definované zboží přidáte jednoduše tlačítkem \"Potvrdit\"</p>"
 
         ));
     }
