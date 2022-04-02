@@ -23,7 +23,7 @@ public class VariantSelect extends CustomField<WarehouseItem.Variant> {
         if (!itemsWithTransientValues.isEmpty() && itemsWithTransientValues.get(0).getTransientVariants().isEmpty()) throw new IllegalArgumentException("Without transient variants.");
         itemComboBox = new ComboBox<>("Zboží", itemsWithTransientValues);
         itemComboBox.setWidth("22.5em");
-        itemComboBox.setMaxWidth("calc(100vw - 32px)");
+        itemComboBox.setMaxWidth("calc(100vw - 115px)");
         //
         variantComboBox = new ComboBox<>("Varianta");
         variantComboBox.setEnabled(false);
