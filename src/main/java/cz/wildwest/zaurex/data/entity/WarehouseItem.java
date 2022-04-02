@@ -94,6 +94,11 @@ public class WarehouseItem extends AbstractEntity {
         this.variants = variants;
     }
 
+    @Override
+    public String toString() {
+        return title;
+    }
+
     public Optional<Collection<Variant>> getTransientVariants() {
         return Optional.ofNullable(variants);
     }
@@ -172,6 +177,11 @@ public class WarehouseItem extends AbstractEntity {
         public void setNote(String note) {
             this.note = note;
         }
+
+        @Override
+        public String toString() {
+            return colour;
+        }
     }
 
     public enum Category {
@@ -186,7 +196,6 @@ public class WarehouseItem extends AbstractEntity {
         public String getTitle() {
             return title;
         }
-
 
         @Override
         public String toString() {

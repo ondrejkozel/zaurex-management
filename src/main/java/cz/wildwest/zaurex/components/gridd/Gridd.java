@@ -331,6 +331,10 @@ public class Gridd<T extends AbstractEntity> extends VerticalLayout {
 
     private HorizontalLayout bottomMenuBarLayout;
 
+    public HorizontalLayout getBottomMenuBarLayout() {
+        return bottomMenuBarLayout;
+    }
+
     private Button newObjectButton;
 
     private Supplier<T> newObjectSupplier;
