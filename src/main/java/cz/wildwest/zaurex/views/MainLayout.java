@@ -1,8 +1,6 @@
 package cz.wildwest.zaurex.views;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -21,13 +19,17 @@ import cz.wildwest.zaurex.help.Helper;
 import cz.wildwest.zaurex.help.Helpers;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.about.AboutView;
+import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
 import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.invoices.InvoicesView;
+import cz.wildwest.zaurex.views.sell.SellView;
+import cz.wildwest.zaurex.views.invoices.InvoicesView;
 import cz.wildwest.zaurex.views.settings.SettingsView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
+import cz.wildwest.zaurex.views.yoursShifts.YoursShiftsView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +109,7 @@ public class MainLayout extends AppLayout {
         helpButton.setClassName("help-button");
         helpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         helpButton.addClickListener(this::showHelpDialog);
+        helpButton.addClickShortcut(Key.KEY_H, KeyModifier.ALT);
         //
         Header header = new Header(toggle, viewTitle, helpButton);
         header.addClassNames("view-header");
@@ -124,7 +127,7 @@ public class MainLayout extends AppLayout {
         Scroller scroller = new Scroller();
         scroller.setContent(new Html("<span>" + helper.html() + "</span>"));
         scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        scroller.setMaxHeight("50vh");
+        scroller.setClassName("help-scroller");
         //
         ConfirmDialog dialog = new ConfirmDialog(getCurrentPageTitle(), "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
@@ -233,7 +236,8 @@ public class MainLayout extends AppLayout {
     protected void afterNavigation() {
         super.afterNavigation();
         viewTitle.setText(getCurrentPageTitle());
-        helpButton.setVisible(Helpers.hasHelper(getContent().getClass()));
+        if (Helpers.hasHelper(getContent().getClass())) helpButton.removeClassName("display-none");
+        else if (!helpButton.hasClassName("display-none")) helpButton.addClassName("display-none");
     }
 
     private String getCurrentPageTitle() {
@@ -243,6 +247,6 @@ public class MainLayout extends AppLayout {
 
     private void checkChangePasswordNotifier() {
         if (authenticatedUser.get().isPresent() && !authenticatedUser.get().get().isHasChangedPassword())
-            Notification.show("Pro lepší zabezpečení si v nastavení změňte heslo. 🔐");
+            Notification.show("Pro lepší zabezpečení si v nastavení změňte heslo 🔐");
     }
 }

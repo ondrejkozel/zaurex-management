@@ -132,3 +132,11 @@ code {
   margin: 0;
   font-size: 85%;
 }
+
+.help-scroller {
+  max-height: 50vh;
+}
+
+.help-scroller h5 {
+  margin-left: var(--lumo-space-xs);
+}
