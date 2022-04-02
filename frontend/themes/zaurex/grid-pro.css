@@ -1,5 +1,5 @@
-.badge-container {
-  display: block;
+.custom-badge {
+ margin-right: var(--lumo-space-m);
 }
 
 .grid-pro-container {

@@ -8,6 +8,7 @@ import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 public class InvoicesPdfExporter {
 
@@ -20,14 +21,16 @@ public class InvoicesPdfExporter {
 
     private final Invoice invoice;
     private final String title;
-    private final String ico;
+    private final String ic;
     private final String bankAccountNumber;
+    private final Locale locale;
 
-    public InvoicesPdfExporter(Invoice invoice, String ico, String bankAccountNumber) {
+    public InvoicesPdfExporter(Invoice invoice, String ic, String bankAccountNumber) {
         this.invoice = invoice;
         this.title = "Faktura – daňový doklad #" + invoice.getNumber();
-        this.ico = ico;
+        this.ic = ic;
         this.bankAccountNumber = bankAccountNumber;
+        this.locale = LocalDateTimeFormatter.LOCALE;
     }
 
     public void export(HttpServletResponse response) throws DocumentException, IOException {
@@ -53,7 +56,7 @@ public class InvoicesPdfExporter {
     private void addTotalPrice(Document document) {
         Paragraph paragraph = new Paragraph();
         paragraph.add("Celková částka k úhradě: ");
-        paragraph.add(new Phrase(String.format("%.2f CZK", invoice.getTotalPrice()), BOLD));
+        paragraph.add(new Phrase(String.format(locale, "%.2f CZK", invoice.getTotalPrice()), BOLD));
         document.add(paragraph);
     }
 
@@ -64,7 +67,7 @@ public class InvoicesPdfExporter {
     }
 
     private void addMetaData(Document document) {
-        document.addTitle(title);
+        document.addTitle("Faktura " + invoice.getNumber());
         document.addCreator("Zaurex management");
     }
 
@@ -77,6 +80,7 @@ public class InvoicesPdfExporter {
     private void addInfo(Document document) {
         PdfPTable table = new PdfPTable(2);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.setWidthPercentage(60);
         table.setTableEvent((table1, width, height, headerRows, rowStart, canvas) -> {
             float[] widths = width[0];
             float x1 = widths[0];
@@ -89,9 +93,12 @@ public class InvoicesPdfExporter {
             cb.resetRGBColorStroke();
         });
         //
-        if (!ico.isBlank()) {
-            table.addCell(getLeftCell("IČO"));
-            table.addCell(getLeftCell(ico));
+        table.addCell(getLeftCell("Dodavatel"));
+        table.addCell(getLeftCell("Zaurex s.r.o."));
+        //
+        if (!ic.isBlank()) {
+            table.addCell(getLeftCell("IČ"));
+            table.addCell(getLeftCell(ic));
         }
         //
         table.addCell(getLeftCell("Datum vystavení"));
@@ -124,11 +131,11 @@ public class InvoicesPdfExporter {
             table.addCell(getRightCell(String.valueOf(item.getAmount())));
             table.addCell(getLeftCell(item.getLabel()));
             table.addCell(getLeftCell(item.getVariantLabel()));
-            table.addCell(getRightCell(String.format("%.2f", item.getPricePerOne())));
-            table.addCell(getRightCell(String.format("%.2f", item.getTotalPrice())));
+            table.addCell(getRightCell(String.format(locale, "%.2f", item.getPricePerOne())));
+            table.addCell(getRightCell(String.format(locale, "%.2f", item.getTotalPrice())));
         });
         for (int i = 0; i < 5; i++) {
-            PdfPCell cell = getCell(i == 0 ? String.valueOf(invoice.getItems().size()) : i == 4 ? String.format("%.2f CZK", invoice.getTotalPrice()) : "", BOLD, Rectangle.TOP);
+            PdfPCell cell = getCell(i == 0 ? String.valueOf(invoice.getTotalAmount()) : i == 4 ? String.format(locale, "%.2f CZK", invoice.getTotalPrice()) : "", BOLD, Rectangle.TOP);
             cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(cell);
         }

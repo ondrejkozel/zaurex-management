@@ -80,7 +80,7 @@ public class SettingsView extends VerticalLayout {
     private TextField icoField;
 
     private void buildChangeIcoField() {
-        icoField = new TextField("IČO");
+        icoField = new TextField("Identifikační číslo");
         icoField.setPlaceholder("nenastaveno");
         icoField.setValueChangeMode(ValueChangeMode.EAGER);
         icoField.setValue(configurationService.getValue(Configuration.StandardKey.ICO).orElse(""));

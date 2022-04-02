@@ -67,9 +67,8 @@ public class HolidaysView extends VerticalLayout {
     }
 
     private void configureColumns() {
-        grid.addColumn("Datum od", new TextRenderer<>(item -> item.getFromDate().format(LocalDateTimeFormatter.ofFullDate())), true);
-        grid.addColumn("Datum do", new TextRenderer<>(item -> item.getToDate().format(LocalDateTimeFormatter.ofFullDate())), true);
-        grid.addColumn("Poznámka", new TextRenderer<>(Holiday::getUserMessage), true);
+        grid.addColumn("Datum od", new TextRenderer<>(item -> item.getFromDate().format(LocalDateTimeFormatter.ofFullDate())), false);
+        grid.addColumn("Datum do", new TextRenderer<>(item -> item.getToDate().format(LocalDateTimeFormatter.ofFullDate())), false);
         grid.addColumn("Stav", new ComponentRenderer<>(holiday -> {
             Badge badge;
             if (holiday.getStatus() == Holiday.Status.APPROVED) badge = new Badge("schválena", Badge.BadgeVariant.SUCCESS);
@@ -77,6 +76,7 @@ public class HolidaysView extends VerticalLayout {
             else badge = new Badge("předána ke schválení", Badge.BadgeVariant.CONTRAST);
             return badge;
         }), true);
+        grid.addColumn("Poznámka", new TextRenderer<>(Holiday::getUserMessage), true);
         grid.addColumn("Odpověď manažera", new TextRenderer<>(Holiday::getManagerResponse), true);
     }
 
@@ -101,9 +101,11 @@ public class HolidaysView extends VerticalLayout {
 
     private BinderCrudEditor<Holiday> buildEditor() {
         fromDate = new DatePicker("Datum od");
+        fromDate.setLocale(LocalDateTimeFormatter.LOCALE);
         fromDate.setMin(LocalDate.now().plusDays(1));
         fromDate.setMax(LocalDate.now().plus(MAX_FROM_DATE_DISTANCE));
         toDate = new DatePicker("Datum do");
+        toDate.setLocale(LocalDateTimeFormatter.LOCALE);
         toDate.setMin(fromDate.getMin());
         fromDate.addValueChangeListener(event -> toDate.setMin(fromDate.getValue()));
         toDate.addValueChangeListener(event -> fromDate.setMax(toDate.getValue()));
