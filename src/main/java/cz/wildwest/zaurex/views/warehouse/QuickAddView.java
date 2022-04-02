@@ -15,7 +15,7 @@ import javax.annotation.security.RolesAllowed;
 import java.util.List;
 
 @PageTitle("Rychle naskladnit")
-@Route(value = "warehouse/quick_add", layout = MainLayout.class)
+@Route(value = "quick_add", layout = MainLayout.class)
 @RolesAllowed({"WAREHOUSEMAN", "MANAGER"})
 public class QuickAddView extends VerticalLayout {
 
