@@ -112,6 +112,8 @@ public class WarehouseView extends VerticalLayout {
         ConfirmDialog dialog = new ConfirmDialog("Rychle naskladnit", "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
         dialog.add(new QuickAddView(warehouseService, warehouseItemVariantService));
+        dialog.addCancelListener(event -> grid.refreshAll());
+        dialog.addConfirmListener(event -> grid.refreshAll());
         dialog.open();
     }
 
