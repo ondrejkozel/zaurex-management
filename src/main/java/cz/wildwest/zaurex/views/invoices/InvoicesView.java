@@ -64,6 +64,7 @@ public class InvoicesView extends VerticalLayout {
     private CrudEditor<Invoice> buildEditor() {
         TextField issuedBy = new TextField("Vystavil");
         DateTimePicker issuedAt = new DateTimePicker("Vystaveno");
+        issuedAt.setLocale(LocalDateTimeFormatter.LOCALE);
         TextArea details = new TextArea("Položky");
         TextField totalPrice = new TextField("Celkem k úhradě");
         totalPrice.setHelperText("Další informace získáte v PDF verzi faktury.");
