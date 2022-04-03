@@ -4,6 +4,7 @@ import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
+import cz.wildwest.zaurex.views.invoices.InvoicesView;
 import cz.wildwest.zaurex.views.warehouse.QuickAddView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 
@@ -78,6 +79,16 @@ public class Helpers {
                         + "<p>Jde o možnost odstranit více kusů zboží zároveň. Dá se spusti buď stisknutím tlačítka <b>Možnosti</b> nebo klávesou zkratkou <code>Alt&nbsp;+&nbsp;S</code>. Označené položky pak můžete snadno odstraniť červeným tlačítkem <b>Odstranit vybrané</b>.</p>"
 
         ));
+        HELPER_MAP.put(InvoicesView.class, new Helper(
+                    "<p>Zde si můžete prohlížet faktury nákupů, které proběhly přes pokladnu.</p>"
+            + "<h4>Ovládací prvky</h4>" +
+                "<h5>Zobrazení</h5>" +
+                        "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví.</p>"          
+                   + "<h5>Zobrazení detailu platby</h5>"
+                        + "<p>Prohlížení detailů aktivity je možné po kliknutí na určitou aktivitu. Stejným způsobem se dá vytvářet i PDF faktura.</p>"
+                + "<h5>Vytváření PDF faktury z archivu</h5>"
+		+ "<p>Soubor ve formátu PDF se dá snadno vytvořit zapomocí kliknutí na ikonu PDF ve sloupci PDF a řádku transakce, ze které fakturu chcete vytvořit. Druhá možnost je přes prohlídnutí si detailů aktivity.</p>"	
+       ));
         HELPER_MAP.put(HolidaysForApprovalView.class, new Helper(
                     "<p>Zde můžete nastavovat dovolenou a schvalovat žádosti o dovolené od zaměstnanců</p>"
             + "<h4>Ovládací prvky</h4>" +
