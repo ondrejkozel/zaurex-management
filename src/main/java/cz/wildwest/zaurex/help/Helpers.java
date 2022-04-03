@@ -83,7 +83,7 @@ public class Helpers {
                     "<p>Zde si můžete prohlížet faktury nákupů, které proběhly přes pokladnu.</p>"
             + "<h4>Ovládací prvky</h4>" +
                 "<h5>Zobrazení</h5>" +
-                        "<p>Nahoře nad seznamem je tlačítko \"Zobrazit\", díky kterému si můžete nastavit, které sloupce se mají zobrazovat. Změníte stav snadno, když kliknete na vlastnost, kterou chcete změnit, z nabídky, která se vám objeví.</p>"          
+                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>"
                    + "<h5>Zobrazení detailu platby</h5>"
                         + "<p>Prohlížení detailů aktivity je možné po kliknutí na určitou aktivitu. Stejným způsobem se dá vytvářet i PDF faktura.</p>"
                 + "<h5>Vytváření PDF faktury z archivu</h5>"
