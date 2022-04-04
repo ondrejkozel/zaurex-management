@@ -35,7 +35,11 @@ public class Helpers {
         return String.format("<h5>Přidání $s</h5>" +
             "<p>$s se přidá tlačítkem v pravém dolním roku obrazovky <b>$s</b> nebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;N</code>.", customText, anotherCustomText, anotherCustomText);
     }
-
+    private static String delete(String customText, String anotherCustomText, String differentCustomText) {
+        return String.format("<h5>Odstraňování $s</h5>" +
+                            " <p>Pokud chcete odstranit $s, lze to udělat tlačítkem <b>Odstranit...</b>, které naleznete v okně na upravování $s. Další možnost jak položku odstranit ze seznamu je přes <i>Vícenásobný výběr</i>, který je popsán níže."
+                    , customText, anotherCustomText, differentCustomText);
+    }
     private static void buildHelpers() {
         HELPER_MAP.put(WarehouseView.class, new Helper(
                     "<p>Zde můžete zjistit, jaké věci se aktuálně nachází na skladě. Mohou se zde přidávat i odstraňovat produkty a varianty.</p>"
@@ -45,8 +49,7 @@ public class Helpers {
                             + "<p>Již existující zboží lze snadno přidat pomocí tlačítka <b>Rychle naskladnit</b>. Pokud ho zmáčknete při držení klávesy <code>Alt</code>, otevře se nová stránka.</p>"
                 + "<h5>Upravování již existujícího zboží</h5>"
                         + "<p>Upravovat určité zboží (název, popis a přidávání, úprava či odstraňování variant) se dá po kliknutí na určité zboží. Před uzavřením nesmíte zapomenout své změny uložit, jinak budou zahozeny. Ukládají se tlačítkem v pravém dolním rohu okna na upravování zboží. Pokud se vám okno na upravování zboží nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost <i>Vícenásobného výběru</i>.</p>"
-                + "<h5>Odstraňování zboží</h5>"
-                        + "<p>Pokud kupříkladu je zboží vloženo chybně, anebo je vyprodáno a nechcete, aby dělalo seznam nepřehledný, můžete ho odstranit. Pokud chcete odstranit celé zboží, bez ohledu na to, kolik má variant, lze to udělat tlačítkem <b>Odstranit...</b>. Další možnost jak zboží odstranit ze seznamu je přes <i>Vícenásobný výběr</i>, který je popsán níže.</p>"
+                        +delete("zboží","celé zboží, bez ohledu na to, kolik má variant","zboží")
                 + multipleChoice("věcí ze sklad")));
 //        HELPER_MAP.pumultipleChoice("věcí ze sklad")t(SettingsView.class, new Helper(
 //                    "<p>Na této stránce není zatím nic víc, než měnění hesla. Pro změnění hesla zadejte nové heslo do rámečku a stiskněte potvrdit.</p>"
@@ -62,9 +65,8 @@ public class Helpers {
                 ZOBRAZENI +addNew("nové žádosti o dovolenou", "Nová dovolená")+ "U nové dovolené je potřeba nastavit datum a volitelně poznámku, kterou uvidí manažer.</p>"
                 + "<h5>Upravování již existující žádosti o dovolenou</h5>"
                         + "<p>Upravování vámi podané žádosti je možné po kliknutí na určitou žádost. Tato možnost je pouze, pokud dovolená ještě nenastala. Pokud dovolená již byla schválena a vy ji přesto upravíte, musí být znovu schválena. Pokud se vám okno na upravování dovolené nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost <i>Vícenásobného výběru</i>.</p>"
-                + "<h5>Odstraňování dovolené</h5>"
-                        + "<p>Dovolenou můžete odstranit. Jde to udělat tlačítkem <b>Odstranit...<b>, které naleznete při levém dolním okraji okna na upravování žádosti o dovolenou. Další možnost jak žádost o dovolenou odstranit, je přes <i>Vícenásobný výber</i>, který je popsán níže.</p>"
-               +multipleChoice("žádostí o dovolenou")));
+                +delete("žádostí o dovolenou","určitou žádost o dovolenou","určité dovolené")
+                            +multipleChoice("žádostí o dovolenou")));
         HELPER_MAP.put(EmployeesView.class, new Helper(
                     "<p>Zde můžete přidávat, upravovat a odstraňovat zaměstnance. Dají se zde také obnovit zapomenutá hesla.</p>"
             +  
@@ -73,9 +75,8 @@ public class Helpers {
                 addNew("nového zaměstnance", "Nový zaměstnanec")+"U nového zaměstnance musíte vyplnit přihlašovací jméno (bude sloužit jako login) a jeho jméno (jak má být v seznamu veden). Mohou se mu nastavit role. Heslo takto vzniklého zaměstnance bude \"heslo\", dokud si ho sám nezmění.</p>"
                 + "<h5>Upravování již existující zaměstnanců</h5>"
                         + "<p>Upravování parametrů zaměstnance (login, jméno a role) je možné po kliknutí na určitou osobu. Pokud se vám okno na upravování záznamu zaměstnanců nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost <i>Vícenásobného výběru</i>.</p>"
-                + "<h5>Odstraňování zaměstnanců</h5>"
-                        + "<p>Nepohodlného zaměstnance můžete odstranit. Jde to udělat tlačítkem <b>Odstranit...</b>, které naleznete při levém dolním okraji okna na upravování záznamech o zaměstnancích. Další možnost jak zaměstnance odstranit, je přes <i>Vícenásobný výber</i>, který je popsán níže.</p>"
-                +multipleChoice("zaměstnanců")));
+                +delete("zaměstnanců","nepohodlného zaměstnance","zaměstnanců")
+                            +multipleChoice("zaměstnanců")));
         HELPER_MAP.put(InvoicesView.class, new Helper(
                     "<p>Zde si můžete prohlížet faktury nákupů, které proběhly přes pokladnu.</p>"
             + 
@@ -91,9 +92,8 @@ public class Helpers {
                         "U nové dovolené je potřeba nastavit datum. Jako manažer máte právo vytvářet jakémukoli zaměstnanci dovolenou.</p>"
                 + "<h5>Upravování již existující žádosti o dovolenou a schvalování</h5>"
                         + "<p>Upravování žádostí je možné po kliknutí na určitou žádost. Stejným způsobem se dá žádost i schvalovat nebo zamítat. Pokud se vám okno na upravování dovolené nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost Vícenásobného výběru.</p>"
-                + "<h5>Odstraňování dovolené</h5>"
-                        + "<p>Dovolenou můžete odstranit. Jde to udělat tlačítkem <b>Odstranit...</b>, které naleznete při levém dolním okraji okna na upravování žádosti o dovolenou. Další možnost jak žádost o dovolenou odstranit, je přes Vícenásobný výber, který je popsán níže.</p>"
-                + multipleChoice("žádostí o dovolenou a obecně dovolených")));
+                 +delete("žádostí o dovolenou","určitou žádost o dovolenou","určité dovolené")
+                            + multipleChoice("žádostí o dovolenou a obecně dovolených")));
         HELPER_MAP.put(QuickAddView.class, new Helper(
                     "<p>Zde můžete rychle naskladňovat již existující zboží, nelze zde vytvářet nové zboží, ani nové varianty.</p>"
             + "<h4>Ovládací prvky</h4>" +
