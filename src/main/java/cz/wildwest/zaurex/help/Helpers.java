@@ -22,14 +22,18 @@ public class Helpers {
         buildHelpers();
     }
     
-    private final static String ZOBRAZENI = "<h5>Zobrazení</h5>" +
+    private final static String ZOBRAZENI = "<h4>Ovládací prvky</h4>"
+            + "<h5>Zobrazení</h5>" +
                         "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>";
+    
+    private static String getVicenasobnyVyber(String customText) {
+        return String.format("bla bla bla %s  jdfkjkoasjf", customText);
+    }
 
     private static void buildHelpers() {
         HELPER_MAP.put(WarehouseView.class, new Helper(
                     "<p>Zde můžete zjistit, jaké věci se aktuálně nachází na skladě. Mohou se zde přidávat i odstraňovat produkty a varianty.</p>"
-            + "<h4>Ovládací prvky</h4>" +
-                ZOBRAZENI+
+            +        ZOBRAZENI +
                 "<h5>Přidání nového zboží</h5>" +
                         "<p>Nové zboží lze přidat tlačítkem v pravém dolním roku obrazovky <b>Nové zboží</b> nebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;N</code>. U nového zboží je potřeba nastavit název a vybrat, do jaké kategorie zboží patří. Nepovinné pole je krátký popis, kde můžete výrobek více specifikovat. Pokud rovnou chcete přidat variantu, rozklikněte <b>Varianty</b> a stiskněte přidat variantu. Každá varianta potřebuje mít název (barvu), cenu a množství (může být i 0). Nepovinné je napsání velikosti nebo nějaké jiné poznámky, která specifikuje danou variantu.</p>"
                             + "<h6>Naskladnění již existujícího zboží</h6>"
@@ -51,10 +55,8 @@ public class Helpers {
                     "<p>Zde můžete požádat o dovolenou</p>"
             +  "<h4>Schvalování</h4>"+
 		"<p>Každá dovolená má tři různé stavy: nevyřízeno, schváleno, zamítnuto. Manažer také může připojit vlastní poznámku, proč dovolenou zamítl, anebo schválil</p>" +
-            "<h4>Ovládací prvky</h4>" +
-                "<h5>Zobrazení</h5>" +
-                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>"+
-                "<h5>Požádání o dovolenou</h5>" +
+            
+                ZOBRAZENI +"<h5>Požádání o dovolenou</h5>" +
                         "<p>Nová dovolená se dá přidat tlačítkem v pravém dolním roku obrazovky <b>Nová dovolená</b>, anebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;N</code>. U nové dovolené je potřeba nastavit datum a volitelně poznámku, kterou uvidí manažer.</p>"
                 + "<h5>Upravování již existující žádosti o dovolenou</h5>"
                         + "<p>Upravování vámi podané žádosti je možné po kliknutí na určitou žádost. Tato možnost je pouze, pokud dovolená ještě nenastala. Pokud dovolená již byla schválena a vy ji přesto upravíte, musí být znovu schválena. Pokud se vám okno na upravování dovolené nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost <i>Vícenásobného výběru</i>.</p>"
@@ -66,11 +68,9 @@ public class Helpers {
         ));
         HELPER_MAP.put(EmployeesView.class, new Helper(
                     "<p>Zde můžete přidávat, upravovat a odstraňovat zaměstnance. Dají se zde také obnovit zapomenutá hesla.</p>"
-            +  "<h4>Ovládací prvky</h4>" +
-		"<h5>Zapomenuté heslo</h5>" +
+            +  
+		ZOBRAZENI +"<h5>Zapomenuté heslo</h5>" +
 		"<p>Pokud zaměstnanec zapomněl heslo, stáčí jednoduše kliknout na jeho řádek a na pravé straně okna, které se vám objeví, naleznete možnost <b>Obnovit heslo</b>. Pokud tuto možnost vyberete, heslo daného zaměstnance se změní na \"heslo\". Doporučte okamžitě po přihlášení zaměstnanci heslo změnit, protože \"heslo\" není nejbezpečnější heslo, obzlášť pokud by ho mělo více pracovníků.</h5>" +
-                "<h5>Zobrazení</h5>" +
-                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>"+
                 "<h5>Přidávání nových zaměstnanců</h5>" +
                         "<p>Nový zaměstnanci se dají přidat tlačítkem v pravém dolním roku obrazovky <b>Nový zaměstnanec</b>, anebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;N</code>. U nového zaměstnance musíte vyplnit přihlašovací jméno (bude sloužit jako login) a jeho jméno (jak má být v seznamu veden). Mohou se mu nastavit role. Heslo takto vzniklého zaměstnance bude \"heslo\", dokud si ho sám nezmění.</p>"
                 + "<h5>Upravování již existující zaměstnanců</h5>"
@@ -83,19 +83,15 @@ public class Helpers {
         ));
         HELPER_MAP.put(InvoicesView.class, new Helper(
                     "<p>Zde si můžete prohlížet faktury nákupů, které proběhly přes pokladnu.</p>"
-            + "<h4>Ovládací prvky</h4>" +
-                "<h5>Zobrazení</h5>" +
-                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>"
-                   + "<h5>Zobrazení detailu platby</h5>"
+            + 
+                ZOBRAZENI + "<h5>Zobrazení detailu platby</h5>"
                         + "<p>Prohlížení detailů aktivity je možné po kliknutí na určitou aktivitu. Stejným způsobem se dá vytvářet i PDF faktura.</p>"
                 + "<h5>Vytváření PDF faktury z archivu</h5>"
 		+ "<p>Soubor ve formátu PDF se dá snadno vytvořit zapomocí kliknutí na ikonu PDF ve sloupci PDF a řádku transakce, ze které fakturu chcete vytvořit. Druhá možnost je přes prohlídnutí si detailů aktivity.</p>"	
        ));
         HELPER_MAP.put(HolidaysForApprovalView.class, new Helper(
                     "<p>Zde můžete nastavovat dovolenou a schvalovat žádosti o dovolené od zaměstnanců</p>"
-            + "<h4>Ovládací prvky</h4>" +
-                "<h5>Zobrazení</h5>" +
-                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné. Možnost <b>Pouze nevyřízené</b>, která skryje vyřízené žádosti. </p>"+
+            + ZOBRAZENI +" Možnost <b>Pouze nevyřízené</b>, která skryje vyřízené žádosti. </p>"+
                 "<h5>Přidávání nové dovolené</h5>" +
                         "<p>Nová dovolená se dá přidat tlačítkem v pravém dolním roku obrazovky Nová dovolená, anebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;N</code>. U nové dovolené je potřeba nastavit datum. Jako manažer máte právo vytvářet jakémukoli zaměstnanci dovolenou.</p>"
                 + "<h5>Upravování již existující žádosti o dovolenou a schvalování</h5>"
