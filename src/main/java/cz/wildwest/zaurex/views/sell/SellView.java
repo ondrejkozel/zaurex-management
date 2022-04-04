@@ -75,7 +75,7 @@ public class SellView extends Div {
     }
 
     public SellView() {
-        addClassNames("prodat-view", "flex", "flex-col", "h-full");
+        addClassNames("sell-view", "flex", "flex-col", "h-full");
 
         Main content = new Main();
         content.addClassNames("grid", "gap-xl", "items-start", "justify-center", "max-w-screen-md", "mx-auto", "pb-l",
