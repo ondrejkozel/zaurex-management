@@ -7,6 +7,7 @@ import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.gridd.Gridd;
+import cz.wildwest.zaurex.data.Role;
 import cz.wildwest.zaurex.data.entity.Holiday;
 import cz.wildwest.zaurex.data.service.HolidayService;
 import cz.wildwest.zaurex.data.service.UserService;
@@ -15,6 +16,7 @@ import cz.wildwest.zaurex.views.MainLayout;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.stream.Collectors;
 
 @PageTitle("Dovolené")
 @Route(value = "holidays/approve", layout = MainLayout.class)
@@ -57,7 +59,7 @@ public class HolidaysForApprovalView extends VerticalLayout {
     }
 
     private void configureHolidaysView() {
-        holidaysView.useOwnerField(userService.findAll());
+        holidaysView.useOwnerField(userService.findAll().stream().filter(user -> user.getRoles().contains(Role.WAREHOUSEMAN) || user.getRoles().contains(Role.SALESMAN)).collect(Collectors.toList()));
         holidaysView.getFormLayout().addComponentAsFirst(holidaysView.getOwner());
         holidaysView.getFormLayout().addComponentAsFirst(holidaysView.getStatus());
         holidaysView.getFormLayout().add(holidaysView.getManagerResponse(), 2);
