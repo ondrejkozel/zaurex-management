@@ -21,13 +21,15 @@ public class Helpers {
         HELPER_MAP = new HashMap<>();
         buildHelpers();
     }
+    
+    private final static String ZOBRAZENI = "<h5>Zobrazení</h5>" +
+                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>";
 
     private static void buildHelpers() {
         HELPER_MAP.put(WarehouseView.class, new Helper(
                     "<p>Zde můžete zjistit, jaké věci se aktuálně nachází na skladě. Mohou se zde přidávat i odstraňovat produkty a varianty.</p>"
             + "<h4>Ovládací prvky</h4>" +
-                "<h5>Zobrazení</h5>" +
-                        "<p>Nahoře nad seznamem je tlačítko <b>Zobrazit</b>, díky kterému si můžete nastavit, které sloupce mají být viditelné.</p>"+
+                ZOBRAZENI+
                 "<h5>Přidání nového zboží</h5>" +
                         "<p>Nové zboží lze přidat tlačítkem v pravém dolním roku obrazovky <b>Nové zboží</b> nebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;N</code>. U nového zboží je potřeba nastavit název a vybrat, do jaké kategorie zboží patří. Nepovinné pole je krátký popis, kde můžete výrobek více specifikovat. Pokud rovnou chcete přidat variantu, rozklikněte <b>Varianty</b> a stiskněte přidat variantu. Každá varianta potřebuje mít název (barvu), cenu a množství (může být i 0). Nepovinné je napsání velikosti nebo nějaké jiné poznámky, která specifikuje danou variantu.</p>"
                             + "<h6>Naskladnění již existujícího zboží</h6>"
