@@ -14,13 +14,17 @@ import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.data.entity.Invoice;
+import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.InvoiceService;
+import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
 import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +35,12 @@ import java.util.Map;
 public class SellView extends Div {
 
     private final Map<WarehouseItem.Variant, Integer> items;
+    private final InvoiceService invoiceService;
+    private final User user;
 
-    public SellView() {
+    public SellView(InvoiceService invoiceService, AuthenticatedUser authenticatedUser) {
+        this.invoiceService = invoiceService;
+        this.user = authenticatedUser.get().orElseThrow();
         addClassNames("sell-view", "flex", "flex-col", "h-full");
 
         items = new HashMap<>();
@@ -121,7 +129,9 @@ public class SellView extends Div {
         return paymentInfo;
     }
 
+    private TextField ic;
     private TextField companyName;
+    private TextField purchaserName;
     private TextField address;
     private TextField postalCode;
     private TextField city;
@@ -140,8 +150,15 @@ public class SellView extends Div {
 
         Checkbox specifyPurchaser = new Checkbox("Specifikovat odběratele");
 
+        ic = new TextField("IČ");
+        ic.setMaxLength(50);
+
         companyName = new TextField("Název firmy");
         companyName.setMaxLength(50);
+
+        purchaserName = new TextField("Jméno odběratele");
+        purchaserName.setMaxLength(50);
+        purchaserName.setRequiredIndicatorVisible(true);
 
         address = new TextField("Adresa");
         address.setMaxLength(50);
@@ -167,7 +184,7 @@ public class SellView extends Div {
         specifyPurchaser.addValueChangeListener(event -> switchPurchaseFieldsEnabled());
         setPurchaseFieldsEnabled(false);
 
-        shippingDetails.add(stepThree, header, specifyPurchaser, companyName, address, subSection);
+        shippingDetails.add(stepThree, header, specifyPurchaser, ic, companyName, purchaserName, address, subSection);
         return shippingDetails;
     }
 
@@ -177,7 +194,7 @@ public class SellView extends Div {
 
     private void setPurchaseFieldsEnabled(boolean enabled) {
         specifyPurchaserStatus = enabled;
-        List.of(companyName, address, postalCode, city).forEach(component -> component.setEnabled(enabled));
+        List.of(ic, companyName, purchaserName, address, postalCode, city).forEach(component -> component.setEnabled(enabled));
     }
 
     private Footer createFooter() {
@@ -190,6 +207,7 @@ public class SellView extends Div {
 
         Button pay = new Button("Prodat", new LineAwesomeIcon("las la-dollar-sign"));
         pay.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        pay.addClickListener(event -> sellAndSaveInvoice());
 
         footer.add(cancel, pay);
         return footer;
@@ -233,5 +251,17 @@ public class SellView extends Div {
 
         item.add(subSection, priceSpan);
         return item;
+    }
+
+    private void sellAndSaveInvoice() {
+        // TODO: 05.04.2022 sell
+        //
+        List<Invoice.Item> invoiceItems = new ArrayList<>();
+        items.forEach((variant, integer) -> invoiceItems.add(new Invoice.Item(variant.getOf().getTitle(), variant.getColour(), integer, variant.getPrice())));
+        Invoice invoice = new Invoice(user, invoiceItems, paymentForm.getValue());
+        if (specifyPurchaserStatus) {
+            invoice.setPurchaserInfo(new Invoice.PurchaserInfo(ic.getValue(), companyName.getValue(), purchaserName.getValue(), address.getValue(), postalCode.getValue() + ", " + city.getValue()));
+        }
+        invoiceService.save(invoice);
     }
 }
