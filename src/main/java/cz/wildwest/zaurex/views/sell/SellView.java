@@ -5,12 +5,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -18,10 +16,13 @@ import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.data.entity.Invoice;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
+import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @PageTitle("Prodat")
@@ -56,8 +57,8 @@ public class SellView extends Div {
         checkoutForm.add(header);
 
         checkoutForm.add(createPersonalDetailsSection());
-        checkoutForm.add(createShippingAddressSection());
         checkoutForm.add(createPaymentInformationSection());
+        checkoutForm.add(createPurchaserSection());
         checkoutForm.add(new Hr());
         checkoutForm.add(createFooter());
 
@@ -68,7 +69,7 @@ public class SellView extends Div {
         Section personalDetails = new Section();
         personalDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
 
-        Paragraph stepOne = new Paragraph("Checkout 1/3");
+        Paragraph stepOne = new Paragraph("Krok 1/3");
         stepOne.addClassNames("m-0", "text-s", "text-secondary");
 
         H3 header = new H3("Personal details");
@@ -77,16 +78,13 @@ public class SellView extends Div {
         TextField name = new TextField("Name");
         name.setRequiredIndicatorVisible(true);
         name.setPattern("[\\p{L} \\-]+");
-        name.addClassNames("mb-s");
 
         EmailField email = new EmailField("Email address");
         email.setRequiredIndicatorVisible(true);
-        email.addClassNames("mb-s");
 
         TextField phone = new TextField("Phone number");
         phone.setRequiredIndicatorVisible(true);
         phone.setPattern("[\\d \\-\\+]+");
-        phone.addClassNames("mb-s");
 
         Checkbox rememberDetails = new Checkbox("Remember personal details for next time");
         rememberDetails.addClassNames("mt-s");
@@ -95,75 +93,91 @@ public class SellView extends Div {
         return personalDetails;
     }
 
-    private Section createShippingAddressSection() {
-        Section shippingDetails = new Section();
-        shippingDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
-
-        Paragraph stepTwo = new Paragraph("Checkout 2/3");
-        stepTwo.addClassNames("m-0", "text-s", "text-secondary");
-
-        H3 header = new H3("Shipping address");
-        header.addClassNames("mb-m", "mt-s", "text-2xl");
-
-        ComboBox countrySelect = new ComboBox("Country");
-        countrySelect.setRequiredIndicatorVisible(true);
-        countrySelect.addClassNames("mb-s");
-
-        TextArea address = new TextArea("Street address");
-        address.setMaxLength(200);
-        address.setRequiredIndicatorVisible(true);
-        address.addClassNames("mb-s");
-
-        Div subSection = new Div();
-        subSection.addClassNames("flex", "flex-wrap", "gap-m");
-
-        TextField postalCode = new TextField("Postal Code");
-        postalCode.setRequiredIndicatorVisible(true);
-        postalCode.setPattern("[\\d \\p{L}]*");
-        postalCode.addClassNames("mb-s");
-
-        TextField city = new TextField("City");
-        city.setRequiredIndicatorVisible(true);
-        city.addClassNames("flex-grow", "mb-s");
-
-        subSection.add(postalCode, city);
-
-        ComboBox stateSelect = new ComboBox("State");
-        stateSelect.setRequiredIndicatorVisible(true);
-        stateSelect.setVisible(false);
-        countrySelect.addValueChangeListener(e -> {
-            stateSelect.setVisible(countrySelect.getValue().equals("United States"));
-        });
-
-        Checkbox sameAddress = new Checkbox("Billing address is the same as shipping address");
-        sameAddress.addClassNames("mt-s");
-
-        Checkbox rememberAddress = new Checkbox("Remember address for next time");
-
-        shippingDetails.add(stepTwo, header, countrySelect, address, subSection, stateSelect, sameAddress,
-                rememberAddress);
-        return shippingDetails;
-    }
+    RadioButtonGroup<Invoice.PaymentForm> paymentForm;
 
     private Component createPaymentInformationSection() {
         Section paymentInfo = new Section();
         paymentInfo.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
-
-        Paragraph stepThree = new Paragraph("Checkout 3/3");
-        stepThree.addClassNames("m-0", "text-s", "text-secondary");
-
+        //
+        Paragraph stepTwo = new Paragraph("Krok 2/3");
+        stepTwo.addClassNames("m-0", "text-s", "text-secondary");
+        //
         H3 header = new H3("Platba");
         header.addClassNames("mb-m", "mt-s", "text-2xl");
-
-        RadioButtonGroup<Invoice.PaymentForm> paymentForm = new RadioButtonGroup<>();
+        //
+        Paragraph transferInfo = new Paragraph(String.format("Datum splatnosti: %s.", LocalDateTime.now().plus(Invoice.TRANSFER_MATURITY_LIMIT).format(LocalDateTimeFormatter.ofLongDate())));
+        transferInfo.addClassNames("text-s", "text-secondary");
+        //
+        paymentForm = new RadioButtonGroup<>();
         paymentForm.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
         paymentForm.setLabel("Forma úhrady");
         paymentForm.setItems(Invoice.PaymentForm.values());
-        paymentForm.setValue(Invoice.PaymentForm.CASH);
         paymentForm.setRequired(true);
         paymentForm.setRenderer(new TextRenderer<>(Invoice.PaymentForm::getText));
-        paymentInfo.add(stepThree, header, paymentForm);
+        paymentForm.addValueChangeListener(event -> transferInfo.setVisible(event.getValue() == Invoice.PaymentForm.TRANSFER));
+        paymentForm.setValue(Invoice.PaymentForm.CASH);
+        //
+        paymentInfo.add(stepTwo, header, paymentForm, transferInfo);
         return paymentInfo;
+    }
+
+    private TextField companyName;
+    private TextField address;
+    private TextField postalCode;
+    private TextField city;
+
+    private boolean specifyPurchaserStatus = false;
+
+    private Section createPurchaserSection() {
+        Section shippingDetails = new Section();
+        shippingDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
+
+        Paragraph stepThree = new Paragraph("Krok 3/3");
+        stepThree.addClassNames("m-0", "text-s", "text-secondary");
+
+        H3 header = new H3("Odběratel");
+        header.addClassNames("mb-m", "mt-s", "text-2xl");
+
+        Checkbox specifyPurchaser = new Checkbox("Specifikovat odběratele");
+
+        companyName = new TextField("Název firmy");
+        companyName.setMaxLength(50);
+
+        address = new TextField("Adresa");
+        address.setMaxLength(50);
+        address.setRequiredIndicatorVisible(true);
+
+        Div subSection = new Div();
+        subSection.addClassNames("flex", "flex-wrap", "gap-m");
+
+        postalCode = new TextField("PSČ");
+        postalCode.setRequiredIndicatorVisible(true);
+        postalCode.setPattern("^[0-9]{1,5}$");
+        postalCode.addValueChangeListener(event -> {
+            if (event.getValue().contains(" ")) postalCode.setValue(event.getValue().replace(" ", ""));
+        });
+
+        city = new TextField("Město");
+        city.setMaxLength(50);
+        city.setRequiredIndicatorVisible(true);
+        city.addClassNames("flex-grow");
+
+        subSection.add(postalCode, city);
+
+        specifyPurchaser.addValueChangeListener(event -> switchPurchaseFieldsEnabled());
+        setPurchaseFieldsEnabled(false);
+
+        shippingDetails.add(stepThree, header, specifyPurchaser, companyName, address, subSection);
+        return shippingDetails;
+    }
+
+    private void switchPurchaseFieldsEnabled() {
+        setPurchaseFieldsEnabled(!specifyPurchaserStatus);
+    }
+
+    private void setPurchaseFieldsEnabled(boolean enabled) {
+        specifyPurchaserStatus = enabled;
+        List.of(companyName, address, postalCode, city).forEach(component -> component.setEnabled(enabled));
     }
 
     private Footer createFooter() {
@@ -186,9 +200,9 @@ public class SellView extends Div {
         aside.addClassNames("bg-contrast-5", "box-border", "p-l", "rounded-l", "sticky");
         Header headerSection = new Header();
         headerSection.addClassNames("flex", "items-center", "justify-between", "mb-m");
-        H3 header = new H3("Objednávka");
+        H3 header = new H3("Rekapitulace");
         header.addClassNames("m-0");
-        Button edit = new Button("Odstranit vše");
+        Button edit = new Button(new LineAwesomeIcon("las la-broom"));
         edit.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
         headerSection.add(header, edit);
 

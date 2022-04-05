@@ -35,6 +35,9 @@ public class Invoice extends AbstractEntity {
     @NotNull
     private PaymentForm paymentForm;
 
+    @Embedded
+    private PurchaserInfo purchaserInfo;
+
     public Invoice() {
     }
 
@@ -77,6 +80,14 @@ public class Invoice extends AbstractEntity {
 
     public LocalDateTime getMaturityDate() {
         return maturityDate;
+    }
+
+    public PurchaserInfo getPurchaserInfo() {
+        return purchaserInfo;
+    }
+
+    public void setPurchaserInfo(PurchaserInfo purchaserInfo) {
+        this.purchaserInfo = purchaserInfo;
     }
 
     @Entity
@@ -138,6 +149,77 @@ public class Invoice extends AbstractEntity {
 
         public double getPricePerOne() {
             return pricePerOne;
+        }
+    }
+
+    @Embeddable
+    public static class PurchaserInfo {
+
+        @NotNull
+        private String ic;
+
+        @NotNull
+        private String companyName;
+
+        @NotBlank
+        private String purchaserName;
+
+        @NotBlank
+        private String address1;
+
+        @NotBlank
+        private String address2;
+
+        public PurchaserInfo(String ic, String companyName, String purchaserName, String address1, String address2) {
+            this.ic = ic;
+            this.companyName = companyName;
+            this.purchaserName = purchaserName;
+            this.address1 = address1;
+            this.address2 = address2;
+        }
+
+        public PurchaserInfo() {
+            this("", "", "", "", "");
+        }
+
+        public String getIc() {
+            return ic;
+        }
+
+        public void setIc(String ic) {
+            this.ic = ic;
+        }
+
+        public String getCompanyName() {
+            return companyName;
+        }
+
+        public void setCompanyName(String companyName) {
+            this.companyName = companyName;
+        }
+
+        public String getPurchaserName() {
+            return purchaserName;
+        }
+
+        public void setPurchaserName(String purchaserName) {
+            this.purchaserName = purchaserName;
+        }
+
+        public String getAddress1() {
+            return address1;
+        }
+
+        public void setAddress1(String address1) {
+            this.address1 = address1;
+        }
+
+        public String getAddress2() {
+            return address2;
+        }
+
+        public void setAddress2(String address2) {
+            this.address2 = address2;
         }
     }
 
