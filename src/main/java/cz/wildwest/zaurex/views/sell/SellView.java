@@ -1,6 +1,8 @@
 package cz.wildwest.zaurex.views.sell;
 
+import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -187,6 +189,8 @@ public class SellView extends Div {
         purchaseFields.getStyle().set("display", "grid");
         purchaseFields.getStyle().set("overflow", "hidden");
 
+        purchaserFields = List.of(ic, companyName, purchaserName, address, postalCode, city);
+
         specifyPurchaser.addValueChangeListener(event -> switchPurchaseFieldsEnabled());
         setPurchaseFieldsEnabled(false);
 
@@ -198,9 +202,14 @@ public class SellView extends Div {
         setPurchaseFieldsEnabled(!specifyPurchaserStatus);
     }
 
+    private List<AbstractField<?, String>> purchaserFields;
+
     private void setPurchaseFieldsEnabled(boolean enabled) {
         specifyPurchaserStatus = enabled;
-        List.of(ic, companyName, purchaserName, address, postalCode, city).forEach(component -> component.setEnabled(enabled));
+        purchaserFields.forEach(component -> {
+            component.setValue(component.getEmptyValue());
+            component.setEnabled(enabled);
+        });
         purchaseFields.getStyle().set("height", enabled ? "unset" : "0");
     }
 
