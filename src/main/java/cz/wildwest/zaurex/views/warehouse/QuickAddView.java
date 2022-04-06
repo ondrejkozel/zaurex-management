@@ -1,11 +1,10 @@
 package cz.wildwest.zaurex.views.warehouse;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.HtmlNotification;
+import cz.wildwest.zaurex.components.VariantSelect;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
@@ -20,16 +19,14 @@ import java.util.List;
 public class QuickAddView extends VerticalLayout {
 
     public QuickAddView(WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
-        List<WarehouseItem> all = warehouseService.findAll();
+        List<WarehouseItem> all = warehouseService.findAllSellable();
         warehouseService.fetchTransientVariants(all);
         //
         VariantSelect variantSelect = new VariantSelect(all);
         //
-        IntegerField integerField = buildAmountChange(variantSelect);
-        Button button = variantSelect.addSubmitButton();
-        button.addClickListener(event -> {
+        variantSelect.addSubmitButtonClickListener(event -> {
             WarehouseItem.Variant variant = variantSelect.generateModelValue();
-            variant.setQuantity(variant.getQuantity() + integerField.getValue());
+            variant.setQuantity(variant.getQuantity() + variantSelect.getAmount());
             warehouseItemVariantService.save(variant);
             //
             HtmlNotification.show(String.format("<span>Nyní je na skladě %d kusů <b>%s</b> (<b>%s</b>).</span>", variant.getQuantity(), variant.getOf().getTitle(), variant.getColour()));
@@ -38,16 +35,5 @@ public class QuickAddView extends VerticalLayout {
         //
         add(variantSelect);
         setSizeFull();
-    }
-
-    private IntegerField buildAmountChange(VariantSelect variantSelect) {
-        IntegerField amountChange = new IntegerField("Změna počtu");
-        amountChange.addValueChangeListener(event -> {
-            if (event.getValue() != null && event.getValue() < amountChange.getMin()) amountChange.setValue(amountChange.getMin());
-        });
-        amountChange.getStyle().set("width", "10em");
-        amountChange.setHasControls(true);
-        variantSelect.addVariantDependentNumberField(amountChange, variant -> amountChange.setMin(-variant.getQuantity()));
-        return amountChange;
     }
 }
