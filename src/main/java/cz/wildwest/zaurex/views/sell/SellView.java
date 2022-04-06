@@ -136,6 +136,8 @@ public class SellView extends Div {
     private TextField postalCode;
     private TextField city;
 
+    private Span purchaseFields;
+
     private boolean specifyPurchaserStatus = false;
 
     private Section createPurchaserSection() {
@@ -181,10 +183,14 @@ public class SellView extends Div {
 
         subSection.add(postalCode, city);
 
+        purchaseFields = new Span(ic, companyName, purchaserName, address, subSection);
+        purchaseFields.getStyle().set("display", "grid");
+        purchaseFields.getStyle().set("overflow", "hidden");
+
         specifyPurchaser.addValueChangeListener(event -> switchPurchaseFieldsEnabled());
         setPurchaseFieldsEnabled(false);
 
-        shippingDetails.add(stepThree, header, specifyPurchaser, ic, companyName, purchaserName, address, subSection);
+        shippingDetails.add(stepThree, header, specifyPurchaser, purchaseFields);
         return shippingDetails;
     }
 
@@ -195,6 +201,7 @@ public class SellView extends Div {
     private void setPurchaseFieldsEnabled(boolean enabled) {
         specifyPurchaserStatus = enabled;
         List.of(ic, companyName, purchaserName, address, postalCode, city).forEach(component -> component.setEnabled(enabled));
+        purchaseFields.getStyle().set("height", enabled ? "unset" : "0");
     }
 
     private Footer createFooter() {
