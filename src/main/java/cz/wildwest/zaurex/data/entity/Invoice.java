@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Collection;
@@ -156,6 +157,7 @@ public class Invoice extends AbstractEntity {
     public static class PurchaserInfo {
 
         @NotNull
+        @Pattern(regexp = "^[0-9]{0,50}$")
         private String ic;
 
         @NotNull

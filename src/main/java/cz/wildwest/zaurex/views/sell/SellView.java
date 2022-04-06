@@ -153,7 +153,7 @@ public class SellView extends Div {
         Checkbox specifyPurchaser = new Checkbox("Specifikovat odběratele");
 
         ic = new TextField("IČ");
-        ic.setMaxLength(50);
+        ic.setPattern("^[0-9]{0,50}$");
 
         companyName = new TextField("Název firmy");
         companyName.setMaxLength(50);
