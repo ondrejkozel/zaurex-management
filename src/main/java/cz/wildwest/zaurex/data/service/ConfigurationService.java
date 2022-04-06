@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class ConfigurationService {
+public class ConfigurationService implements Truncatable {
 
     private final ConfigurationRepository mainRepository;
 
@@ -46,5 +46,10 @@ public class ConfigurationService {
 
     public void saveAll(Iterable<Configuration> iterable) {
         mainRepository.saveAll(iterable);
+    }
+
+    @Override
+    public void truncate() {
+        mainRepository.deleteAll();
     }
 }
