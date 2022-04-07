@@ -31,10 +31,8 @@ import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
+import javax.validation.metadata.ConstraintDescriptor;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -294,7 +292,8 @@ public class SellView extends Div {
         //
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        Set<ConstraintViolation<Invoice>> violations = validator.validate(invoice);
+        Set<ConstraintViolation<Invoice>> violations = new HashSet<>(validator.validate(invoice));
+        validateCount(invoice.getItems(), itemsEditor.count(), violations);
         if (!violations.isEmpty()) {
             violations.forEach(invoiceConstraintViolation -> Notification.show(invoiceConstraintViolation.getMessage()));
             return;
@@ -304,6 +303,65 @@ public class SellView extends Div {
         invoiceService.save(invoice);
         buildAndShowNewInvoiceNotification(invoice);
         clean();
+    }
+
+    private void validateCount(List<Invoice.Item> invoiceItems, int itemCount, Set<ConstraintViolation<Invoice>> violations) {
+        if (itemCount != invoiceItems.size()) violations.add(new ConstraintViolation<>() {
+            @Override
+            public String getMessage() {
+                return "Všechny položky seznamu nejsou unikátní.";
+            }
+
+            @Override
+            public String getMessageTemplate() {
+                return null;
+            }
+
+            @Override
+            public Invoice getRootBean() {
+                return null;
+            }
+
+            @Override
+            public Class<Invoice> getRootBeanClass() {
+                return null;
+            }
+
+            @Override
+            public Object getLeafBean() {
+                return null;
+            }
+
+            @Override
+            public Object[] getExecutableParameters() {
+                return new Object[0];
+            }
+
+            @Override
+            public Object getExecutableReturnValue() {
+                return null;
+            }
+
+            @Override
+            public Path getPropertyPath() {
+                return null;
+            }
+
+            @Override
+            public Object getInvalidValue() {
+                return null;
+            }
+
+            @Override
+            public ConstraintDescriptor<?> getConstraintDescriptor() {
+                return null;
+            }
+
+            @Override
+            public <U> U unwrap(Class<U> type) {
+                return null;
+            }
+        });
     }
 
     private void buildAndShowNewInvoiceNotification(Invoice invoice) {
@@ -370,6 +428,10 @@ public class SellView extends Div {
                 if (variant != null) map.put(variant, variantSelect.getAmount());
             });
             return map;
+        }
+
+        public int count() {
+            return (int) itemEditorsLayout.getChildren().count();
         }
 
         @Override

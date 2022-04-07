@@ -25,7 +25,7 @@ public class Invoice extends AbstractEntity {
     private LocalDateTime maturityDate;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "of")
-    @NotEmpty(message = "Počet položek nesmí být 0.")
+    @NotEmpty(message = "Seznam položek nesmí být prázdný.")
     private List<Item> items;
 
     private String issuedBy;
