@@ -3,10 +3,7 @@ package cz.wildwest.zaurex.data.entity;
 import cz.wildwest.zaurex.data.AbstractEntity;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Collection;
@@ -28,6 +25,7 @@ public class Invoice extends AbstractEntity {
     private LocalDateTime maturityDate;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "of")
+    @NotEmpty(message = "Počet položek nesmí být 0.")
     private List<Item> items;
 
     private String issuedBy;

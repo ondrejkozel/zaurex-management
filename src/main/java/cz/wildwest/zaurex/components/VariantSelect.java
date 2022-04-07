@@ -81,7 +81,11 @@ public class VariantSelect extends CustomField<WarehouseItem.Variant> {
     }
 
     public int getAmount() {
-        return amountChange.getValue();
+        return amountChange.getValue() == null ? 0 : amountChange.getValue();
+    }
+
+    public void setAmount(int amount) {
+        amountChange.setValue(amount);
     }
 
     private void addVariantDependentNumberField(IntegerField numberField, Consumer<WarehouseItem.Variant> onVariantSelectionChange) {
@@ -139,9 +143,10 @@ public class VariantSelect extends CustomField<WarehouseItem.Variant> {
 
     public void setSellMode() {
         submitButton.setVisible(false);
-        amountChange.setTitle("Počet kusů");
+        amountChange.setLabel("Počet kusů");
         variantComboBox.addValueChangeListener(event -> {
             if (event.getValue() != null) {
+                amountChange.setValue(1);
                 amountChange.setMin(1);
                 amountChange.setMax(event.getValue().getQuantity());
             }

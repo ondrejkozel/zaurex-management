@@ -2,104 +2,108 @@ package cz.wildwest.zaurex.views.sell;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
-import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.VariantSelect;
 import cz.wildwest.zaurex.data.entity.Invoice;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.InvoiceService;
+import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
 import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @PageTitle("Prodat")
 @Route(value = "sell", layout = MainLayout.class)
 @RolesAllowed("SALESMAN")
 public class SellView extends Div {
 
-    private final Map<WarehouseItem.Variant, Integer> items;
     private final InvoiceService invoiceService;
     private final User user;
+    private final WarehouseService warehouseService;
 
-    public SellView(InvoiceService invoiceService, AuthenticatedUser authenticatedUser) {
+    public SellView(InvoiceService invoiceService, AuthenticatedUser authenticatedUser, WarehouseService warehouseService) {
         this.invoiceService = invoiceService;
         this.user = authenticatedUser.get().orElseThrow();
+        this.warehouseService = warehouseService;
         addClassNames("sell-view", "flex", "flex-col", "h-full");
-
-        items = new HashMap<>();
 
         Main content = new Main();
         content.addClassNames("grid", "gap-xl", "items-start", "justify-center", "max-w-screen-md", "mx-auto", "pb-l",
                 "px-l");
+
 
         content.add(createCheckoutForm());
         content.add(createAside());
         add(content);
     }
 
-    private Component createCheckoutForm() {
-        Section checkoutForm = new Section();
-        checkoutForm.addClassNames("flex", "flex-col", "flex-grow");
+    private Section checkoutForm;
 
+    private Component createCheckoutForm() {
+        checkoutForm = new Section();
+        checkoutForm.addClassNames("flex", "flex-col", "flex-grow");
+        rebuildCheckoutForm();
+        return checkoutForm;
+    }
+
+    private void rebuildCheckoutForm() {
+        List<WarehouseItem> itemsWithTransientValues = warehouseService.findAllSellable();
+        warehouseService.fetchTransientVariants(itemsWithTransientValues);
+        checkoutForm.removeAll();
         H2 header = new H2("Pokladna");
         header.addClassNames("mb-0", "mt-xl", "text-3xl");
 //        Paragraph note = new Paragraph("All fields are required unless otherwise noted");
 //        note.addClassNames("mb-xl", "mt-0", "text-secondary");
         checkoutForm.add(header);
 
-        checkoutForm.add(createPersonalDetailsSection());
+        checkoutForm.add(createPersonalDetailsSection(itemsWithTransientValues));
         checkoutForm.add(createPaymentInformationSection());
         checkoutForm.add(createPurchaserSection());
         checkoutForm.add(new Hr());
         checkoutForm.add(createFooter());
-
-        return checkoutForm;
     }
 
-    private Section createPersonalDetailsSection() {
+    private ItemsEditor itemsEditor;
+
+    private Section createPersonalDetailsSection(List<WarehouseItem> itemsWithTransientValues) {
         Section personalDetails = new Section();
         personalDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
 
         Paragraph stepOne = new Paragraph("Krok 1/3");
         stepOne.addClassNames("m-0", "text-s", "text-secondary");
 
-        H3 header = new H3("Personal details");
+        H3 header = new H3("Položky");
         header.addClassNames("mb-m", "mt-s", "text-2xl");
 
-        TextField name = new TextField("Name");
-        name.setRequiredIndicatorVisible(true);
-        name.setPattern("[\\p{L} \\-]+");
+        itemsEditor = new ItemsEditor(itemsWithTransientValues);
 
-        EmailField email = new EmailField("Email address");
-        email.setRequiredIndicatorVisible(true);
-
-        TextField phone = new TextField("Phone number");
-        phone.setRequiredIndicatorVisible(true);
-        phone.setPattern("[\\d \\-\\+]+");
-
-        Checkbox rememberDetails = new Checkbox("Remember personal details for next time");
-        rememberDetails.addClassNames("mt-s");
-
-        personalDetails.add(stepOne, header, name, email, phone, rememberDetails);
+        personalDetails.add(stepOne, header, itemsEditor);
         return personalDetails;
     }
 
@@ -217,7 +221,7 @@ public class SellView extends Div {
         Footer footer = new Footer();
         footer.addClassNames("flex", "items-center", "justify-between", "my-m");
 
-        Button cancel = new Button("Začít od začátku");
+        Button cancel = new Button("Obnovit");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
         cancel.addClickListener(event -> UI.getCurrent().getPage().reload());
 
@@ -229,7 +233,12 @@ public class SellView extends Div {
         return footer;
     }
 
+    private void clean() {
+        rebuildCheckoutForm();
+    }
+
     private Aside createAside() {
+        // TODO: 07.04.2022 rekapitulace
         Aside aside = new Aside();
         aside.addClassNames("bg-contrast-5", "box-border", "p-l", "rounded-l", "sticky");
         Header headerSection = new Header();
@@ -270,14 +279,84 @@ public class SellView extends Div {
     }
 
     private void sellAndSaveInvoice() {
-        // TODO: 05.04.2022 sell
-        //
         List<Invoice.Item> invoiceItems = new ArrayList<>();
-        items.forEach((variant, integer) -> invoiceItems.add(new Invoice.Item(variant.getOf().getTitle(), variant.getColour(), integer, variant.getPrice())));
+        itemsEditor.generateModelValue().forEach((variant, integer) -> invoiceItems.add(new Invoice.Item(variant, integer)));
         Invoice invoice = new Invoice(user, invoiceItems, paymentForm.getValue());
         if (specifyPurchaserStatus) {
             invoice.setPurchaserInfo(new Invoice.PurchaserInfo(ic.getValue(), companyName.getValue(), purchaserName.getValue(), address.getValue(), postalCode.getValue() + ", " + city.getValue()));
         }
+        //
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Invoice>> violations = validator.validate(invoice);
+        if (!violations.isEmpty()) {
+            violations.forEach(invoiceConstraintViolation -> Notification.show(invoiceConstraintViolation.getMessage()));
+            return;
+        }
+        //
+        // TODO: 05.04.2022 odečíst ze skladu
         invoiceService.save(invoice);
+        // TODO: 07.04.2022 notifikace s pdf
+        clean();
+    }
+
+    public static class ItemsEditor extends CustomField<Map<WarehouseItem.Variant, Integer>> {
+
+        private final VerticalLayout itemEditorsLayout;
+        private final List<WarehouseItem> itemsWithTransientValues;
+
+        public ItemsEditor(List<WarehouseItem> itemsWithTransientValues) {
+            this.itemsWithTransientValues = itemsWithTransientValues;
+            itemEditorsLayout = new VerticalLayout();
+            itemEditorsLayout.setPadding(false);
+            Button addButton = new Button("Přidat položku", new LineAwesomeIcon("las la-plus"));
+            addButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+            addButton.addClickListener(event -> addButtonClicked());
+            VerticalLayout verticalLayout = new VerticalLayout(itemEditorsLayout, addButton);
+            verticalLayout.setPadding(false);
+            add(verticalLayout);
+            //
+            addButtonClicked();
+        }
+
+        private VariantSelect addButtonClicked() {
+            VariantSelect variantSelect = new VariantSelect(itemsWithTransientValues);
+            variantSelect.setSellMode();
+            Span order = new Span("#" + (itemEditorsLayout.getChildren().count() + 1));
+            order.addClassNames("text-s", "text-secondary");
+            Span blank = new Span();
+            Button delete = new Button(VaadinIcon.CLOSE.create());
+            delete.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
+            HorizontalLayout child = new HorizontalLayout(order, blank, delete);
+            child.getStyle().set("padding-right", "40px");
+            child.setFlexGrow(1, blank);
+            child.setWidthFull();
+            VerticalLayout parent = new VerticalLayout(child, variantSelect);
+            parent.setPadding(false);
+            parent.setSpacing(false);
+            delete.addClickListener(event -> itemEditorsLayout.remove(parent));
+            itemEditorsLayout.add(parent);
+            return variantSelect;
+        }
+
+        @Override
+        protected Map<WarehouseItem.Variant, Integer> generateModelValue() {
+            Map<WarehouseItem.Variant, Integer> map = new HashMap<>();
+            itemEditorsLayout.getChildren().map(component -> component.getChildren().collect(Collectors.toList()).get(1)).forEach(component -> {
+                VariantSelect variantSelect = (VariantSelect) component;
+                WarehouseItem.Variant variant = variantSelect.generateModelValue();
+                if (variant != null) map.put(variant, variantSelect.getAmount());
+            });
+            return map;
+        }
+
+        @Override
+        protected void setPresentationValue(Map<WarehouseItem.Variant, Integer> newPresentationValue) {
+            newPresentationValue.forEach((variant, integer) -> {
+                VariantSelect variantSelect = addButtonClicked();
+                variantSelect.setPresentationValue(variant);
+                variantSelect.setAmount(integer);
+            });
+        }
     }
 }
