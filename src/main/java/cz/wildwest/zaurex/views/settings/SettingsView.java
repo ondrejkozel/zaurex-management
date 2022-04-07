@@ -105,13 +105,22 @@ public class SettingsView extends VerticalLayout {
             passwordField.setHelperText("Síla hesla: " + getPasswordStrength(event.getValue()));
         });
         //
+        PasswordField passwordCheck = new PasswordField();
+        passwordCheck.setPlaceholder("Potvrďte napsáním znovu");
+        passwordCheck.addValueChangeListener((event) -> {
+            passwordCheck.setHelperText("Heslo se " + getCheck(passwordField.getValue(),passwordCheck.getValue()));
+        });
+        
         Button submit = new Button("Potvrdit", new LineAwesomeIcon("las la-check"));
         passwordField.addValueChangeListener(event -> submit.setEnabled(!passwordField.isInvalid()));
         submit.setDisableOnClick(true);
         submit.setEnabled(false);
-        submit.addClickListener(clickEvent -> changePassword(passwordField.getValue()));
-        add(new HorizontalLayout(passwordField, submit));
+        submit.addClickListener(clickEvent -> changePassword(passwordField.getValue(), passwordCheck.getValue()));
+        add(new HorizontalLayout(passwordField, passwordCheck, submit));
     }
+    public String getCheck(String password, String secondPassword){
+    return password.equals(secondPassword) ? "shoduje" : "neshoduje";
+    };
     
     public String getPasswordStrength(String password){
     var strength=0;
@@ -139,10 +148,15 @@ public class SettingsView extends VerticalLayout {
     return strength*x <= 20 ? "slabé" : strength*x <= 30 ? "střední" : "silné";
     };
     
-    private void changePassword(String unhashedPassword) {
+    private void changePassword(String unhashedPassword, String checkPassword) {
+      if(unhashedPassword.equals(checkPassword)) { 
         user.setHashedPassword(passwordEncoder.encode(unhashedPassword));
         user.setHasChangedPassword(true);
         userService.save(user);
         Notification.show("Úspěšně jsme vám nastavili nové heslo! 🌞");
+    }
+      else{
+          Notification.show("Hesla se neshodují");
+      }
     }
 }
