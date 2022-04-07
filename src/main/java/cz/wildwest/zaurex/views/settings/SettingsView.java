@@ -23,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.security.PermitAll;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @PageTitle("Nastavení")
 @Route(value = "settings", layout = MainLayout.class)
@@ -56,7 +58,7 @@ public class SettingsView extends VerticalLayout {
         invoicingSubmit.setDisableOnClick(true);
         invoicingSubmit.setEnabled(false);
         invoicingSubmit.addClickListener(event -> {
-            configurationService.save(Configuration.StandardKey.ICO, icoField.getValue());
+            configurationService.save(Configuration.StandardKey.ICO, String.valueOf(icoField.getValue()));
             configurationService.save(Configuration.StandardKey.BANK_ACCOUNT_NUMBER, accountNumberField.getValue());
         });
         add(invoicingSubmit);
@@ -70,13 +72,16 @@ public class SettingsView extends VerticalLayout {
 
     private void buildChangeAccoutNumberField() {
         accountNumberField = new TextField("Číslo bankovního účtu");
-        accountNumberField.setPlaceholder("nenastaveno");
         accountNumberField.setValueChangeMode(ValueChangeMode.EAGER);
+        accountNumberField.setPattern("^([0-9]{2,6}-|)[0-9]{2,10}\\/[0-9]{4}$");
         accountNumberField.setValue(configurationService.getValue(Configuration.StandardKey.BANK_ACCOUNT_NUMBER).orElse(""));
         accountNumberField.addValueChangeListener(event -> invoicingFieldsValueChanged());
+        accountNumberField.addValueChangeListener((event) -> {
+            if (accountNumberField.isInvalid()) accountNumberField.setHelperText("Vámi zadané parametry nevyhovují formátu (xxxxxx-)xxxxxxxxxx/xxxx.");
+            else accountNumberField.setHelperText("");
+        });
         add(accountNumberField);
     }
-
     private TextField accountNumberField;
     private IntegerField icoField;
 
@@ -84,7 +89,7 @@ public class SettingsView extends VerticalLayout {
         icoField = new IntegerField("Identifikační číslo");
         icoField.setPlaceholder("nenastaveno");
         icoField.setValueChangeMode(ValueChangeMode.EAGER);
-        icoField.setValue(configurationService.getValue(Configuration.StandardKey.ICO).orElse(""));
+        icoField.setValue(Integer.parseInt(configurationService.getValue(Configuration.StandardKey.ICO).orElse("")));
         icoField.addValueChangeListener(event -> invoicingFieldsValueChanged());
         add(icoField);
     }
@@ -98,12 +103,15 @@ public class SettingsView extends VerticalLayout {
         Button submit = new Button("Potvrdit", new LineAwesomeIcon("las la-check"));
         passwordField.addValueChangeListener(event -> submit.setEnabled(!passwordField.isInvalid()));
         passwordField.setValueChangeMode(ValueChangeMode.EAGER);
+        //"síla hesla: " + getSilaHesla(event.getValue())
         submit.setDisableOnClick(true);
         submit.setEnabled(false);
         submit.addClickListener(clickEvent -> changePassword(passwordField.getValue()));
         add(new HorizontalLayout(passwordField, submit));
     }
-
+    
+    //vlastní "funkci"
+    
     private void changePassword(String unhashedPassword) {
         user.setHashedPassword(passwordEncoder.encode(unhashedPassword));
         user.setHasChangedPassword(true);
