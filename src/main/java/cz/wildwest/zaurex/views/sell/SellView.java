@@ -10,6 +10,7 @@ import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.PdfAnchor;
 import cz.wildwest.zaurex.components.VariantSelect;
 import cz.wildwest.zaurex.data.entity.Invoice;
 import cz.wildwest.zaurex.data.entity.User;
@@ -296,8 +298,19 @@ public class SellView extends Div {
         //
         // TODO: 05.04.2022 odečíst ze skladu
         invoiceService.save(invoice);
-        // TODO: 07.04.2022 notifikace s pdf
+        buildAndShowNewInvoiceNotification(invoice);
         clean();
+    }
+
+    private void buildAndShowNewInvoiceNotification(Invoice invoice) {
+        Button pdfButton = new Button("Zobrazit PDF", new LineAwesomeIcon("las la-file-pdf"));
+        HorizontalLayout layout = new HorizontalLayout(new Label("Transakce byla dokončena."), new PdfAnchor(invoice, pdfButton));
+        layout.setSpacing(true);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+        Notification notification = new Notification();
+        notification.setDuration(5000);
+        notification.add(layout);
+        notification.open();
     }
 
     public static class ItemsEditor extends CustomField<Map<WarehouseItem.Variant, Integer>> {

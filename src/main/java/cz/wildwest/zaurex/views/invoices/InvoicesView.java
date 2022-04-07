@@ -5,7 +5,6 @@ import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -16,6 +15,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.PdfAnchor;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
 import cz.wildwest.zaurex.components.gridd.NumberGriddCell;
@@ -86,23 +86,6 @@ public class InvoicesView extends VerticalLayout {
         });
         binder.forField(totalPrice).bindReadOnly(invoice -> String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", invoice.getTotalPrice()));
         return new BinderCrudEditor<>(binder, formLayout);
-    }
-
-    private static class PdfAnchor extends Anchor {
-
-        public PdfAnchor(Button button) {
-            add(button);
-            setTarget("_blank");
-        }
-
-        public PdfAnchor(Invoice invoice, Button button) {
-            this(button);
-            setHref(invoice.getId());
-        }
-
-        public void setHref(long invoiceId) {
-            setHref("/invoices/export?id=" + invoiceId);
-        }
     }
 }
 
