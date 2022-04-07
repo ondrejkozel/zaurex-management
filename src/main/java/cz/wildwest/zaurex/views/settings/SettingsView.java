@@ -100,17 +100,44 @@ public class SettingsView extends VerticalLayout {
         passwordField.setPlaceholder("nové heslo");
         passwordField.setHelperText("Nové heslo musí mít alespoň 8 znaků.");
         passwordField.setMinLength(8);
+        passwordField.setValueChangeMode(ValueChangeMode.EAGER);
+        passwordField.addValueChangeListener((event) -> {
+            passwordField.setHelperText("Síla hesla: " + getPasswordStrength(event.getValue()));
+        });
+        //
         Button submit = new Button("Potvrdit", new LineAwesomeIcon("las la-check"));
         passwordField.addValueChangeListener(event -> submit.setEnabled(!passwordField.isInvalid()));
-        passwordField.setValueChangeMode(ValueChangeMode.EAGER);
-        //"síla hesla: " + getSilaHesla(event.getValue())
         submit.setDisableOnClick(true);
         submit.setEnabled(false);
         submit.addClickListener(clickEvent -> changePassword(passwordField.getValue()));
         add(new HorizontalLayout(passwordField, submit));
     }
     
-    //vlastní "funkci"
+    public String getPasswordStrength(String password){
+    var strength=0;
+    Pattern a = Pattern.compile("[a-z]");
+    Matcher b = a.matcher(password);
+    if (b.find()){
+        strength+=1;
+    }
+    Pattern c = Pattern.compile("[A-Z]");
+    Matcher d = c.matcher(password);
+    if (d.find()){
+        strength+=1;
+    }
+    Pattern e = Pattern.compile("[0-9]");
+    Matcher f = e.matcher(password);
+    if (f.find()){
+        strength+=1;
+    }
+    Pattern g = Pattern.compile("\\W");
+    Matcher h = g.matcher(password);
+    if (h.find()){
+        strength+=1;
+    }
+    int x = password.length();
+    return strength*x <= 20 ? "slabé" : strength*x <= 30 ? "střední" : "silné";
+    };
     
     private void changePassword(String unhashedPassword) {
         user.setHashedPassword(passwordEncoder.encode(unhashedPassword));
