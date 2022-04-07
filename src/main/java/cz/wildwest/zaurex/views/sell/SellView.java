@@ -2,7 +2,6 @@ package cz.wildwest.zaurex.views.sell;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -84,7 +83,7 @@ public class SellView extends Div {
 //        note.addClassNames("mb-xl", "mt-0", "text-secondary");
         checkoutForm.add(header);
 
-        checkoutForm.add(createPersonalDetailsSection(itemsWithTransientValues));
+        checkoutForm.add(createItemsSection(itemsWithTransientValues));
         checkoutForm.add(createPaymentInformationSection());
         checkoutForm.add(createPurchaserSection());
         checkoutForm.add(new Hr());
@@ -93,7 +92,7 @@ public class SellView extends Div {
 
     private ItemsEditor itemsEditor;
 
-    private Section createPersonalDetailsSection(List<WarehouseItem> itemsWithTransientValues) {
+    private Section createItemsSection(List<WarehouseItem> itemsWithTransientValues) {
         Section personalDetails = new Section();
         personalDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
 
@@ -225,7 +224,7 @@ public class SellView extends Div {
 
         Button cancel = new Button("Obnovit");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
-        cancel.addClickListener(event -> UI.getCurrent().getPage().reload());
+        cancel.addClickListener(event -> clean());
 
         Button pay = new Button("Prodat", new LineAwesomeIcon("las la-dollar-sign"));
         pay.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -247,9 +246,10 @@ public class SellView extends Div {
         headerSection.addClassNames("flex", "items-center", "justify-between", "mb-m");
         H3 header = new H3("Rekapitulace");
         header.addClassNames("m-0");
-        Button edit = new Button(new LineAwesomeIcon("las la-broom"));
-        edit.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
-        headerSection.add(header, edit);
+        Button clean = new Button(new LineAwesomeIcon("las la-broom"));
+        clean.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
+        clean.addClickListener(event -> cleanItems());
+        headerSection.add(header, clean);
 
         UnorderedList ul = new UnorderedList();
         ul.addClassNames("list-none", "m-0", "p-0", "flex", "flex-col", "gap-m");
@@ -260,6 +260,10 @@ public class SellView extends Div {
 
         aside.add(headerSection, ul);
         return aside;
+    }
+
+    private void cleanItems() {
+        itemsEditor.clean();
     }
 
     private ListItem createListItem(String primary, String secondary, String price) {
@@ -350,6 +354,11 @@ public class SellView extends Div {
             delete.addClickListener(event -> itemEditorsLayout.remove(parent));
             itemEditorsLayout.add(parent);
             return variantSelect;
+        }
+
+        public void clean() {
+            itemEditorsLayout.removeAll();
+            addButtonClicked();
         }
 
         @Override
