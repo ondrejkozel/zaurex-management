@@ -4,6 +4,6 @@
 
 @media (min-width: 1024px) {
     .sell-view main {
-        grid-template-columns: auto 324px;
+        grid-template-columns: auto 400px;
     }
 }

@@ -53,9 +53,9 @@ public class SellView extends Div {
         addClassNames("sell-view", "flex", "flex-col", "h-full");
 
         Main content = new Main();
-        content.addClassNames("grid", "gap-xl", "items-start", "justify-center", "max-w-screen-md", "mx-auto", "pb-l",
+        content.addClassNames("grid", "gap-xl", "items-start", "justify-center", "mx-auto", "pb-l",
                 "px-l");
-
+        content.getStyle().set("max-width", "870px");
 
         content.add(createCheckoutForm());
         content.add(createAside());
@@ -101,6 +101,7 @@ public class SellView extends Div {
         header.addClassNames("mb-m", "mt-s", "text-2xl");
 
         itemsEditor = new ItemsEditor(itemsWithTransientValues);
+        itemsEditor.addValueChangeListener(event -> setRecapitulationItems(event.getValue()));
 
         personalDetails.add(stepOne, header, itemsEditor);
         return personalDetails;
@@ -234,37 +235,48 @@ public class SellView extends Div {
 
     private void clean() {
         rebuildCheckoutForm();
+        itemsEditor.clean();
     }
 
+    private UnorderedList itemsRecapitulationList;
+
     private Aside createAside() {
-        // TODO: 07.04.2022 rekapitulace
         Aside aside = new Aside();
         aside.addClassNames("bg-contrast-5", "box-border", "p-l", "rounded-l", "sticky");
         Header headerSection = new Header();
         headerSection.addClassNames("flex", "items-center", "justify-between", "mb-m");
         H3 header = new H3("Rekapitulace");
         header.addClassNames("m-0");
-        Button clean = new Button(new LineAwesomeIcon("las la-broom"));
-        clean.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
-        clean.addClickListener(event -> cleanItems());
-        headerSection.add(header, clean);
+        headerSection.add(header);
 
-        UnorderedList ul = new UnorderedList();
-        ul.addClassNames("list-none", "m-0", "p-0", "flex", "flex-col", "gap-m");
+        itemsRecapitulationList = new UnorderedList();
+        itemsRecapitulationList.addClassNames("list-none", "m-0", "p-0", "flex", "flex-col", "gap-m");
 
-        ul.add(createListItem("Vanilla cracker", "With wholemeal flour", "$7.00"));
-        ul.add(createListItem("Vanilla blueberry cake", "With blueberry jam", "$8.00"));
-        ul.add(createListItem("Vanilla pastry", "With wholemeal flour", "$5.00"));
+        setRecapitulationItems(new HashMap<>());
 
-        aside.add(headerSection, ul);
+        aside.add(headerSection, itemsRecapitulationList);
         return aside;
     }
 
-    private void cleanItems() {
-        itemsEditor.clean();
+    private void setRecapitulationItems(Map<WarehouseItem.Variant, Integer> items) {
+        itemsRecapitulationList.removeAll();
+        items.forEach((variant, integer) -> itemsRecapitulationList.add(createListItem(integer + "x " + variant.getOf().getTitle(), variant.getColour(), String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", variant.getPrice() * integer))));
+        if (!items.isEmpty()) {
+            itemsRecapitulationList.add(new Hr());
+            final Double[] totalPrice = {0d};
+            items.forEach((variant, integer) -> totalPrice[0] += variant.getPrice() * integer);
+            itemsRecapitulationList.add(createListItem("Celkem", "", String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", totalPrice[0]), true));
+        }
+        else {
+            itemsRecapitulationList.add(new Label("Seznam položek je prázdný."));
+        }
     }
 
     private ListItem createListItem(String primary, String secondary, String price) {
+        return createListItem(primary, secondary, price, false);
+    }
+
+    private ListItem createListItem(String primary, String secondary, String price, boolean bold) {
         ListItem item = new ListItem();
         item.addClassNames("flex", "justify-between");
 
@@ -277,6 +289,8 @@ public class SellView extends Div {
         subSection.add(secondarySpan);
 
         Span priceSpan = new Span(price);
+
+        if (bold) item.getStyle().set("font-weight", "bold");
 
         item.add(subSection, priceSpan);
         return item;
@@ -373,9 +387,10 @@ public class SellView extends Div {
         notification.setDuration(5000);
         notification.add(layout);
         notification.open();
+        pdfButton.addClickListener(event -> notification.close());
     }
 
-    public static class ItemsEditor extends CustomField<Map<WarehouseItem.Variant, Integer>> {
+    public class ItemsEditor extends CustomField<Map<WarehouseItem.Variant, Integer>> {
 
         private final VerticalLayout itemEditorsLayout;
         private final List<WarehouseItem> itemsWithTransientValues;
@@ -387,7 +402,12 @@ public class SellView extends Div {
             Button addButton = new Button("Přidat položku", new LineAwesomeIcon("las la-plus"));
             addButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
             addButton.addClickListener(event -> addButtonClicked());
-            VerticalLayout verticalLayout = new VerticalLayout(itemEditorsLayout, addButton);
+            //
+            Button cleanButton = new Button(new LineAwesomeIcon("las la-broom"));
+            cleanButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
+            cleanButton.addClickListener(event -> clean());
+            //
+            VerticalLayout verticalLayout = new VerticalLayout(itemEditorsLayout, new HorizontalLayout(addButton, cleanButton));
             verticalLayout.setPadding(false);
             add(verticalLayout);
             //
@@ -403,13 +423,15 @@ public class SellView extends Div {
             Button delete = new Button(VaadinIcon.CLOSE.create());
             delete.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
             HorizontalLayout child = new HorizontalLayout(order, blank, delete);
-            child.getStyle().set("padding-right", "40px");
             child.setFlexGrow(1, blank);
             child.setWidthFull();
             VerticalLayout parent = new VerticalLayout(child, variantSelect);
             parent.setPadding(false);
             parent.setSpacing(false);
-            delete.addClickListener(event -> itemEditorsLayout.remove(parent));
+            delete.addClickListener(event -> {
+                itemEditorsLayout.remove(parent);
+                setRecapitulationItems(generateModelValue());
+            });
             itemEditorsLayout.add(parent);
             return variantSelect;
         }
@@ -417,6 +439,7 @@ public class SellView extends Div {
         public void clean() {
             itemEditorsLayout.removeAll();
             addButtonClicked();
+            setRecapitulationItems(new HashMap<>());
         }
 
         @Override

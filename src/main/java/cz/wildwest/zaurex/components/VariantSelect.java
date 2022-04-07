@@ -5,9 +5,11 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.ComboBoxVariant;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
 
@@ -35,12 +37,16 @@ public class VariantSelect extends CustomField<WarehouseItem.Variant> {
         variantComboBox = new ComboBox<>("Varianta");
         variantComboBox.setEnabled(false);
         variantComboBox.setHelperText("Nejdříve vyberte zboží.");
+        variantComboBox.setPreventInvalidInput(true);
         //
+        itemComboBox.setPreventInvalidInput(true);
         itemComboBox.addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 variantComboBox.setEnabled(true);
                 //noinspection OptionalGetWithoutIsPresent
-                variantComboBox.setItems(event.getValue().getTransientVariants().get().stream().filter(variant -> variant.getQuantity() > 0).collect(Collectors.toList()));
+                List<WarehouseItem.Variant> variantComboBoxItemsToSet = event.getValue().getTransientVariants().get().stream().filter(variant -> variant.getQuantity() > 0).collect(Collectors.toList());
+                variantComboBox.setItems(variantComboBoxItemsToSet);
+                if (variantComboBoxItemsToSet.size() == 1) variantComboBox.setValue(variantComboBoxItemsToSet.get(0));
                 variantComboBox.setHelperText("");
             } else {
                 variantComboBox.setEnabled(false);
@@ -95,7 +101,7 @@ public class VariantSelect extends CustomField<WarehouseItem.Variant> {
             if (event.getValue() != null) {
                 numberField.setEnabled(true);
                 numberField.setValue(0);
-                numberField.setHelperText(String.format("Nyní je na skladě %d kusů.", event.getValue().getQuantity()));
+                numberField.setHelperText(String.format("Naskladněno %d ks.", event.getValue().getQuantity()));
                 onVariantSelectionChange.accept(event.getValue());
             } else {
                 numberField.setEnabled(false);
@@ -151,5 +157,11 @@ public class VariantSelect extends CustomField<WarehouseItem.Variant> {
                 amountChange.setMax(event.getValue().getQuantity());
             }
         });
+        amountChange.addValueChangeListener(event -> {
+            if (event.getValue() != null && event.getValue() > amountChange.getMax()) amountChange.setValue(amountChange.getMax());
+        });
+        itemComboBox.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
+        variantComboBox.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
+        amountChange.addThemeVariants(TextFieldVariant.LUMO_SMALL);
     }
 }
