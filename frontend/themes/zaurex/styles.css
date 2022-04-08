@@ -1,6 +1,7 @@
 @import url('./main-layout.css');
 @import url('./grid-pro.css');
 @import url('./views/about-view.css');
+@import url('./views/sell-view.css');
 @import url('./views/home-page-view.css');
 @import url('line-awesome/dist/line-awesome/css/line-awesome.min.css');
 @import url('@fontsource/open-sans');    html {

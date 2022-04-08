@@ -7,7 +7,7 @@ import cz.wildwest.zaurex.data.service.repository.GenericRepository;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class GenericService<T extends AbstractEntity, R extends GenericRepository<T>> {
+public abstract class GenericService<T extends AbstractEntity, R extends GenericRepository<T>> implements Truncatable {
 
     protected final R mainRepository;
 
@@ -43,4 +43,8 @@ public abstract class GenericService<T extends AbstractEntity, R extends Generic
         mainRepository.deleteAll(objekty);
     }
 
+    @Override
+    public void truncate() {
+        mainRepository.deleteAll();
+    }
 }

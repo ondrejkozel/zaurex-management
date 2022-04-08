@@ -24,20 +24,24 @@ public class DataGenerator {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userService.count() != 0L) {
-                logger.info("Using existing database");
+                logger.info("Using existing database.");
                 return;
             }
             //
-            logger.info("Generating demo data");
-            //
-            createConfiguration(configurationService);
-            createUsers(passwordEncoder, userService);
-            createWarehouseItems(warehouseService, warehouseItemVariantService);
-            createHolidays(userService, holidayService);
-            createInvoices(invoiceService, warehouseItemVariantService, userService);
-            //
-            logger.info("Generated demo data");
+            generateDemoData(passwordEncoder, userService, warehouseService, warehouseItemVariantService, holidayService, invoiceService, configurationService, logger);
         };
+    }
+
+    public void generateDemoData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService, Logger logger) {
+        logger.info("Generating demo data.");
+        //
+        createConfiguration(configurationService);
+        createUsers(passwordEncoder, userService);
+        createWarehouseItems(warehouseService, warehouseItemVariantService);
+        createHolidays(userService, holidayService);
+        createInvoices(invoiceService, warehouseItemVariantService, userService);
+        //
+        logger.info("Generated demo data.");
     }
 
     private void createConfiguration(ConfigurationService configurationService) {
@@ -51,35 +55,35 @@ public class DataGenerator {
         User salesman = new User();
         salesman.setName("Prodavač");
         salesman.setUsername("prodavac");
-        salesman.setHashedPassword(passwordEncoder.encode("prodavac"));
+        salesman.setHashedPassword(passwordEncoder.encode("heslo"));
         salesman.setRoles(Collections.singleton(Role.SALESMAN));
         salesman.setHasChangedPassword(true);
         //
         User warehouseman = new User();
         warehouseman.setName("Skladník");
         warehouseman.setUsername("skladnik");
-        warehouseman.setHashedPassword(passwordEncoder.encode("skladnik"));
+        warehouseman.setHashedPassword(passwordEncoder.encode("heslo"));
         warehouseman.setRoles(Collections.singleton(Role.WAREHOUSEMAN));
         warehouseman.setHasChangedPassword(true);
         //
         User shiftLeader = new User();
         shiftLeader.setName("Vedoucí směny");
         shiftLeader.setUsername("vedoucismeny");
-        shiftLeader.setHashedPassword(passwordEncoder.encode("vedoucismeny"));
+        shiftLeader.setHashedPassword(passwordEncoder.encode("heslo"));
         shiftLeader.setRoles(Collections.singleton(Role.SHIFT_LEADER));
         shiftLeader.setHasChangedPassword(true);
         //
         User manager = new User();
         manager.setName("Manažer");
         manager.setUsername("manazer");
-        manager.setHashedPassword(passwordEncoder.encode("manazer"));
+        manager.setHashedPassword(passwordEncoder.encode("heslo"));
         manager.setRoles(Set.of(Role.values()));
         manager.setHasChangedPassword(true);
         //
         User shiftLeader2 = new User();
         shiftLeader2.setName("Vedocí směny prodavač");
         shiftLeader2.setUsername("vedoucismeny2");
-        shiftLeader2.setHashedPassword(passwordEncoder.encode("vedoucismeny2"));
+        shiftLeader2.setHashedPassword(passwordEncoder.encode("heslo"));
         shiftLeader2.setRoles(Set.of(Role.SHIFT_LEADER, Role.SALESMAN));
         shiftLeader2.setHasChangedPassword(true);
         //
@@ -115,6 +119,7 @@ public class DataGenerator {
     private void createInvoices(InvoiceService invoiceService, WarehouseItemVariantService warehouseItemVariantService, UserService userService) {
         Invoice invoice = new Invoice(userService.findAll().get(0), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 1)).collect(Collectors.toList()), Invoice.PaymentForm.CARD);
         Invoice invoice2 = new Invoice(userService.findAll().get(1), warehouseItemVariantService.findAll().stream().map(item -> new Invoice.Item(item, 10)).collect(Collectors.toList()), Invoice.PaymentForm.TRANSFER);
+        invoice2.setPurchaserInfo(new Invoice.PurchaserInfo("6841846", "Alza.cz", "Petr Novák", "Pramenná 9", "64100, Brno"));
         invoiceService.save(invoice);
         invoiceService.save(invoice2);
     }
