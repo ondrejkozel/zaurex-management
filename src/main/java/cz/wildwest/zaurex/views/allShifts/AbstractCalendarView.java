@@ -3,6 +3,7 @@ package cz.wildwest.zaurex.views.allShifts;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -12,6 +13,7 @@ import org.vaadin.stefan.fullcalendar.dataprovider.EntryProvider;
 
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A basic class for simple calendar views, e.g. for demo or testing purposes. Takes care of
@@ -19,8 +21,8 @@ import java.util.Collection;
  * Also registers a dates rendered listener to update the toolbar.
  */
 public abstract class AbstractCalendarView extends VerticalLayout {
-    private final CalendarViewToolbar toolbar;
     protected final FullCalendar calendar;
+    private final CalendarViewToolbar toolbar;
 
     // TODO add scheduler support
 
@@ -84,22 +86,23 @@ public abstract class AbstractCalendarView extends VerticalLayout {
      * @return initial options
      */
     protected JsonObject createDefaultInitialOptions() {
-JsonObject initialOptions = Json.createObject();
-JsonObject eventTimeFormat = Json.createObject();
+        JsonObject initialOptions = Json.createObject();
+        JsonObject eventTimeFormat = Json.createObject();
 //{ hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }
-eventTimeFormat.put("hour", "2-digit");
-eventTimeFormat.put("minute", "2-digit");
-eventTimeFormat.put("timeZoneName", "short");
-eventTimeFormat.put("meridiem", false);
-eventTimeFormat.put("hour12", false);
-initialOptions.put("eventTimeFormat", eventTimeFormat);
+        eventTimeFormat.put("hour", "2-digit");
+        eventTimeFormat.put("minute", "2-digit");
+        eventTimeFormat.put("timeZoneName", "short");
+        eventTimeFormat.put("meridiem", false);
+        eventTimeFormat.put("hour12", false);
+        initialOptions.put("eventTimeFormat", eventTimeFormat);
         return initialOptions;
     }
 
     /**
      * Called by the calendar's entry click listener. Noop by default.
-     * @see FullCalendar#addEntryClickedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addEntryClickedListener(ComponentEventListener)
      */
     protected void onEntryClick(EntryClickedEvent event) {
     }
@@ -107,8 +110,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
     /**
      * Called by the calendar's entry drop listener (i. e. an entry has been dragged around / moved by the user).
      * Applies the changes to the entry and calls {@link #onEntryChanged(Entry)} by default.
-     * @see FullCalendar#addEntryDroppedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addEntryDroppedListener(ComponentEventListener)
      */
     protected void onEntryDropped(EntryDroppedEvent event) {
         event.applyChangesOnEntry();
@@ -118,8 +122,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
     /**
      * Called by the calendar's entry resize listener.
      * Applies the changes to the entry and calls {@link #onEntryChanged(Entry)} by default.
-     * @see FullCalendar#addEntryResizedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addEntryResizedListener(ComponentEventListener)
      */
     protected void onEntryResized(EntryResizedEvent event) {
         event.applyChangesOnEntry();
@@ -128,8 +133,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
 
     /**
      * Called by the calendar's week number click listener. Noop by default.
-     * @see FullCalendar#addWeekNumberClickedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addWeekNumberClickedListener(ComponentEventListener)
      */
     protected void onWeekNumberClicked(WeekNumberClickedEvent event) {
 
@@ -139,8 +145,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
      * Called by the calendar's dates rendered listener. Noop by default.
      * Please note, that there is a separate dates rendered listener taking
      * care of updating the toolbar.
-     * @see FullCalendar#addDatesRenderedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addDatesRenderedListener(ComponentEventListener)
      */
     protected void onDatesRendered(DatesRenderedEvent event) {
 
@@ -148,16 +155,19 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
 
     /**
      * Called by the calendar's view skeleton rendered listener. Noop by default.
-     * @see FullCalendar#addViewSkeletonRenderedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addViewSkeletonRenderedListener(ComponentEventListener)
      */
     protected void onViewSkeletonRendered(ViewSkeletonRenderedEvent event) {
 
     }
+
     /**
      * Called by the calendar's timeslot selected listener. Noop by default.
-     * @see FullCalendar#addTimeslotsSelectedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addTimeslotsSelectedListener(ComponentEventListener)
      */
     protected void onTimeslotsSelected(TimeslotsSelectedEvent event) {
 
@@ -165,8 +175,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
 
     /**
      * Called by the calendar's timeslot clicked listener. Noop by default.
-     * @see FullCalendar#addTimeslotClickedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addTimeslotClickedListener(ComponentEventListener)
      */
     protected void onTimeslotClicked(TimeslotClickedEvent event) {
 
@@ -174,8 +185,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
 
     /**
      * Called by the calendar's "more" link clicked listener. Noop by default.
-     * @see FullCalendar#addMoreLinkClickedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addMoreLinkClickedListener(ComponentEventListener)
      */
     protected void onMoreLinkClicked(MoreLinkClickedEvent event) {
     }
@@ -184,8 +196,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
      * Called by the calendar's browser timezone obtained listener. Noop by default.
      * Please note, that the full calendar builder registers also a listener, when the
      * {@link FullCalendarBuilder#withAutoBrowserTimezone()} option is used.
-     * @see FullCalendar#addBrowserTimezoneObtainedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addBrowserTimezoneObtainedListener(ComponentEventListener)
      */
     protected void onBrowserTimezoneObtained(BrowserTimezoneObtainedEvent event) {
 
@@ -193,8 +206,9 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
 
     /**
      * Called by the calendar's day number click listener. Noop by default.
-     * @see FullCalendar#addDayNumberClickedListener(ComponentEventListener)
+     *
      * @param event event
+     * @see FullCalendar#addDayNumberClickedListener(ComponentEventListener)
      */
     protected void onDayNumberClicked(DayNumberClickedEvent event) {
 
@@ -207,6 +221,7 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
      * Intended to update the used backend. By default it will check, if the used entry provider is eager in memory
      * and in that case automatically update the entry provider (to prevent unnecessary code duplication when
      * the default entry provider is used).
+     *
      * @param entries entries to add
      */
     protected void onEntriesCreated(Collection<Entry> entries) {
@@ -216,6 +231,7 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
             ((EagerInMemoryEntryProvider<Entry>) getCalendar().getEntryProvider()).addEntries(entries);
         }
     }
+
     /**
      * Called by the toolbar, when the "Remove entries" button has been pressed to simulate the removal of entries.
      * Might be called by any other source, too.
@@ -233,6 +249,7 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
             ((EagerInMemoryEntryProvider<Entry>) getCalendar().getEntryProvider()).removeEntries(entries);
         }
     }
+
     /**
      * Called, when one of the sample entries have been modified, e. g. by an event.
      * Might be called by any other source, too.
@@ -258,6 +275,7 @@ initialOptions.put("eventTimeFormat", eventTimeFormat);
     /**
      * Returns the entry provider set to the calendar. Will be available after {@link #createCalendar(JsonObject)}
      * has been called.
+     *
      * @return entry provider or null
      */
     protected EntryProvider<Entry> getEntryProvider() {

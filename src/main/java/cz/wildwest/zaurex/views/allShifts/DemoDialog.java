@@ -3,6 +3,7 @@ package cz.wildwest.zaurex.views.allShifts;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.DialogVariant;
 import com.vaadin.flow.component.html.Span;
@@ -10,14 +11,18 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Setter;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.ValueProvider;
+import cz.wildwest.zaurex.data.entity.User;
 import org.vaadin.stefan.fullcalendar.Delta;
 import org.vaadin.stefan.fullcalendar.Entry;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 public class DemoDialog extends Dialog {
 	private static final long serialVersionUID = 1L;
@@ -27,6 +32,7 @@ public class DemoDialog extends Dialog {
     private SerializableConsumer<Entry> onDeleteConsumer;
 
     private final Entry tmpEntry;
+    private final List<User> users;
 
     private final CustomDateTimePicker fieldStart;
     private final CustomDateTimePicker fieldEnd;
@@ -34,12 +40,13 @@ public class DemoDialog extends Dialog {
     private final Entry entry;
     private boolean initTimeWhenActivated;
 
-    public DemoDialog(Entry entry, boolean newInstance) {
+    public DemoDialog(Entry entry, boolean newInstance, List<User> users) {
         this.entry = entry;
         this.initTimeWhenActivated = entry.isAllDay();
 
         // tmp entry is a copy. we will use its start and end to represent either the start/end or the recurring start/end
         this.tmpEntry = entry.copy();
+        this.users = users;
 
         setCloseOnEsc(true);
         setCloseOnOutsideClick(true);
@@ -49,7 +56,10 @@ public class DemoDialog extends Dialog {
 
         // init fields
 
-        TextField fieldTitle = new TextField("Title");
+        ComboBox<User> employeeField = new ComboBox<>("Zaměstnanec");
+        employeeField.setRenderer(new TextRenderer<>(User::getName));
+        employeeField.setItemLabelGenerator(User::getName);
+        employeeField.setItems(users);
         Checkbox fieldAllDay = new Checkbox("All day event");
 
         fieldStart = new CustomDateTimePicker("Start");
@@ -65,7 +75,7 @@ public class DemoDialog extends Dialog {
 
         // layouting - MUST be initialized here, otherwise might lead to null pointer exception
         /*, fieldRecurring*/
-        VerticalLayout componentsLayout = new VerticalLayout(fieldTitle,
+        VerticalLayout componentsLayout = new VerticalLayout(employeeField,
                 new HorizontalLayout(fieldAllDay/*, fieldRecurring*/),
                 fieldStart, fieldEnd, infoEnd);
 
@@ -90,7 +100,12 @@ public class DemoDialog extends Dialog {
         binder = new Binder<>(Entry.class);
 
         // required fields
-        binder.forField(fieldTitle).asRequired().bind(Entry::getTitle, Entry::setTitle);
+        binder.forField(employeeField).asRequired().bind(
+                (ValueProvider<Entry, User>) entry1 -> {
+                    long l = entry.getTitle() == null ? 0 : Long.parseLong(entry.getTitle());
+                    return users.stream().filter(user -> user.getId() == l).findFirst().orElse(null);
+                },
+                (Setter<Entry, User>) (entry2, user) -> entry2.setTitle(String.valueOf(user.getId())));
         binder.forField(fieldStart).asRequired().bind(Entry::getStart, Entry::setStart);
         binder.forField(fieldEnd).asRequired().bind(Entry::getEnd, Entry::setEnd);
 
@@ -141,7 +156,7 @@ public class DemoDialog extends Dialog {
 
         add(outer);
 
-        fieldTitle.focus();
+        employeeField.focus();
     }
 
     protected void onSave() {

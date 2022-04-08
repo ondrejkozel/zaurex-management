@@ -16,10 +16,9 @@
  */
 package cz.wildwest.zaurex.views.allShifts;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.router.Route;
-import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
+import cz.wildwest.zaurex.data.service.UserService;
 import cz.wildwest.zaurex.views.MainLayout;
 import cz.wildwest.zaurex.views.allShifts.util.EntryManager;
 import cz.wildwest.zaurex.views.allShifts.util.ResourceManager;
@@ -41,9 +40,12 @@ import java.util.List;
 @RolesAllowed("MANAGER")
 public class AllShiftsView extends AbstractCalendarView {
 
-    public AllShiftsView() {
+    private final UserService userService;
+
+    public AllShiftsView(UserService userService) {
         super();
 
+        this.userService = userService;
     }
 
     private MenuBar createMenuBar() {
@@ -102,14 +104,14 @@ public class AllShiftsView extends AbstractCalendarView {
             entry.setColor("dodgerblue");
             entry.setCalendar(calendar);
 
-            DemoDialog dialog = new DemoDialog(entry, true);
+            DemoDialog dialog = new DemoDialog(entry, true, userService.findAll());
             dialog.setSaveConsumer(e -> onEntriesCreated(Collections.singletonList(e)));
             dialog.open();
         });
 
         calendar.addEntryClickedListener(event -> {
             if (event.getEntry().getRenderingMode() != RenderingMode.BACKGROUND && event.getEntry().getRenderingMode() != RenderingMode.INVERSE_BACKGROUND) {
-                DemoDialog dialog = new DemoDialog(event.getEntry(), false);
+                DemoDialog dialog = new DemoDialog(event.getEntry(), false, userService.findAll());
                 dialog.setSaveConsumer(this::onEntryChanged);
                 dialog.setDeleteConsumer(e -> onEntriesRemoved(Collections.singletonList(e)));
                 dialog.open();
@@ -129,12 +131,12 @@ public class AllShiftsView extends AbstractCalendarView {
                         + "    }"
                         + "}");
 
-        createTestEntries(calendar);
+        populateEntries(calendar);
 
         return calendar;
     }
 
-    private void createTestEntries(FullCalendar calendar) {
+    private void populateEntries(FullCalendar calendar) {
         LocalDate now = LocalDate.now();
 
         Resource meetingRoomRed = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Red", "#ff0000");
