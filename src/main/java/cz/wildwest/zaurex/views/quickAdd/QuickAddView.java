@@ -1,4 +1,4 @@
-package cz.wildwest.zaurex.views.warehouse;
+package cz.wildwest.zaurex.views.quickAdd;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,14 +12,20 @@ import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.views.MainLayout;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 @PageTitle("Rychle naskladnit")
 @Route(value = "quick_add", layout = MainLayout.class)
 @RolesAllowed({"WAREHOUSEMAN", "MANAGER"})
 public class QuickAddView extends VerticalLayout {
 
-    public QuickAddView(WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
+    /**
+     * @param afterSaveNotification list of consumers which accept notification html
+     *                              last minute workaround of a bug when notifications haven't been showing in Warehouse view
+     */
+    public QuickAddView(WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, Consumer<String>... afterSaveNotification) {
         List<WarehouseItem> all = warehouseService.findAll();
         warehouseService.fetchTransientVariants(all);
         //
@@ -32,7 +38,10 @@ public class QuickAddView extends VerticalLayout {
             variant.setQuantity(variant.getQuantity() + integerField.getValue());
             warehouseItemVariantService.save(variant);
             //
-            HtmlNotification.show(String.format("<span>Nyní je na skladě %d kusů <b>%s</b> (<b>%s</b>).</span>", variant.getQuantity(), variant.getOf().getTitle(), variant.getColour()));
+            String notificationHtml = String.format("<span>Nyní je na skladě <b>%d</b> kusů %s (%s).</span>", variant.getQuantity(), variant.getOf().getTitle(), variant.getColour());
+            if (afterSaveNotification.length == 0) HtmlNotification.show(notificationHtml);
+            Arrays.stream(afterSaveNotification).forEach(stringConsumer -> stringConsumer.accept(notificationHtml));
+            //
             variantSelect.setItems(warehouseService.fetchTransientVariants(warehouseService.findAll()));
         });
         //

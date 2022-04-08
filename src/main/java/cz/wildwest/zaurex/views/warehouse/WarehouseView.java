@@ -15,6 +15,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -28,6 +29,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import cz.wildwest.zaurex.components.Badge;
+import cz.wildwest.zaurex.components.HtmlNotification;
 import cz.wildwest.zaurex.components.gridd.GenericDataProvider;
 import cz.wildwest.zaurex.components.gridd.Gridd;
 import cz.wildwest.zaurex.components.gridd.NumberGriddCell;
@@ -40,6 +42,7 @@ import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
 import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
+import cz.wildwest.zaurex.views.quickAdd.QuickAddView;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.security.RolesAllowed;
@@ -111,7 +114,10 @@ public class WarehouseView extends VerticalLayout {
     private void showQuickAdditionDialog() {
         ConfirmDialog dialog = new ConfirmDialog("Rychle naskladnit", "", "Zavřít", event -> {});
         dialog.setConfirmButtonTheme("tertiary");
-        dialog.add(new QuickAddView(warehouseService, warehouseItemVariantService));
+        dialog.add(new QuickAddView(warehouseService, warehouseItemVariantService, s -> {
+            Notification.show(""); // i don't get it, but this line solves buggy html notification
+            HtmlNotification.show(s);
+        }));
         dialog.addCancelListener(event -> grid.refreshAll());
         dialog.addConfirmListener(event -> grid.refreshAll());
         dialog.open();
