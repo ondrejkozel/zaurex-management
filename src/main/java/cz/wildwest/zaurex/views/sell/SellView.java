@@ -24,6 +24,7 @@ import cz.wildwest.zaurex.data.entity.Invoice;
 import cz.wildwest.zaurex.data.entity.User;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.InvoiceService;
+import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.LineAwesomeIcon;
@@ -45,11 +46,13 @@ public class SellView extends Div {
     private final InvoiceService invoiceService;
     private final User user;
     private final WarehouseService warehouseService;
+    private final WarehouseItemVariantService warehouseItemVariantService;
 
-    public SellView(InvoiceService invoiceService, AuthenticatedUser authenticatedUser, WarehouseService warehouseService) {
+    public SellView(InvoiceService invoiceService, AuthenticatedUser authenticatedUser, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
         this.invoiceService = invoiceService;
         this.user = authenticatedUser.get().orElseThrow();
         this.warehouseService = warehouseService;
+        this.warehouseItemVariantService = warehouseItemVariantService;
         addClassNames("sell-view", "flex", "flex-col", "h-full");
 
         Main content = new Main();
@@ -297,8 +300,9 @@ public class SellView extends Div {
     }
 
     private void sellAndSaveInvoice() {
+        var generatedModelValue = itemsEditor.generateModelValue();
         List<Invoice.Item> invoiceItems = new ArrayList<>();
-        itemsEditor.generateModelValue().forEach((variant, integer) -> invoiceItems.add(new Invoice.Item(variant, integer)));
+        generatedModelValue.forEach((variant, integer) -> invoiceItems.add(new Invoice.Item(variant, integer)));
         Invoice invoice = new Invoice(user, invoiceItems, paymentForm.getValue());
         if (specifyPurchaserStatus) {
             invoice.setPurchaserInfo(new Invoice.PurchaserInfo(ic.getValue(), companyName.getValue(), purchaserName.getValue(), address.getValue(), postalCode.getValue() + ", " + city.getValue()));
@@ -314,6 +318,11 @@ public class SellView extends Div {
         }
         //
         // TODO: 05.04.2022 odečíst ze skladu
+        generatedModelValue.forEach((variant, integer) -> {
+            variant.setQuantity(variant.getQuantity() - integer);
+            warehouseItemVariantService.save(variant);
+        });
+        //
         invoiceService.save(invoice);
         buildAndShowNewInvoiceNotification(invoice);
         clean();
