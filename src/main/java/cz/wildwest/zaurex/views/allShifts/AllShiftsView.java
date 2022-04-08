@@ -1,205 +1,282 @@
+/*
+ * Copyright 2020, Stefan Uebe
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions
+ * of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package cz.wildwest.zaurex.views.allShifts;
 
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
-import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import javax.annotation.security.PermitAll;
+import cz.wildwest.zaurex.views.allShifts.util.EntryManager;
+import cz.wildwest.zaurex.views.allShifts.util.ResourceManager;
+import elemental.json.JsonObject;
+import org.vaadin.stefan.fullcalendar.*;
+import org.vaadin.stefan.fullcalendar.Entry.RenderingMode;
+
 import javax.annotation.security.RolesAllowed;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
-@PageTitle("Všechny směny")
-@Route(value = "shifts/all", layout = MainLayout.class)
-@RolesAllowed({"SHIFT_LEADER", "MANAGER"})
-public class AllShiftsView extends Div {
-
-    private GridPro<Client> grid;
-    private GridListDataView<Client> gridListDataView;
-
-    private Grid.Column<Client> clientColumn;
-    private Grid.Column<Client> amountColumn;
-    private Grid.Column<Client> statusColumn;
-    private Grid.Column<Client> dateColumn;
+@Route(value = "calendar", layout = MainLayout.class)
+@RolesAllowed("MANAGER")
+public class AllShiftsView extends AbstractCalendarView {
 
     public AllShiftsView() {
-        addClassName("všechnysměny-view");
-        setSizeFull();
-        createGrid();
-        add(grid);
+        super();
+
     }
 
-    private void createGrid() {
-        createGridComponent();
-        addColumnsToGrid();
-        addFiltersToGrid();
+    private MenuBar createMenuBar() {
+        MenuBar menuBar = new MenuBar();
+        menuBar.addItem("test");
+        return menuBar;
     }
 
-    private void createGridComponent() {
-        grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setHeight("100%");
+    @Override
+    protected FullCalendar createCalendar(JsonObject defaultInitialOptions) {
+        FullCalendar calendar = FullCalendarBuilder.create()
+                .withAutoBrowserTimezone()
+                .withInitialOptions(defaultInitialOptions)
+                .withEntryLimit(3)
+                .withScheduler("GPL-My-Project-Is-Open-Source")
+                .build();
 
-        List<Client> clients = getClients();
-        gridListDataView = grid.setItems(clients);
+        calendar.setHeightByParent();
+        ((FullCalendarScheduler) calendar).setResourceAreaWidth("15%");
+        ((FullCalendarScheduler) calendar).setSlotMinWidth("100");
+        ((FullCalendarScheduler) calendar).setResourcesInitiallyExpanded(false);
+
+        calendar.setNowIndicatorShown(true);
+        calendar.setNumberClickable(true);
+        calendar.setTimeslotsSelectable(true);
+
+        calendar.setSlotMinTime(LocalTime.of(7, 0));
+        calendar.setSlotMaxTime(LocalTime.of(17, 0));
+
+        calendar.setBusinessHours(
+                new BusinessHours(LocalTime.of(9, 0), LocalTime.of(17, 0), BusinessHours.DEFAULT_BUSINESS_WEEK),
+                new BusinessHours(LocalTime.of(12, 0), LocalTime.of(15, 0), DayOfWeek.SATURDAY),
+                new BusinessHours(LocalTime.of(12, 0), LocalTime.of(13, 0), DayOfWeek.SUNDAY)
+        );
+
+        ((FullCalendarScheduler) calendar).addEntryDroppedSchedulerListener(event -> {
+            System.out.println("Old resource: " + event.getOldResource());
+            System.out.println("New resource: " + event.getNewResource());
+            Entry entry = event.getEntry();
+            System.out.println(entry.getStart() + " / " + entry.getStart());
+        });
+
+        ((FullCalendarScheduler) calendar).addTimeslotsSelectedSchedulerListener((event) -> {
+            System.out.println( "ZoneId: " + event.getSource().getTimezone().getZoneId() );
+            LocalDateTime startDate = event.getStart();
+            System.out.println( "getStart(): " + event.getStart() );
+            System.out.println( "getStartWithOffset():  " + event.getStartWithOffset() );
+
+
+            ResourceEntry entry = new ResourceEntry();
+
+            entry.setStart(event.getStart());
+            entry.setEnd(event.getEnd());
+            entry.setAllDay(event.isAllDay());
+
+            entry.setColor("dodgerblue");
+            entry.setCalendar(calendar);
+
+            DemoDialog dialog = new DemoDialog(entry, true);
+            dialog.setSaveConsumer(e -> onEntriesCreated(Collections.singletonList(e)));
+            dialog.open();
+        });
+
+        calendar.addEntryClickedListener(event -> {
+            if (event.getEntry().getRenderingMode() != RenderingMode.BACKGROUND && event.getEntry().getRenderingMode() != RenderingMode.INVERSE_BACKGROUND) {
+                DemoDialog dialog = new DemoDialog(event.getEntry(), false);
+                dialog.setSaveConsumer(this::onEntryChanged);
+                dialog.setDeleteConsumer(e -> onEntriesRemoved(Collections.singletonList(e)));
+                dialog.open();
+            }
+        });
+
+        ((FullCalendarScheduler) calendar).setEntryResourceEditable(false);
+
+        calendar.setEntryDidMountCallback(
+                "function(info) { "
+                        + "    if(info.event.extendedProps.cursors != undefined) { "
+                        + "        if(!info.event.startEditable) { "
+                        + "            info.el.style.cursor = info.event.extendedProps.cursors.disabled;"
+                        + "        } else { "
+                        + "            info.el.style.cursor = info.event.extendedProps.cursors.enabled;"
+                        + "        }"
+                        + "    }"
+                        + "}");
+
+        createTestEntries(calendar);
+
+        return calendar;
     }
 
-    private void addColumnsToGrid() {
-        createClientColumn();
-        createAmountColumn();
-        createStatusColumn();
-        createDateColumn();
+    private void createTestEntries(FullCalendar calendar) {
+        LocalDate now = LocalDate.now();
+
+        Resource meetingRoomRed = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Red", "#ff0000");
+        Resource meetingRoomGreen = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Green", "green");
+        Resource meetingRoomBlue = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Blue", "blue");
+        Resource meetingRoomOrange = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Orange", "orange", null,
+                new BusinessHours(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+
+        Resource computer1A = ResourceManager.createResource((Scheduler) calendar, "Computer 1A", "lightbrown");
+        Resource computer1B = ResourceManager.createResource((Scheduler) calendar, "Computer 1B", "lightbrown");
+        Resource computer1C = ResourceManager.createResource((Scheduler) calendar, "Computer 1C", "lightbrown");
+
+        ResourceManager.createResource((Scheduler) calendar, "Computer room 1", "brown", Arrays.asList(computer1A, computer1B, computer1C));
+
+        Resource computerRoom2 = ResourceManager.createResource((Scheduler) calendar, "Computer room 2", "brown");
+        // here we must NOT use createResource, since they are added to the calendar later
+        Resource computer2A = new Resource(null, "Computer 2A", "lightbrown");
+        Resource computer2B = new Resource(null, "Computer 2B", "lightbrown");
+        Resource computer2C = new Resource(null, "Computer 2C", "lightbrown");
+
+        // not realistic, just a demonstration of automatic recursive adding
+        computer2A.addChild(new Resource(null, "Mouse", "orange"));
+        computer2A.addChild(new Resource(null, "Screen", "orange"));
+        computer2A.addChild(new Resource(null, "Keyboard", "orange"));
+
+        List<Resource> computerRoom2Children = Arrays.asList(computer2A, computer2B, computer2C);
+        computerRoom2.addChildren(computerRoom2Children);
+        ((Scheduler) calendar).addResources(computerRoom2Children);
+
+        EntryManager.createTimedEntry(calendar, "Meeting 1", now.withDayOfMonth(3).atTime(10, 0), 120, null, meetingRoomBlue, meetingRoomGreen, meetingRoomRed);
+
+        EntryManager.createTimedEntry(calendar, "Meeting 2", now.withDayOfMonth(3).atTime(10, 0), 120, null, meetingRoomOrange);
+        EntryManager.createTimedEntry(calendar, "Meeting 3", now.withDayOfMonth(7).atTime(11, 30), 120, null, meetingRoomRed);
+
+        HashMap<String, Object> extendedProps = new HashMap<String, Object>();
+        HashMap<String, Object> cursors = new HashMap<String, Object>();
+        cursors.put("enabled", "pointer");
+        cursors.put("disabled", "not-allowed");
+        extendedProps.put("cursors", cursors);
+
+        EntryManager.createTimedEntry(calendar, "Meeting 4", now.withDayOfMonth(12).atTime(9, 0), 120, null, extendedProps, meetingRoomGreen);
+        EntryManager.createTimedEntry(calendar, "Meeting 5", now.withDayOfMonth(13).atTime(10, 0), 120, null, meetingRoomGreen);
+        EntryManager.createTimedEntry(calendar, "Meeting 6", now.withDayOfMonth(17).atTime(11, 30), 120, null, meetingRoomBlue);
+        EntryManager.createTimedEntry(calendar, "Meeting 7", now.withDayOfMonth(22).atTime(9, 0), 120, null, meetingRoomRed);
+        EntryManager.createTimedEntry(calendar, "Meeting 8", now.withDayOfMonth(4).atTime(10, 0), 120, null);
+
+        EntryManager.createTimedBackgroundEntry(calendar, now.withDayOfMonth(3).atTime(10, 0), 120, null);
+        EntryManager.createTimedEntry(calendar, "Meeting 9", now.withDayOfMonth(7).atTime(11, 30), 120, "mediumseagreen");
+        EntryManager.createTimedEntry(calendar, "Meeting 10", now.withDayOfMonth(15).atTime(9, 0), 120, "mediumseagreen");
+        EntryManager.createTimedEntry(calendar, "Meeting 11", now.withDayOfMonth(18).atTime(10, 0), 120, "mediumseagreen");
+        EntryManager.createTimedEntry(calendar, "Meeting 12", now.withDayOfMonth(17).atTime(11, 30), 120, "mediumseagreen");
+        EntryManager.createTimedEntry(calendar, "Meeting 13", now.withDayOfMonth(24).atTime(9, 0), 120, "mediumseagreen");
+
+        EntryManager.createTimedEntry(calendar, "Grocery Store", now.withDayOfMonth(7).atTime(17, 30), 45, "violet");
+        EntryManager.createTimedEntry(calendar, "Dentist", now.withDayOfMonth(20).atTime(11, 30), 60, "violet");
+        EntryManager.createTimedEntry(calendar, "Cinema", now.withDayOfMonth(10).atTime(20, 30), 140, "dodgerblue");
+        EntryManager.createDayEntry(calendar, "Short trip", now.withDayOfMonth(17), 2, "dodgerblue");
+        EntryManager.createDayEntry(calendar, "John's Birthday", now.withDayOfMonth(23), 1, "gray");
+        EntryManager.createDayEntry(calendar, "This special holiday", now.withDayOfMonth(4), 1, "gray");
+
+        EntryManager.createDayEntry(calendar, "Multi 1", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 2", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 3", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 4", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 5", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 6", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 7", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 8", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 9", now.withDayOfMonth(12), 2, "tomato");
+        EntryManager.createDayEntry(calendar, "Multi 10", now.withDayOfMonth(12), 2, "tomato");
+
+
+        EntryManager.createDayBackgroundEntry(calendar, now.withDayOfMonth(4), 6, "#B9FFC3");
+        EntryManager.createDayBackgroundEntry(calendar, now.withDayOfMonth(19), 2, "#CEE3FF");
+        EntryManager.createTimedBackgroundEntry(calendar, now.withDayOfMonth(20).atTime(11, 0), 150, "#ff0000");
+
+        EntryManager.createRecurringEvents(calendar);
     }
 
-    private void createClientColumn() {
-        clientColumn = grid.addColumn(new ComponentRenderer<>(client -> {
-            HorizontalLayout hl = new HorizontalLayout();
-            hl.setAlignItems(Alignment.CENTER);
-            Image img = new Image(client.getImg(), "");
-            Span span = new Span();
-            span.setClassName("name");
-            span.setText(client.getClient());
-            hl.add(img, span);
-            return hl;
-        })).setComparator(client -> client.getClient()).setHeader("Client");
+    @Override
+    protected void onTimeslotsSelected(TimeslotsSelectedEvent event) {
+        super.onTimeslotsSelected(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private void createAmountColumn() {
-        amountColumn = grid
-                .addEditColumn(Client::getAmount,
-                        new NumberRenderer<>(client -> client.getAmount(), NumberFormat.getCurrencyInstance(Locale.US)))
-                .text((item, newValue) -> item.setAmount(Double.parseDouble(newValue)))
-                .setComparator(client -> client.getAmount()).setHeader("Amount");
+    @Override
+    protected void onDayNumberClicked(DayNumberClickedEvent event) {
+        super.onDayNumberClicked(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private void createStatusColumn() {
-        statusColumn = grid.addEditColumn(Client::getClient, new ComponentRenderer<>(client -> {
-            Span span = new Span();
-            span.setText(client.getStatus());
-            span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
-            return span;
-        })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("Pending", "Success", "Error"))
-                .setComparator(client -> client.getStatus()).setHeader("Status");
+    @Override
+    protected void onWeekNumberClicked(WeekNumberClickedEvent event) {
+        super.onWeekNumberClicked(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private void createDateColumn() {
-        dateColumn = grid
-                .addColumn(new LocalDateRenderer<>(client -> LocalDate.parse(client.getDate()),
-                        DateTimeFormatter.ofPattern("M/d/yyyy")))
-                .setComparator(client -> client.getDate()).setHeader("Date").setWidth("180px").setFlexGrow(0);
+    @Override
+    protected void onViewSkeletonRendered(ViewSkeletonRenderedEvent event) {
+        super.onViewSkeletonRendered(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private void addFiltersToGrid() {
-        HeaderRow filterRow = grid.appendHeaderRow();
-
-        TextField clientFilter = new TextField();
-        clientFilter.setPlaceholder("Filter");
-        clientFilter.setClearButtonVisible(true);
-        clientFilter.setWidth("100%");
-        clientFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        clientFilter.addValueChangeListener(event -> gridListDataView
-                .addFilter(client -> StringUtils.containsIgnoreCase(client.getClient(), clientFilter.getValue())));
-        filterRow.getCell(clientColumn).setComponent(clientFilter);
-
-        TextField amountFilter = new TextField();
-        amountFilter.setPlaceholder("Filter");
-        amountFilter.setClearButtonVisible(true);
-        amountFilter.setWidth("100%");
-        amountFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        amountFilter.addValueChangeListener(event -> gridListDataView.addFilter(client -> StringUtils
-                .containsIgnoreCase(Double.toString(client.getAmount()), amountFilter.getValue())));
-        filterRow.getCell(amountColumn).setComponent(amountFilter);
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.setItems(Arrays.asList("Pending", "Success", "Error"));
-        statusFilter.setPlaceholder("Filter");
-        statusFilter.setClearButtonVisible(true);
-        statusFilter.setWidth("100%");
-        statusFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areStatusesEqual(client, statusFilter)));
-        filterRow.getCell(statusColumn).setComponent(statusFilter);
-
-        DatePicker dateFilter = new DatePicker();
-        dateFilter.setPlaceholder("Filter");
-        dateFilter.setClearButtonVisible(true);
-        dateFilter.setWidth("100%");
-        dateFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(client -> areDatesEqual(client, dateFilter)));
-        filterRow.getCell(dateColumn).setComponent(dateFilter);
+    @Override
+    protected void onEntryResized(EntryResizedEvent event) {
+        super.onEntryResized(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private boolean areStatusesEqual(Client client, ComboBox<String> statusFilter) {
-        String statusFilterValue = statusFilter.getValue();
-        if (statusFilterValue != null) {
-            return StringUtils.equals(client.getStatus(), statusFilterValue);
-        }
-        return true;
+    @Override
+    protected void onEntryDropped(EntryDroppedEvent event) {
+        super.onEntryDropped(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private boolean areDatesEqual(Client client, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
-        if (dateFilterValue != null) {
-            LocalDate clientDate = LocalDate.parse(client.getDate());
-            return dateFilterValue.equals(clientDate);
-        }
-        return true;
+    @Override
+    protected void onEntryClick(EntryClickedEvent event) {
+        super.onEntryClick(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private List<Client> getClients() {
-        return Arrays.asList(
-                createClient(4957, "https://randomuser.me/api/portraits/women/42.jpg", "Amarachi Nkechi", 47427.0,
-                        "Success", "2019-05-09"),
-                createClient(675, "https://randomuser.me/api/portraits/women/24.jpg", "Bonelwa Ngqawana", 70503.0,
-                        "Success", "2019-05-09"),
-                createClient(6816, "https://randomuser.me/api/portraits/men/42.jpg", "Debashis Bhuiyan", 58931.0,
-                        "Success", "2019-05-07"),
-                createClient(5144, "https://randomuser.me/api/portraits/women/76.jpg", "Jacqueline Asong", 25053.0,
-                        "Pending", "2019-04-25"),
-                createClient(9800, "https://randomuser.me/api/portraits/men/24.jpg", "Kobus van de Vegte", 7319.0,
-                        "Pending", "2019-04-22"),
-                createClient(3599, "https://randomuser.me/api/portraits/women/94.jpg", "Mattie Blooman", 18441.0,
-                        "Error", "2019-04-17"),
-                createClient(3989, "https://randomuser.me/api/portraits/men/76.jpg", "Oea Romana", 33376.0, "Pending",
-                        "2019-04-17"),
-                createClient(1077, "https://randomuser.me/api/portraits/men/94.jpg", "Stephanus Huggins", 75774.0,
-                        "Success", "2019-02-26"),
-                createClient(8942, "https://randomuser.me/api/portraits/men/16.jpg", "Torsten Paulsson", 82531.0,
-                        "Pending", "2019-02-21"));
+    @Override
+    protected void onBrowserTimezoneObtained(BrowserTimezoneObtainedEvent event) {
+        super.onBrowserTimezoneObtained(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
 
-    private Client createClient(int id, String img, String client, double amount, String status, String date) {
-        Client c = new Client();
-        c.setId(id);
-        c.setImg(img);
-        c.setClient(client);
-        c.setAmount(amount);
-        c.setStatus(status);
-        c.setDate(date);
-
-        return c;
+    @Override
+    protected void onDatesRendered(DatesRenderedEvent event) {
+        super.onDatesRendered(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
     }
-};
+
+    @Override
+    protected void onMoreLinkClicked(MoreLinkClickedEvent event) {
+        super.onMoreLinkClicked(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
+    }
+
+    @Override
+    protected void onTimeslotClicked(TimeslotClickedEvent event) {
+        super.onTimeslotClicked(event);
+        System.out.println(event.getClass().getSimpleName() + ": " + event);
+    }
+}
