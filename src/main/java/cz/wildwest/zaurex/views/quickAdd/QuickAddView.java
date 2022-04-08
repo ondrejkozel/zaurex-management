@@ -1,11 +1,10 @@
 package cz.wildwest.zaurex.views.quickAdd;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import cz.wildwest.zaurex.components.HtmlNotification;
+import cz.wildwest.zaurex.components.VariantSelect;
 import cz.wildwest.zaurex.data.entity.WarehouseItem;
 import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
 import cz.wildwest.zaurex.data.service.WarehouseService;
@@ -26,16 +25,14 @@ public class QuickAddView extends VerticalLayout {
      *                              last minute workaround of a bug when notifications haven't been showing in Warehouse view
      */
     public QuickAddView(WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, Consumer<String>... afterSaveNotification) {
-        List<WarehouseItem> all = warehouseService.findAll();
+        List<WarehouseItem> all = warehouseService.findAllSellable();
         warehouseService.fetchTransientVariants(all);
         //
         VariantSelect variantSelect = new VariantSelect(all);
         //
-        IntegerField integerField = buildAmountChange(variantSelect);
-        Button button = variantSelect.addSubmitButton();
-        button.addClickListener(event -> {
+        variantSelect.addSubmitButtonClickListener(event -> {
             WarehouseItem.Variant variant = variantSelect.generateModelValue();
-            variant.setQuantity(variant.getQuantity() + integerField.getValue());
+            variant.setQuantity(variant.getQuantity() + variantSelect.getAmount());
             warehouseItemVariantService.save(variant);
             //
             String notificationHtml = String.format("<span>Nyní je na skladě <b>%d</b> kusů %s (%s).</span>", variant.getQuantity(), variant.getOf().getTitle(), variant.getColour());
@@ -47,16 +44,5 @@ public class QuickAddView extends VerticalLayout {
         //
         add(variantSelect);
         setSizeFull();
-    }
-
-    private IntegerField buildAmountChange(VariantSelect variantSelect) {
-        IntegerField amountChange = new IntegerField("Změna počtu");
-        amountChange.addValueChangeListener(event -> {
-            if (event.getValue() != null && event.getValue() < amountChange.getMin()) amountChange.setValue(amountChange.getMin());
-        });
-        amountChange.getStyle().set("width", "10em");
-        amountChange.setHasControls(true);
-        variantSelect.addVariantDependentNumberField(amountChange, variant -> amountChange.setMin(-variant.getQuantity()));
-        return amountChange;
     }
 }

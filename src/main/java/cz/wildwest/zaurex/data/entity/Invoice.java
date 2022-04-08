@@ -3,9 +3,7 @@ package cz.wildwest.zaurex.data.entity;
 import cz.wildwest.zaurex.data.AbstractEntity;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Collection;
@@ -27,6 +25,7 @@ public class Invoice extends AbstractEntity {
     private LocalDateTime maturityDate;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "of")
+    @NotEmpty(message = "Seznam položek nesmí být prázdný.")
     private List<Item> items;
 
     private String issuedBy;
@@ -34,6 +33,9 @@ public class Invoice extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     @NotNull
     private PaymentForm paymentForm;
+
+    @Embedded
+    private PurchaserInfo purchaserInfo;
 
     public Invoice() {
     }
@@ -77,6 +79,14 @@ public class Invoice extends AbstractEntity {
 
     public LocalDateTime getMaturityDate() {
         return maturityDate;
+    }
+
+    public PurchaserInfo getPurchaserInfo() {
+        return purchaserInfo;
+    }
+
+    public void setPurchaserInfo(PurchaserInfo purchaserInfo) {
+        this.purchaserInfo = purchaserInfo;
     }
 
     @Entity
@@ -138,6 +148,78 @@ public class Invoice extends AbstractEntity {
 
         public double getPricePerOne() {
             return pricePerOne;
+        }
+    }
+
+    @Embeddable
+    public static class PurchaserInfo {
+
+        @NotNull
+        @Pattern(regexp = "^[0-9]{0,50}$")
+        private String ic;
+
+        @NotNull
+        private String companyName;
+
+        @NotBlank
+        private String purchaserName;
+
+        @NotBlank
+        private String address1;
+
+        @NotBlank
+        private String address2;
+
+        public PurchaserInfo(String ic, String companyName, String purchaserName, String address1, String address2) {
+            this.ic = ic;
+            this.companyName = companyName;
+            this.purchaserName = purchaserName;
+            this.address1 = address1;
+            this.address2 = address2;
+        }
+
+        public PurchaserInfo() {
+            this("", "", "", "", "");
+        }
+
+        public String getIc() {
+            return ic;
+        }
+
+        public void setIc(String ic) {
+            this.ic = ic;
+        }
+
+        public String getCompanyName() {
+            return companyName;
+        }
+
+        public void setCompanyName(String companyName) {
+            this.companyName = companyName;
+        }
+
+        public String getPurchaserName() {
+            return purchaserName;
+        }
+
+        public void setPurchaserName(String purchaserName) {
+            this.purchaserName = purchaserName;
+        }
+
+        public String getAddress1() {
+            return address1;
+        }
+
+        public void setAddress1(String address1) {
+            this.address1 = address1;
+        }
+
+        public String getAddress2() {
+            return address2;
+        }
+
+        public void setAddress2(String address2) {
+            this.address2 = address2;
         }
     }
 

@@ -26,6 +26,7 @@ import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.invoices.InvoicesView;
+import cz.wildwest.zaurex.views.sell.SellView;
 import cz.wildwest.zaurex.views.settings.SettingsView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 
@@ -170,7 +171,7 @@ public class MainLayout extends AppLayout {
         MenuItemInfo warehouse = new MenuItemInfo("Sklad", "la la-boxes", WarehouseView.class);
         List<MenuItemInfo> menuItemInfos = new ArrayList<>(List.of(
 
-//                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
+                new MenuItemInfo("Prodat", "la la-wallet", SellView.class),
 
                 warehouse,
 

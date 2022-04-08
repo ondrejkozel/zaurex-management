@@ -79,19 +79,7 @@ public class InvoicesPdfExporter {
 
     private void addInfo(Document document) {
         PdfPTable table = new PdfPTable(2);
-        table.setHorizontalAlignment(Element.ALIGN_LEFT);
-        table.setWidthPercentage(60);
-        table.setTableEvent((table1, width, height, headerRows, rowStart, canvas) -> {
-            float[] widths = width[0];
-            float x1 = widths[0];
-            float x2 = widths[widths.length - 1];
-            float y1 = height[0];
-            float y2 = height[height.length - 1];
-            PdfContentByte cb = canvas[PdfPTable.LINECANVAS];
-            cb.rectangle(x1, y1, x2 - x1, y2 - y1 - 3);
-            cb.stroke();
-            cb.resetRGBColorStroke();
-        });
+        formatSmallTable(table);
         //
         table.addCell(getLeftCell("Dodavatel"));
         table.addCell(getLeftCell("Zaurex s.r.o."));
@@ -116,6 +104,50 @@ public class InvoicesPdfExporter {
         }
         //
         document.add(table);
+        //
+        Invoice.PurchaserInfo purchaserInfo = invoice.getPurchaserInfo();
+        if (purchaserInfo != null) {
+            addEmptyLines(document, 1);
+            //
+            PdfPTable table2 = new PdfPTable(2);
+            formatSmallTable(table2);
+            //
+            table2.addCell(getLeftCell("Odběratel"));
+            table2.addCell(getLeftCell(purchaserInfo.getPurchaserName()));
+            //
+            if (purchaserInfo.getCompanyName() != null && !purchaserInfo.getCompanyName().isBlank()) {
+                table2.addCell(getLeftCell(""));
+                table2.addCell(getLeftCell(purchaserInfo.getCompanyName()));
+            }
+            //
+            if (purchaserInfo.getIc() != null && !purchaserInfo.getIc().isBlank()) {
+                table2.addCell(getLeftCell("IČ"));
+                table2.addCell(getLeftCell(purchaserInfo.getIc()));
+            }
+            //
+            table2.addCell(getLeftCell("Adresa"));
+            table2.addCell(getLeftCell(purchaserInfo.getAddress1()));
+            table2.addCell(getLeftCell(""));
+            table2.addCell(getLeftCell(purchaserInfo.getAddress2()));
+            //
+            document.add(table2);
+        }
+    }
+
+    private void formatSmallTable(PdfPTable table) {
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.setWidthPercentage(60);
+        table.setTableEvent((table1, width, height, headerRows, rowStart, canvas) -> {
+            float[] widths = width[0];
+            float x1 = widths[0];
+            float x2 = widths[widths.length - 1];
+            float y1 = height[0];
+            float y2 = height[height.length - 1];
+            PdfContentByte cb = canvas[PdfPTable.LINECANVAS];
+            cb.rectangle(x1, y1, x2 - x1, y2 - y1 - 3);
+            cb.stroke();
+            cb.resetRGBColorStroke();
+        });
     }
 
     private void addItems(Document document) {

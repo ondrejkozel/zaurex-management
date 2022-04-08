@@ -1,281 +1,290 @@
 package cz.wildwest.zaurex.views.sell;
 
+import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.components.PdfAnchor;
+import cz.wildwest.zaurex.components.VariantSelect;
+import cz.wildwest.zaurex.data.entity.Invoice;
+import cz.wildwest.zaurex.data.entity.User;
+import cz.wildwest.zaurex.data.entity.WarehouseItem;
+import cz.wildwest.zaurex.data.service.InvoiceService;
+import cz.wildwest.zaurex.data.service.WarehouseItemVariantService;
+import cz.wildwest.zaurex.data.service.WarehouseService;
+import cz.wildwest.zaurex.security.AuthenticatedUser;
+import cz.wildwest.zaurex.views.LineAwesomeIcon;
+import cz.wildwest.zaurex.views.LocalDateTimeFormatter;
 import cz.wildwest.zaurex.views.MainLayout;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+
 import javax.annotation.security.RolesAllowed;
+import javax.validation.*;
+import javax.validation.metadata.ConstraintDescriptor;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @PageTitle("Prodat")
 @Route(value = "sell", layout = MainLayout.class)
 @RolesAllowed("SALESMAN")
 public class SellView extends Div {
 
-    private static final Set<String> states = new LinkedHashSet<>();
-    private static final Set<String> countries = new LinkedHashSet<>();
+    private final InvoiceService invoiceService;
+    private final User user;
+    private final WarehouseService warehouseService;
+    private final WarehouseItemVariantService warehouseItemVariantService;
 
-    static {
-        states.addAll(Arrays.asList("Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
-                "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas",
-                "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-                "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York",
-                "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
-                "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
-                "West Virginia", "Wisconsin", "Wyoming"));
-
-        countries.addAll(Arrays.asList("Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola",
-                "Anguilla", "Antarctica", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia",
-                "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize",
-                "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Bouvet Island",
-                "Brazil", "British Indian Ocean Territory", "British Virgin Islands", "Brunei Darussalam", "Bulgaria",
-                "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands",
-                "Central African Republic", "Chad", "Chile", "China", "Christmas Island", "Cocos (Keeling) Islands",
-                "Colombia", "Comoros", "Congo", "Cook Islands", "Costa Rica", "Croatia", "Cuba", "Cyprus",
-                "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador",
-                "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands",
-                "Faroe Islands", "Federated States of Micronesia", "Fiji", "Finland", "France", "French Guiana",
-                "French Polynesia", "French Southern Territories", "Gabon", "Gambia", "Georgia", "Germany", "Ghana",
-                "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guinea",
-                "Guinea-Bissau", "Guyana", "Haiti", "Heard Island and McDonald Islands", "Honduras", "Hong Kong",
-                "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Ivory Coast",
-                "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos",
-                "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau",
-                "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands",
-                "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Moldova", "Monaco", "Mongolia",
-                "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands",
-                "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue",
-                "Norfolk Island", "North Korea", "Northern Mariana Islands", "Norway", "Oman", "Pakistan", "Palau",
-                "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn", "Poland", "Portugal",
-                "Puerto Rico", "Qatar", "Reunion", "Romania", "Russian Federation", "Rwanda", "Saint Kitts and Nevis",
-                "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe",
-                "Saudi Arabia", "Senegal", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia",
-                "Solomon Islands", "Somalia", "South Africa", "South Georgia and the South Sandwich Islands",
-                "South Korea", "Spain", "Sri Lanka", "St. Helena", "St. Pierre and Miquelon", "Sudan", "Suriname",
-                "Svalbard and Jan Mayen Islands", "Swaziland", "Sweden", "Switzerland", "Syrian Arab Republic",
-                "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago",
-                "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine",
-                "United Arab Emirates", "United Kingdom", "United States", "United States Minor Outlying Islands",
-                "United States Virgin Islands", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City State", "Venezuela",
-                "Vietnam", "Wallis and Futuna Islands", "Western Sahara", "Yemen", "Yugoslavia", "Zaire", "Zambia",
-                "Zimbabwe"));
-    }
-
-    public SellView() {
-        addClassNames("prodat-view", "flex", "flex-col", "h-full");
+    public SellView(InvoiceService invoiceService, AuthenticatedUser authenticatedUser, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService) {
+        this.invoiceService = invoiceService;
+        this.user = authenticatedUser.get().orElseThrow();
+        this.warehouseService = warehouseService;
+        this.warehouseItemVariantService = warehouseItemVariantService;
+        addClassNames("sell-view", "flex", "flex-col", "h-full");
 
         Main content = new Main();
-        content.addClassNames("grid", "gap-xl", "items-start", "justify-center", "max-w-screen-md", "mx-auto", "pb-l",
+        content.addClassNames("grid", "gap-xl", "items-start", "justify-center", "mx-auto", "pb-l",
                 "px-l");
+        content.getStyle().set("max-width", "870px");
 
         content.add(createCheckoutForm());
         content.add(createAside());
         add(content);
     }
 
+    private Section checkoutForm;
+
     private Component createCheckoutForm() {
-        Section checkoutForm = new Section();
+        checkoutForm = new Section();
         checkoutForm.addClassNames("flex", "flex-col", "flex-grow");
-
-        H2 header = new H2("Checkout");
-        header.addClassNames("mb-0", "mt-xl", "text-3xl");
-        Paragraph note = new Paragraph("All fields are required unless otherwise noted");
-        note.addClassNames("mb-xl", "mt-0", "text-secondary");
-        checkoutForm.add(header, note);
-
-        checkoutForm.add(createPersonalDetailsSection());
-        checkoutForm.add(createShippingAddressSection());
-        checkoutForm.add(createPaymentInformationSection());
-        checkoutForm.add(new Hr());
-        checkoutForm.add(createFooter());
-
+        rebuildCheckoutForm();
         return checkoutForm;
     }
 
-    private Section createPersonalDetailsSection() {
+    private void rebuildCheckoutForm() {
+        List<WarehouseItem> itemsWithTransientValues = warehouseService.findAllSellable();
+        warehouseService.fetchTransientVariants(itemsWithTransientValues);
+        checkoutForm.removeAll();
+        H2 header = new H2("Pokladna");
+        header.addClassNames("mb-0", "mt-xl", "text-3xl");
+//        Paragraph note = new Paragraph("All fields are required unless otherwise noted");
+//        note.addClassNames("mb-xl", "mt-0", "text-secondary");
+        checkoutForm.add(header);
+
+        checkoutForm.add(createItemsSection(itemsWithTransientValues));
+        checkoutForm.add(createPaymentInformationSection());
+        checkoutForm.add(createPurchaserSection());
+        checkoutForm.add(new Hr());
+        checkoutForm.add(createFooter());
+    }
+
+    private ItemsEditor itemsEditor;
+
+    private Section createItemsSection(List<WarehouseItem> itemsWithTransientValues) {
         Section personalDetails = new Section();
         personalDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
 
-        Paragraph stepOne = new Paragraph("Checkout 1/3");
+        Paragraph stepOne = new Paragraph("Krok 1/3");
         stepOne.addClassNames("m-0", "text-s", "text-secondary");
 
-        H3 header = new H3("Personal details");
+        H3 header = new H3("Položky");
         header.addClassNames("mb-m", "mt-s", "text-2xl");
 
-        TextField name = new TextField("Name");
-        name.setRequiredIndicatorVisible(true);
-        name.setPattern("[\\p{L} \\-]+");
-        name.addClassNames("mb-s");
+        itemsEditor = new ItemsEditor(itemsWithTransientValues);
+        itemsEditor.addValueChangeListener(event -> setRecapitulationItems(event.getValue()));
 
-        EmailField email = new EmailField("Email address");
-        email.setRequiredIndicatorVisible(true);
-        email.addClassNames("mb-s");
-
-        TextField phone = new TextField("Phone number");
-        phone.setRequiredIndicatorVisible(true);
-        phone.setPattern("[\\d \\-\\+]+");
-        phone.addClassNames("mb-s");
-
-        Checkbox rememberDetails = new Checkbox("Remember personal details for next time");
-        rememberDetails.addClassNames("mt-s");
-
-        personalDetails.add(stepOne, header, name, email, phone, rememberDetails);
+        personalDetails.add(stepOne, header, itemsEditor);
         return personalDetails;
     }
 
-    private Section createShippingAddressSection() {
-        Section shippingDetails = new Section();
-        shippingDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
-
-        Paragraph stepTwo = new Paragraph("Checkout 2/3");
-        stepTwo.addClassNames("m-0", "text-s", "text-secondary");
-
-        H3 header = new H3("Shipping address");
-        header.addClassNames("mb-m", "mt-s", "text-2xl");
-
-        ComboBox countrySelect = new ComboBox("Country");
-        countrySelect.setRequiredIndicatorVisible(true);
-        countrySelect.addClassNames("mb-s");
-
-        TextArea address = new TextArea("Street address");
-        address.setMaxLength(200);
-        address.setRequiredIndicatorVisible(true);
-        address.addClassNames("mb-s");
-
-        Div subSection = new Div();
-        subSection.addClassNames("flex", "flex-wrap", "gap-m");
-
-        TextField postalCode = new TextField("Postal Code");
-        postalCode.setRequiredIndicatorVisible(true);
-        postalCode.setPattern("[\\d \\p{L}]*");
-        postalCode.addClassNames("mb-s");
-
-        TextField city = new TextField("City");
-        city.setRequiredIndicatorVisible(true);
-        city.addClassNames("flex-grow", "mb-s");
-
-        subSection.add(postalCode, city);
-
-        ComboBox stateSelect = new ComboBox("State");
-        stateSelect.setRequiredIndicatorVisible(true);
-
-        stateSelect.setItems(states);
-        stateSelect.setVisible(false);
-        countrySelect.setItems(countries);
-        countrySelect.addValueChangeListener(e -> {
-            stateSelect.setVisible(countrySelect.getValue().equals("United States"));
-        });
-
-        Checkbox sameAddress = new Checkbox("Billing address is the same as shipping address");
-        sameAddress.addClassNames("mt-s");
-
-        Checkbox rememberAddress = new Checkbox("Remember address for next time");
-
-        shippingDetails.add(stepTwo, header, countrySelect, address, subSection, stateSelect, sameAddress,
-                rememberAddress);
-        return shippingDetails;
-    }
+    RadioButtonGroup<Invoice.PaymentForm> paymentForm;
 
     private Component createPaymentInformationSection() {
         Section paymentInfo = new Section();
         paymentInfo.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
+        //
+        Paragraph stepTwo = new Paragraph("Krok 2/3");
+        stepTwo.addClassNames("m-0", "text-s", "text-secondary");
+        //
+        H3 header = new H3("Platba");
+        header.addClassNames("mb-m", "mt-s", "text-2xl");
+        //
+        Paragraph transferInfo = new Paragraph(String.format("Datum splatnosti: %s.", LocalDateTime.now().plus(Invoice.TRANSFER_MATURITY_LIMIT).format(LocalDateTimeFormatter.ofLongDate())));
+        transferInfo.addClassNames("text-s", "text-secondary");
+        //
+        paymentForm = new RadioButtonGroup<>();
+        paymentForm.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        paymentForm.setLabel("Forma úhrady");
+        paymentForm.setItems(Invoice.PaymentForm.values());
+        paymentForm.setRequired(true);
+        paymentForm.setRenderer(new TextRenderer<>(Invoice.PaymentForm::getText));
+        paymentForm.addValueChangeListener(event -> transferInfo.setVisible(event.getValue() == Invoice.PaymentForm.TRANSFER));
+        paymentForm.setValue(Invoice.PaymentForm.CASH);
+        //
+        paymentInfo.add(stepTwo, header, paymentForm, transferInfo);
+        return paymentInfo;
+    }
 
-        Paragraph stepThree = new Paragraph("Checkout 3/3");
+    private TextField ic;
+    private TextField companyName;
+    private TextField purchaserName;
+    private TextField address;
+    private TextField postalCode;
+    private TextField city;
+
+    private Span purchaseFields;
+
+    private boolean specifyPurchaserStatus = false;
+
+    private Section createPurchaserSection() {
+        Section shippingDetails = new Section();
+        shippingDetails.addClassNames("flex", "flex-col", "mb-xl", "mt-m");
+
+        Paragraph stepThree = new Paragraph("Krok 3/3");
         stepThree.addClassNames("m-0", "text-s", "text-secondary");
 
-        H3 header = new H3("Personal details");
+        H3 header = new H3("Odběratel");
         header.addClassNames("mb-m", "mt-s", "text-2xl");
 
-        TextField cardHolder = new TextField("Cardholder name");
-        cardHolder.setRequiredIndicatorVisible(true);
-        cardHolder.setPattern("[\\p{L} \\-]+");
-        cardHolder.addClassNames("mb-s");
+        Checkbox specifyPurchaser = new Checkbox("Specifikovat odběratele");
 
-        Div subSectionOne = new Div();
-        subSectionOne.addClassNames("flex", "flex-wrap", "gap-m");
+        ic = new TextField("IČ");
+        ic.setPattern("^[0-9]{0,50}$");
+        ic.setMaxLength(50);
 
-        TextField cardNumber = new TextField("Card Number");
-        cardNumber.setRequiredIndicatorVisible(true);
-        cardNumber.setPattern("[\\d ]{12,23}");
-        cardNumber.addClassNames("mb-s");
+        companyName = new TextField("Název firmy");
+        companyName.setMaxLength(50);
 
-        TextField securityCode = new TextField("Security Code");
-        securityCode.setRequiredIndicatorVisible(true);
-        securityCode.setPattern("[0-9]{3,4}");
-        securityCode.addClassNames("flex-grow", "mb-s");
-        securityCode.setHelperText("What is this?");
+        purchaserName = new TextField("Jméno odběratele");
+        purchaserName.setMaxLength(50);
+        purchaserName.setRequiredIndicatorVisible(true);
 
-        subSectionOne.add(cardNumber, securityCode);
+        address = new TextField("Adresa");
+        address.setMaxLength(50);
+        address.setRequiredIndicatorVisible(true);
 
-        Div subSectionTwo = new Div();
-        subSectionTwo.addClassNames("flex", "flex-wrap", "gap-m");
+        Div subSection = new Div();
+        subSection.addClassNames("flex", "flex-wrap", "gap-m");
 
-        Select<String> expirationMonth = new Select<>();
-        expirationMonth.setLabel("Expiration month");
-        expirationMonth.setRequiredIndicatorVisible(true);
-        expirationMonth.setItems("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
+        postalCode = new TextField("PSČ");
+        postalCode.setRequiredIndicatorVisible(true);
+        postalCode.setPattern("^[0-9]{1,5}$");
+        postalCode.setMaxLength(5);
+        postalCode.addValueChangeListener(event -> {
+            if (event.getValue().contains(" ")) postalCode.setValue(event.getValue().replace(" ", ""));
+        });
 
-        Select<String> expirationYear = new Select<>();
-        expirationYear.setLabel("Expiration month");
-        expirationYear.setRequiredIndicatorVisible(true);
-        expirationYear.setItems("22", "23", "24", "25", "26");
+        city = new TextField("Město");
+        city.setMaxLength(50);
+        city.setRequiredIndicatorVisible(true);
+        city.addClassNames("flex-grow");
 
-        subSectionTwo.add(expirationMonth, expirationYear);
+        subSection.add(postalCode, city);
 
-        paymentInfo.add(stepThree, header, cardHolder, subSectionTwo);
-        return paymentInfo;
+        purchaseFields = new Span(ic, companyName, purchaserName, address, subSection);
+        purchaseFields.getStyle().set("display", "grid");
+        purchaseFields.getStyle().set("overflow", "hidden");
+
+        purchaserFields = List.of(ic, companyName, purchaserName, address, postalCode, city);
+        purchaserFields.forEach(textField -> textField.addValueChangeListener(event -> {
+            if (event.getValue().length() > textField.getMaxLength()) textField.setValue(event.getOldValue());
+        }));
+
+        specifyPurchaser.addValueChangeListener(event -> switchPurchaseFieldsEnabled());
+        setPurchaseFieldsEnabled(false);
+
+        shippingDetails.add(stepThree, header, specifyPurchaser, purchaseFields);
+        return shippingDetails;
+    }
+
+    private void switchPurchaseFieldsEnabled() {
+        setPurchaseFieldsEnabled(!specifyPurchaserStatus);
+    }
+
+    private List<TextField> purchaserFields;
+
+    private void setPurchaseFieldsEnabled(boolean enabled) {
+        specifyPurchaserStatus = enabled;
+        purchaserFields.forEach(component -> {
+            component.setValue(component.getEmptyValue());
+            component.setEnabled(enabled);
+        });
+        purchaseFields.getStyle().set("height", enabled ? "unset" : "0");
     }
 
     private Footer createFooter() {
         Footer footer = new Footer();
         footer.addClassNames("flex", "items-center", "justify-between", "my-m");
 
-        Button cancel = new Button("Cancel order");
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        Button cancel = new Button("Obnovit");
+        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+        cancel.addClickListener(event -> clean());
 
-        Button pay = new Button("Pay securely", new Icon(VaadinIcon.LOCK));
-        pay.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+        Button pay = new Button("Prodat", new LineAwesomeIcon("las la-dollar-sign"));
+        pay.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        pay.addClickListener(event -> sellAndSaveInvoice());
 
         footer.add(cancel, pay);
         return footer;
     }
+
+    private void clean() {
+        rebuildCheckoutForm();
+        itemsEditor.clean();
+    }
+
+    private UnorderedList itemsRecapitulationList;
 
     private Aside createAside() {
         Aside aside = new Aside();
         aside.addClassNames("bg-contrast-5", "box-border", "p-l", "rounded-l", "sticky");
         Header headerSection = new Header();
         headerSection.addClassNames("flex", "items-center", "justify-between", "mb-m");
-        H3 header = new H3("Order");
+        H3 header = new H3("Rekapitulace");
         header.addClassNames("m-0");
-        Button edit = new Button("Edit");
-        edit.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-        headerSection.add(header, edit);
+        headerSection.add(header);
 
-        UnorderedList ul = new UnorderedList();
-        ul.addClassNames("list-none", "m-0", "p-0", "flex", "flex-col", "gap-m");
+        itemsRecapitulationList = new UnorderedList();
+        itemsRecapitulationList.addClassNames("list-none", "m-0", "p-0", "flex", "flex-col", "gap-m");
 
-        ul.add(createListItem("Vanilla cracker", "With wholemeal flour", "$7.00"));
-        ul.add(createListItem("Vanilla blueberry cake", "With blueberry jam", "$8.00"));
-        ul.add(createListItem("Vanilla pastry", "With wholemeal flour", "$5.00"));
+        setRecapitulationItems(new HashMap<>());
 
-        aside.add(headerSection, ul);
+        aside.add(headerSection, itemsRecapitulationList);
         return aside;
     }
 
+    private void setRecapitulationItems(Map<WarehouseItem.Variant, Integer> items) {
+        itemsRecapitulationList.removeAll();
+        items.forEach((variant, integer) -> itemsRecapitulationList.add(createListItem(integer + "x " + variant.getOf().getTitle(), variant.getColour(), String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", variant.getPrice() * integer))));
+        if (!items.isEmpty()) {
+            itemsRecapitulationList.add(new Hr());
+            final Double[] totalPrice = {0d};
+            items.forEach((variant, integer) -> totalPrice[0] += variant.getPrice() * integer);
+            itemsRecapitulationList.add(createListItem("Celkem", "", String.format(LocalDateTimeFormatter.LOCALE, "%.2f Kč", totalPrice[0]), true));
+        }
+        else {
+            itemsRecapitulationList.add(new Label("Seznam položek je prázdný."));
+        }
+    }
+
     private ListItem createListItem(String primary, String secondary, String price) {
+        return createListItem(primary, secondary, price, false);
+    }
+
+    private ListItem createListItem(String primary, String secondary, String price, boolean bold) {
         ListItem item = new ListItem();
         item.addClassNames("flex", "justify-between");
 
@@ -289,7 +298,185 @@ public class SellView extends Div {
 
         Span priceSpan = new Span(price);
 
+        if (bold) item.getStyle().set("font-weight", "bold");
+
         item.add(subSection, priceSpan);
         return item;
+    }
+
+    private void sellAndSaveInvoice() {
+        var generatedModelValue = itemsEditor.generateModelValue();
+        List<Invoice.Item> invoiceItems = new ArrayList<>();
+        generatedModelValue.forEach((variant, integer) -> invoiceItems.add(new Invoice.Item(variant, integer)));
+        Invoice invoice = new Invoice(user, invoiceItems, paymentForm.getValue());
+        if (specifyPurchaserStatus) {
+            invoice.setPurchaserInfo(new Invoice.PurchaserInfo(ic.getValue(), companyName.getValue(), purchaserName.getValue(), address.getValue(), postalCode.getValue() + ", " + city.getValue()));
+        }
+        //
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Invoice>> violations = new HashSet<>(validator.validate(invoice));
+        if (violations.isEmpty()) validateCount(invoice.getItems(), itemsEditor.count(), violations);
+        if (!violations.isEmpty()) {
+            violations.forEach(invoiceConstraintViolation -> Notification.show(invoiceConstraintViolation.getMessage()));
+            return;
+        }
+        //
+        generatedModelValue.forEach((variant, integer) -> {
+            variant.setQuantity(variant.getQuantity() - integer);
+            warehouseItemVariantService.save(variant);
+        });
+        //
+        invoiceService.save(invoice);
+        buildAndShowNewInvoiceNotification(invoice);
+        clean();
+    }
+
+    private void validateCount(List<Invoice.Item> invoiceItems, int itemCount, Set<ConstraintViolation<Invoice>> violations) {
+        if (itemCount != invoiceItems.size()) violations.add(new ConstraintViolation<>() {
+            @Override
+            public String getMessage() {
+                return "Všechny položky seznamu nejsou unikátní.";
+            }
+
+            @Override
+            public String getMessageTemplate() {
+                return null;
+            }
+
+            @Override
+            public Invoice getRootBean() {
+                return null;
+            }
+
+            @Override
+            public Class<Invoice> getRootBeanClass() {
+                return null;
+            }
+
+            @Override
+            public Object getLeafBean() {
+                return null;
+            }
+
+            @Override
+            public Object[] getExecutableParameters() {
+                return new Object[0];
+            }
+
+            @Override
+            public Object getExecutableReturnValue() {
+                return null;
+            }
+
+            @Override
+            public Path getPropertyPath() {
+                return null;
+            }
+
+            @Override
+            public Object getInvalidValue() {
+                return null;
+            }
+
+            @Override
+            public ConstraintDescriptor<?> getConstraintDescriptor() {
+                return null;
+            }
+
+            @Override
+            public <U> U unwrap(Class<U> type) {
+                return null;
+            }
+        });
+    }
+
+    private void buildAndShowNewInvoiceNotification(Invoice invoice) {
+        Button pdfButton = new Button("Zobrazit PDF", new LineAwesomeIcon("las la-file-pdf"));
+        HorizontalLayout layout = new HorizontalLayout(new Label("Transakce byla dokončena."), new PdfAnchor(invoice, pdfButton));
+        layout.setSpacing(true);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+        Notification notification = new Notification();
+        notification.setDuration(5000);
+        notification.add(layout);
+        notification.open();
+        pdfButton.addClickListener(event -> notification.close());
+    }
+
+    public class ItemsEditor extends CustomField<Map<WarehouseItem.Variant, Integer>> {
+
+        private final VerticalLayout itemEditorsLayout;
+        private final List<WarehouseItem> itemsWithTransientValues;
+
+        public ItemsEditor(List<WarehouseItem> itemsWithTransientValues) {
+            this.itemsWithTransientValues = itemsWithTransientValues;
+            itemEditorsLayout = new VerticalLayout();
+            itemEditorsLayout.setPadding(false);
+            Button addButton = new Button("Přidat položku", new LineAwesomeIcon("las la-plus"));
+            addButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+            addButton.addClickListener(event -> addButtonClicked());
+            //
+            Button cleanButton = new Button(new LineAwesomeIcon("las la-broom"));
+            cleanButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
+            cleanButton.addClickListener(event -> clean());
+            //
+            VerticalLayout verticalLayout = new VerticalLayout(itemEditorsLayout, new HorizontalLayout(addButton, cleanButton));
+            verticalLayout.setPadding(false);
+            add(verticalLayout);
+            //
+            addButtonClicked();
+        }
+
+        private VariantSelect addButtonClicked() {
+            VariantSelect variantSelect = new VariantSelect(itemsWithTransientValues);
+            variantSelect.setSellMode();
+            Span order = new Span("#" + (itemEditorsLayout.getChildren().count() + 1));
+            order.addClassNames("text-s", "text-secondary");
+            Span blank = new Span();
+            Button delete = new Button(VaadinIcon.CLOSE.create());
+            delete.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ERROR);
+            HorizontalLayout child = new HorizontalLayout(order, blank, delete);
+            child.setFlexGrow(1, blank);
+            child.setWidthFull();
+            VerticalLayout parent = new VerticalLayout(child, variantSelect);
+            parent.setPadding(false);
+            parent.setSpacing(false);
+            delete.addClickListener(event -> {
+                itemEditorsLayout.remove(parent);
+                setRecapitulationItems(generateModelValue());
+            });
+            itemEditorsLayout.add(parent);
+            return variantSelect;
+        }
+
+        public void clean() {
+            itemEditorsLayout.removeAll();
+            addButtonClicked();
+            setRecapitulationItems(new HashMap<>());
+        }
+
+        @Override
+        protected Map<WarehouseItem.Variant, Integer> generateModelValue() {
+            Map<WarehouseItem.Variant, Integer> map = new HashMap<>();
+            itemEditorsLayout.getChildren().map(component -> component.getChildren().collect(Collectors.toList()).get(1)).forEach(component -> {
+                VariantSelect variantSelect = (VariantSelect) component;
+                WarehouseItem.Variant variant = variantSelect.generateModelValue();
+                if (variant != null) map.put(variant, variantSelect.getAmount());
+            });
+            return map;
+        }
+
+        public int count() {
+            return (int) itemEditorsLayout.getChildren().count();
+        }
+
+        @Override
+        protected void setPresentationValue(Map<WarehouseItem.Variant, Integer> newPresentationValue) {
+            newPresentationValue.forEach((variant, integer) -> {
+                VariantSelect variantSelect = addButtonClicked();
+                variantSelect.setPresentationValue(variant);
+                variantSelect.setAmount(integer);
+            });
+        }
     }
 }
