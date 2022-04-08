@@ -69,7 +69,7 @@ public class Helpers {
             +   addNew("nového zboží", "Nové zboží")
             +   "U nového zboží je potřeba nastavit název a vybrat, do jaké kategorie zboží patří. Nepovinné pole je krátký popis, kde můžete výrobek více specifikovat. Pokud rovnou chcete přidat variantu, rozklikněte <b>Varianty</b> a stiskněte přidat variantu. Každá varianta potřebuje mít název (barvu), cenu a množství (může být i 0). Nepovinné je napsání velikosti nebo nějaké jiné poznámky, která specifikuje danou variantu.</p>"
             +   "<h6>Naskladnění již existujícího zboží</h6>"
-            +   "<p>Již existující zboží lze snadno přidat pomocí tlačítka <b>Rychle naskladnit</b>. Pokud ho zmáčknete při držení klávesy <code>Alt</code>, otevře se nová stránka.</p>"
+            +   "<p>Již existující zboží lze snadno přidat pomocí tlačítka <b>Rychle naskladnit</b>. Pokud ho zmáčknete při držení klávesy <code>Alt</code> nebo dvakrát rychle po sobě, otevře se nová stránka.</p>"
             +   "<h5>Upravování již existujícího zboží</h5>"
             +   "<p>Upravovat určité zboží (název, popis a přidávání, úprava či odstraňování variant) se dá po kliknutí na určité zboží. Před uzavřením nesmíte zapomenout své změny uložit, jinak budou zahozeny. Ukládají se tlačítkem v pravém dolním rohu okna na upravování zboží. Pokud se vám okno na upravování zboží nedaří otevřít, zkontrolujte, zda náhodou nemáte zapnutou možnost <i>Vícenásobného výběru</i>.</p>"
             +   delete("zboží","celé zboží, bez ohledu na to, kolik má variant","zboží")
