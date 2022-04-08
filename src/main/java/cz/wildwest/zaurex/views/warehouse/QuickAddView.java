@@ -32,7 +32,7 @@ public class QuickAddView extends VerticalLayout {
             variant.setQuantity(variant.getQuantity() + integerField.getValue());
             warehouseItemVariantService.save(variant);
             //
-            HtmlNotification.show(String.format("<span>Nyní je na skladě %d kusů <b>%s</b> (<b>%s</b>).</span>", variant.getQuantity(), variant.getOf().getTitle(), variant.getColour()));
+            HtmlNotification.show(String.format("<span>Nyní je na skladě <b>%d</b> kusů %s (%s).</span>", variant.getQuantity(), variant.getOf().getTitle(), variant.getColour()));
             variantSelect.setItems(warehouseService.fetchTransientVariants(warehouseService.findAll()));
         });
         //
