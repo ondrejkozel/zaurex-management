@@ -37,7 +37,7 @@ public class SettingsView extends VerticalLayout {
     private final PasswordEncoder passwordEncoder;
     private Button invoicingSubmit;
     private TextField accountNumberField;
-    private IntegerField icoField;
+    private TextField icoField;
 
     public SettingsView(UserService userService, AuthenticatedUser authenticatedUser, PasswordEncoder passwordEncoder, ConfigurationService configurationService) {
         this.userService = userService;
@@ -74,9 +74,10 @@ public class SettingsView extends VerticalLayout {
     private void buildChangeAccoutNumberField() {
         accountNumberField = new TextField("Číslo bankovního účtu");
         accountNumberField.setValueChangeMode(ValueChangeMode.EAGER);
-        accountNumberField.setPattern("^([0-9]{2,6}-|)[0-9]{2,10}\\/[0-9]{4}$");
+        accountNumberField.setPattern("^(([0-9]{2,6}-|)[0-9]{2,10}\\/[0-9]{4}$)|^$");
         accountNumberField.setValue(configurationService.getValue(Configuration.StandardKey.BANK_ACCOUNT_NUMBER).orElse(""));
         accountNumberField.addValueChangeListener(event -> invoicingFieldsValueChanged());
+        accountNumberField.setPlaceholder("nenastaveno");
         accountNumberField.addValueChangeListener((event) -> {
             if (accountNumberField.isInvalid()) accountNumberField.setHelperText("Vámi zadané parametry nevyhovují formátu (xxxxxx-)xxxxxxxxxx/xxxx.");
             else accountNumberField.setHelperText("");
@@ -85,10 +86,10 @@ public class SettingsView extends VerticalLayout {
     }
 
     private void buildChangeIcoField() {
-        icoField = new IntegerField("Identifikační číslo");
+        icoField = new TextField("Identifikační číslo");
         icoField.setPlaceholder("nenastaveno");
         icoField.setValueChangeMode(ValueChangeMode.EAGER);
-        icoField.setValue(Integer.parseInt(configurationService.getValue(Configuration.StandardKey.ICO).orElse("")));
+        icoField.setValue(configurationService.getValue(Configuration.StandardKey.ICO).orElse(""));
         icoField.addValueChangeListener(event -> invoicingFieldsValueChanged());
         add(icoField);
     }
