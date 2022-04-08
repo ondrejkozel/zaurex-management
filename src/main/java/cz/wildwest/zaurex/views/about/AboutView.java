@@ -45,7 +45,7 @@ public class AboutView extends VerticalLayout {
         Button formatButton = new Button("Nenavrátně obnovit", new LineAwesomeIcon("las la-undo-alt"));
         formatButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         formatButton.addClickListener(event -> {
-            ConfirmDialog dialog = new ConfirmDialog("Uvést do továrního nastavení?", "Tato akce trvale vymaže všechny vámi vytvořené objekty. Pro následné přihlášení použijte uživatelské jméno \"manazer\", heslo \"heslo\".Opravdu chcete pokračovat?", "TRVALE ODSTRANIT", this::deletePernamently, "Zrušit", event1 -> {});
+            ConfirmDialog dialog = new ConfirmDialog("Uvést do továrního nastavení?", "Tato akce trvale vymaže všechny vámi vytvořené objekty. Pro následné přihlášení použijte uživatelské jméno \"manazer\", heslo \"heslo\". Opravdu chcete pokračovat?", "TRVALE ODSTRANIT", this::deletePernamently, "Zrušit", event1 -> {});
             dialog.setConfirmButtonTheme("error primary");
             dialog.open();
         });
