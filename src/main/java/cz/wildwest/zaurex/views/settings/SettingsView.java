@@ -35,6 +35,9 @@ public class SettingsView extends VerticalLayout {
     private final User user;
     private final ConfigurationService configurationService;
     private final PasswordEncoder passwordEncoder;
+    private Button invoicingSubmit;
+    private TextField accountNumberField;
+    private IntegerField icoField;
 
     public SettingsView(UserService userService, AuthenticatedUser authenticatedUser, PasswordEncoder passwordEncoder, ConfigurationService configurationService) {
         this.userService = userService;
@@ -64,8 +67,6 @@ public class SettingsView extends VerticalLayout {
         add(invoicingSubmit);
     }
 
-    private Button invoicingSubmit;
-
     private void invoicingFieldsValueChanged() {
         invoicingSubmit.setEnabled(!accountNumberField.isInvalid() && !icoField.isInvalid());
     }
@@ -82,8 +83,6 @@ public class SettingsView extends VerticalLayout {
         });
         add(accountNumberField);
     }
-    private TextField accountNumberField;
-    private IntegerField icoField;
 
     private void buildChangeIcoField() {
         icoField = new IntegerField("Identifikační číslo");
@@ -101,62 +100,80 @@ public class SettingsView extends VerticalLayout {
         passwordField.setHelperText("Nové heslo musí mít alespoň 8 znaků.");
         passwordField.setMinLength(8);
         passwordField.setValueChangeMode(ValueChangeMode.EAGER);
-        passwordField.addValueChangeListener((event) -> {
-            passwordField.setHelperText("Síla hesla: " + getPasswordStrength(event.getValue()));
-        });
+        passwordField.addValueChangeListener((event) -> passwordField.setHelperText("Síla hesla: " + getPasswordStrength(event.getValue())));
         //
-        PasswordField passwordCheck = new PasswordField();
-        passwordCheck.setPlaceholder("Potvrďte napsáním znovu");
-        passwordCheck.addValueChangeListener((event) -> {
-            passwordCheck.setHelperText("Heslo se " + getCheck(passwordField.getValue(),passwordCheck.getValue()));
-        });
-        
-        Button submit = new Button("Potvrdit", new LineAwesomeIcon("las la-check"));
-        passwordField.addValueChangeListener(event -> submit.setEnabled(!passwordField.isInvalid()));
-        submit.setDisableOnClick(true);
-        submit.setEnabled(false);
-        submit.addClickListener(clickEvent -> changePassword(passwordField.getValue(), passwordCheck.getValue()));
-        add(new HorizontalLayout(passwordField, passwordCheck, submit));
+        PasswordField passwordCheckField = new PasswordField();
+        passwordCheckField.setPlaceholder("opište");
+        passwordCheckField.addValueChangeListener((event) -> passwordCheckField.setHelperText("Hesla se " + (arePasswordsEqual(passwordField.getValue(), passwordCheckField.getValue()) ? "shodují" : "neshodují")));
+        passwordCheckField.setValueChangeMode(ValueChangeMode.EAGER);
+        Button passwordSubmitButton = new Button("Potvrdit", new LineAwesomeIcon("las la-check"));
+        passwordSubmitButton.setDisableOnClick(true);
+        passwordSubmitButton.setEnabled(false);
+        passwordSubmitButton.addClickListener(clickEvent -> changePassword(passwordField.getValue(), passwordCheckField.getValue()));
+        add(new HorizontalLayout(passwordField, passwordCheckField, passwordSubmitButton));
+        //
+        passwordField.addValueChangeListener(event -> passwordFieldsValueChanged(passwordSubmitButton, passwordField.getValue(), passwordCheckField.getValue()));
+        passwordCheckField.addValueChangeListener(event -> passwordFieldsValueChanged(passwordSubmitButton, passwordField.getValue(), passwordCheckField.getValue()));
     }
-    public String getCheck(String password, String secondPassword){
-    return password.equals(secondPassword) ? "shoduje" : "neshoduje";
-    };
-    
-    public String getPasswordStrength(String password){
-    var strength=0;
-    Pattern a = Pattern.compile("[a-z]");
-    Matcher b = a.matcher(password);
-    if (b.find()){
-        strength+=1;
+
+    private void passwordFieldsValueChanged(Button submitButton, String newPassword, String newPasswordCheck) {
+        submitButton.setEnabled(arePasswordsEqual(newPassword, newPasswordCheck) && newPassword.length() >= 8);
     }
-    Pattern c = Pattern.compile("[A-Z]");
-    Matcher d = c.matcher(password);
-    if (d.find()){
-        strength+=1;
+
+    public boolean arePasswordsEqual(String password, String secondPassword) {
+        return password.equals(secondPassword);
     }
-    Pattern e = Pattern.compile("[0-9]");
-    Matcher f = e.matcher(password);
-    if (f.find()){
-        strength+=1;
+
+    public String getPasswordStrength(String password) {
+        var strength = 0;
+
+        /*
+        Toto by šlo vylepšit nějak takto:
+
+            List<Pattern> patterns = List.of(
+                    Pattern.compile("[a-z]"), //small letters
+                    Pattern.compile("[A-Z]"), //capital letters
+                    Pattern.compile("[0-9]"), //numbers
+                    Pattern.compile("\\W") //special characters
+            );
+            for (Pattern pattern : patterns) {
+                if (pattern.matcher(password).find()) strength += 1;
+            }
+            strength *= password.length();
+            return strength <= 20 ? "slabé" : strength <= 30 ? "střední" : "silné";
+
+        */
+
+        Pattern a = Pattern.compile("[a-z]");
+        Matcher b = a.matcher(password);
+        if (b.find()){
+            strength+=1;
+        }
+        Pattern c = Pattern.compile("[A-Z]");
+        Matcher d = c.matcher(password);
+        if (d.find()){
+            strength+=1;
+        }
+        Pattern e = Pattern.compile("[0-9]");
+        Matcher f = e.matcher(password);
+        if (f.find()){
+            strength+=1;
+        }
+        Pattern g = Pattern.compile("\\W");
+        Matcher h = g.matcher(password);
+        if (h.find()){
+            strength+=1;
+        }
+        int x = password.length();
+        return strength*x <= 20 ? "slabé" : strength*x <= 30 ? "střední" : "silné";
     }
-    Pattern g = Pattern.compile("\\W");
-    Matcher h = g.matcher(password);
-    if (h.find()){
-        strength+=1;
-    }
-    int x = password.length();
-    return strength*x <= 20 ? "slabé" : strength*x <= 30 ? "střední" : "silné";
-    };
-    
+
     private void changePassword(String unhashedPassword, String checkPassword) {
-      if(unhashedPassword.equals(checkPassword)) { 
-        user.setHashedPassword(passwordEncoder.encode(unhashedPassword));
-        user.setHasChangedPassword(true);
-        userService.save(user);
-        Notification.show("Úspěšně jsme vám nastavili nové heslo! 🌞");
-    }
-      else{
-          Notification.show("Hesla se neshodují");
-      }
+        if (arePasswordsEqual(unhashedPassword, checkPassword)) {
+            user.setHashedPassword(passwordEncoder.encode(unhashedPassword));
+            user.setHasChangedPassword(true);
+            userService.save(user);
+            Notification.show("Úspěšně jsme vám nastavili nové heslo! 🌞");
+        } else Notification.show("Hesla se neshodují 😔");
     }
 }
