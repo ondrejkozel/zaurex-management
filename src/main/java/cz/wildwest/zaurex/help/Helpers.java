@@ -86,13 +86,17 @@ public class Helpers {
                 "<p>Zde můžete prodávat produkty ze skladu.</p>"
             +   "<h4>Ovládací prvky</h4>" 
             +   "<h5>Přidávání zboží k prodeji</h5>" 
-            +   "<p> Zboží přidáte k prodeji možností <b>!DOPLNIT!</b>. U prodávaného produktu musíte vybrat nejprve název zboží, následně variantu a nakonec množství. Program by vám neměl dovolit prodat více zboží, než je na skladě a pokud tedy tento údaj zadáte chybně, sám vás opraví na maximum možné </p>"           
+            +   "<p> Zboží přidáte k prodeji možností <b>Přidat položku</b>. U prodávaného produktu musíte vybrat nejprve název zboží, následně variantu a nakonec množství. Program by vám neměl dovolit prodat více zboží, než je na skladě a pokud tedy tento údaj zadáte chybně, sám vás opraví na maximum možné </p>"           
             +   "<h5>Vymazávání položky na prodej</h5>"
             +   "<p> Pokud si kupříkladu zákazník nákup určité položky rozmyslel, dá se snadno odstranit červeným křížkem napravo od položky. Pokud chcete vymazat celý seznam, stačí stisknout ikonku červeného koštěte </p>"
             +   "<h5>Přidání kontaktních údajů zákazníka</h5>" 
-            +   "<p> Pokud chcete přidat kontaktní údaje na zákazníka, jde to snadno přes možnost <b>!DOPLNIT!</b>.  </p>"
+            +   "<p> Pokud chcete přidat kontaktní údaje na zákazníka, jde to snadno přes možnost <b>Specifikovat odběratele</b>.  </p>"
             +   "<h5>Vytvoření PDF faktury</h5>" 
             +   "<p> PDF faktura se dá vytvořit po provedení transakce stiskutím tlačítka v levém dolním rohu, anebo zpětně na stránce <b>Faktury</b>. </p>"              
+            +   "<h5>Platební metoda</h5>"
+            +   "<p> Při prodeji položek je zapotřebí vybrat z nabídky způsob platby. </p>"    
+            +   "<h5>Potvrzení prodeje</h5>" 
+            +   "<p> Prodej se provede pouze pokud obědnávka splňuje všechny požadavky po stisknutí tlačítka <b>Prodat</b></p>" 
         ));
         //
         //
