@@ -96,7 +96,7 @@ public class Helpers {
             +   "<h5>Platební metoda</h5>"
             +   "<p> Při prodeji položek je zapotřebí vybrat z nabídky způsob platby. </p>"    
             +   "<h5>Potvrzení prodeje</h5>" 
-            +   "<p> Prodej se provede pouze pokud obědnávka splňuje všechny požadavky po stisknutí tlačítka <b>Prodat</b></p>" 
+            +   "<p> Prodej se provede pouze pokud obědnávka splňuje všechny požadavky po stisknutí tlačítka <b>Prodat</b>.</p>"
         ));
         //
         //
