@@ -17,35 +17,35 @@
 package cz.wildwest.zaurex.views.allShifts;
 
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.router.Route;
+import cz.wildwest.zaurex.data.service.ShiftService;
 import cz.wildwest.zaurex.data.service.UserService;
 import cz.wildwest.zaurex.views.MainLayout;
-import cz.wildwest.zaurex.views.allShifts.util.EntryManager;
-import cz.wildwest.zaurex.views.allShifts.util.ResourceManager;
 import elemental.json.JsonObject;
 import org.vaadin.stefan.fullcalendar.*;
 import org.vaadin.stefan.fullcalendar.Entry.RenderingMode;
+import org.vaadin.stefan.fullcalendar.dataprovider.CallbackEntryProvider;
 
 import javax.annotation.security.RolesAllowed;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 @Route(value = "calendar", layout = MainLayout.class)
 @RolesAllowed("MANAGER")
 public class AllShiftsView extends AbstractCalendarView {
 
     private final UserService userService;
+    private final ShiftService shiftService;
 
-    public AllShiftsView(UserService userService) {
+    public AllShiftsView(UserService userService, ShiftService shiftService) {
         super();
 
         this.userService = userService;
+        this.shiftService = shiftService;
     }
 
     private MenuBar createMenuBar() {
@@ -81,42 +81,42 @@ public class AllShiftsView extends AbstractCalendarView {
                 new BusinessHours(LocalTime.of(12, 0), LocalTime.of(13, 0), DayOfWeek.SUNDAY)
         );
 
-        ((FullCalendarScheduler) calendar).addEntryDroppedSchedulerListener(event -> {
-            System.out.println("Old resource: " + event.getOldResource());
-            System.out.println("New resource: " + event.getNewResource());
-            Entry entry = event.getEntry();
-            System.out.println(entry.getStart() + " / " + entry.getStart());
-        });
+//        ((FullCalendarScheduler) calendar).addEntryDroppedSchedulerListener(event -> {
+//            System.out.println("Old resource: " + event.getOldResource());
+//            System.out.println("New resource: " + event.getNewResource());
+//            Entry entry = event.getEntry();
+//            System.out.println(entry.getStart() + " / " + entry.getStart());
+//        });
 
-        ((FullCalendarScheduler) calendar).addTimeslotsSelectedSchedulerListener((event) -> {
-            System.out.println( "ZoneId: " + event.getSource().getTimezone().getZoneId() );
-            LocalDateTime startDate = event.getStart();
-            System.out.println( "getStart(): " + event.getStart() );
-            System.out.println( "getStartWithOffset():  " + event.getStartWithOffset() );
+//        ((FullCalendarScheduler) calendar).addTimeslotsSelectedSchedulerListener((event) -> {
+//            System.out.println( "ZoneId: " + event.getSource().getTimezone().getZoneId() );
+//            LocalDateTime startDate = event.getStart();
+//            System.out.println( "getStart(): " + event.getStart() );
+//            System.out.println( "getStartWithOffset():  " + event.getStartWithOffset() );
+//
+//
+//            ResourceEntry entry = new ResourceEntry();
+//
+//            entry.setStart(event.getStart());
+//            entry.setEnd(event.getEnd());
+//            entry.setAllDay(event.isAllDay());
+//
+//            entry.setColor("dodgerblue");
+//            entry.setCalendar(calendar);
+//
+//            DemoDialog dialog = new DemoDialog(entry, true, userService.findAll());
+//            dialog.setSaveConsumer(e -> onEntriesCreated(Collections.singletonList(e)));
+//            dialog.open();
+//        });
 
-
-            ResourceEntry entry = new ResourceEntry();
-
-            entry.setStart(event.getStart());
-            entry.setEnd(event.getEnd());
-            entry.setAllDay(event.isAllDay());
-
-            entry.setColor("dodgerblue");
-            entry.setCalendar(calendar);
-
-            DemoDialog dialog = new DemoDialog(entry, true, userService.findAll());
-            dialog.setSaveConsumer(e -> onEntriesCreated(Collections.singletonList(e)));
-            dialog.open();
-        });
-
-        calendar.addEntryClickedListener(event -> {
-            if (event.getEntry().getRenderingMode() != RenderingMode.BACKGROUND && event.getEntry().getRenderingMode() != RenderingMode.INVERSE_BACKGROUND) {
-                DemoDialog dialog = new DemoDialog(event.getEntry(), false, userService.findAll());
-                dialog.setSaveConsumer(this::onEntryChanged);
-                dialog.setDeleteConsumer(e -> onEntriesRemoved(Collections.singletonList(e)));
-                dialog.open();
-            }
-        });
+//        calendar.addEntryClickedListener(event -> {
+//            if (event.getEntry().getRenderingMode() != RenderingMode.BACKGROUND && event.getEntry().getRenderingMode() != RenderingMode.INVERSE_BACKGROUND) {
+//                DemoDialog dialog = new DemoDialog(event.getEntry(), false, userService.findAll());
+//                dialog.setSaveConsumer(this::onEntryChanged);
+//                dialog.setDeleteConsumer(e -> onEntriesRemoved(Collections.singletonList(e)));
+//                dialog.open();
+//            }
+//        });
 
         ((FullCalendarScheduler) calendar).setEntryResourceEditable(false);
 
@@ -137,83 +137,20 @@ public class AllShiftsView extends AbstractCalendarView {
     }
 
     private void populateEntries(FullCalendar calendar) {
-        LocalDate now = LocalDate.now();
+        calendar.setEntryProvider(new CallbackEntryProvider<>(entryQuery -> shiftService.findAll().stream().map(shift -> {
+            ResourceEntry resourceEntry = new ResourceEntry();
+            setValues(calendar, resourceEntry, shift.getOwner().getName(), shift.getFromDateTime(), shift.getToDateTime(), "gray");
+            return resourceEntry;
+        }), (SerializableFunction<String, ResourceEntry>) s -> new ResourceEntry()
+        ));
+    }
 
-        Resource meetingRoomRed = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Red", "#ff0000");
-        Resource meetingRoomGreen = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Green", "green");
-        Resource meetingRoomBlue = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Blue", "blue");
-        Resource meetingRoomOrange = ResourceManager.createResource((Scheduler) calendar, "Meetingroom Orange", "orange", null,
-                new BusinessHours(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-
-        Resource computer1A = ResourceManager.createResource((Scheduler) calendar, "Computer 1A", "lightbrown");
-        Resource computer1B = ResourceManager.createResource((Scheduler) calendar, "Computer 1B", "lightbrown");
-        Resource computer1C = ResourceManager.createResource((Scheduler) calendar, "Computer 1C", "lightbrown");
-
-        ResourceManager.createResource((Scheduler) calendar, "Computer room 1", "brown", Arrays.asList(computer1A, computer1B, computer1C));
-
-        Resource computerRoom2 = ResourceManager.createResource((Scheduler) calendar, "Computer room 2", "brown");
-        // here we must NOT use createResource, since they are added to the calendar later
-        Resource computer2A = new Resource(null, "Computer 2A", "lightbrown");
-        Resource computer2B = new Resource(null, "Computer 2B", "lightbrown");
-        Resource computer2C = new Resource(null, "Computer 2C", "lightbrown");
-
-        // not realistic, just a demonstration of automatic recursive adding
-        computer2A.addChild(new Resource(null, "Mouse", "orange"));
-        computer2A.addChild(new Resource(null, "Screen", "orange"));
-        computer2A.addChild(new Resource(null, "Keyboard", "orange"));
-
-        List<Resource> computerRoom2Children = Arrays.asList(computer2A, computer2B, computer2C);
-        computerRoom2.addChildren(computerRoom2Children);
-        ((Scheduler) calendar).addResources(computerRoom2Children);
-
-        EntryManager.createTimedEntry(calendar, "Meeting 1", now.withDayOfMonth(3).atTime(10, 0), 120, null, meetingRoomBlue, meetingRoomGreen, meetingRoomRed);
-
-        EntryManager.createTimedEntry(calendar, "Meeting 2", now.withDayOfMonth(3).atTime(10, 0), 120, null, meetingRoomOrange);
-        EntryManager.createTimedEntry(calendar, "Meeting 3", now.withDayOfMonth(7).atTime(11, 30), 120, null, meetingRoomRed);
-
-        HashMap<String, Object> extendedProps = new HashMap<String, Object>();
-        HashMap<String, Object> cursors = new HashMap<String, Object>();
-        cursors.put("enabled", "pointer");
-        cursors.put("disabled", "not-allowed");
-        extendedProps.put("cursors", cursors);
-
-        EntryManager.createTimedEntry(calendar, "Meeting 4", now.withDayOfMonth(12).atTime(9, 0), 120, null, extendedProps, meetingRoomGreen);
-        EntryManager.createTimedEntry(calendar, "Meeting 5", now.withDayOfMonth(13).atTime(10, 0), 120, null, meetingRoomGreen);
-        EntryManager.createTimedEntry(calendar, "Meeting 6", now.withDayOfMonth(17).atTime(11, 30), 120, null, meetingRoomBlue);
-        EntryManager.createTimedEntry(calendar, "Meeting 7", now.withDayOfMonth(22).atTime(9, 0), 120, null, meetingRoomRed);
-        EntryManager.createTimedEntry(calendar, "Meeting 8", now.withDayOfMonth(4).atTime(10, 0), 120, null);
-
-        EntryManager.createTimedBackgroundEntry(calendar, now.withDayOfMonth(3).atTime(10, 0), 120, null);
-        EntryManager.createTimedEntry(calendar, "Meeting 9", now.withDayOfMonth(7).atTime(11, 30), 120, "mediumseagreen");
-        EntryManager.createTimedEntry(calendar, "Meeting 10", now.withDayOfMonth(15).atTime(9, 0), 120, "mediumseagreen");
-        EntryManager.createTimedEntry(calendar, "Meeting 11", now.withDayOfMonth(18).atTime(10, 0), 120, "mediumseagreen");
-        EntryManager.createTimedEntry(calendar, "Meeting 12", now.withDayOfMonth(17).atTime(11, 30), 120, "mediumseagreen");
-        EntryManager.createTimedEntry(calendar, "Meeting 13", now.withDayOfMonth(24).atTime(9, 0), 120, "mediumseagreen");
-
-        EntryManager.createTimedEntry(calendar, "Grocery Store", now.withDayOfMonth(7).atTime(17, 30), 45, "violet");
-        EntryManager.createTimedEntry(calendar, "Dentist", now.withDayOfMonth(20).atTime(11, 30), 60, "violet");
-        EntryManager.createTimedEntry(calendar, "Cinema", now.withDayOfMonth(10).atTime(20, 30), 140, "dodgerblue");
-        EntryManager.createDayEntry(calendar, "Short trip", now.withDayOfMonth(17), 2, "dodgerblue");
-        EntryManager.createDayEntry(calendar, "John's Birthday", now.withDayOfMonth(23), 1, "gray");
-        EntryManager.createDayEntry(calendar, "This special holiday", now.withDayOfMonth(4), 1, "gray");
-
-        EntryManager.createDayEntry(calendar, "Multi 1", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 2", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 3", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 4", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 5", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 6", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 7", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 8", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 9", now.withDayOfMonth(12), 2, "tomato");
-        EntryManager.createDayEntry(calendar, "Multi 10", now.withDayOfMonth(12), 2, "tomato");
-
-
-        EntryManager.createDayBackgroundEntry(calendar, now.withDayOfMonth(4), 6, "#B9FFC3");
-        EntryManager.createDayBackgroundEntry(calendar, now.withDayOfMonth(19), 2, "#CEE3FF");
-        EntryManager.createTimedBackgroundEntry(calendar, now.withDayOfMonth(20).atTime(11, 0), 150, "#ff0000");
-
-        EntryManager.createRecurringEvents(calendar);
+    static void setValues(FullCalendar calendar, ResourceEntry entry, String title, LocalDateTime start, LocalDateTime end, String color) {
+        entry.setCalendar(calendar);
+        entry.setTitle(title);
+        entry.setStart(start);
+        entry.setEnd(end);
+        entry.setColor(color);
     }
 
     @Override

@@ -32,7 +32,7 @@ public class DataRegenerator {
     public DataRegenerator(@Autowired EntityManager entityManager, ConfigurationService configurationService, HolidayService holidayService, InvoiceService invoiceService, UserService userService, WarehouseItemVariantService warehouseItemVariantService, WarehouseService warehouseService, ShiftService shiftService, PasswordEncoder passwordEncoder) {
         this.shiftService = shiftService;
         this.passwordEncoder = passwordEncoder;
-        this.allServices = List.of(configurationService, holidayService, invoiceService, userService, warehouseItemVariantService, warehouseService);
+        this.allServices = List.of(configurationService, holidayService, invoiceService, userService, warehouseItemVariantService, warehouseService, shiftService);
         this.entityManager = entityManager;
         this.configurationService = configurationService;
         this.holidayService = holidayService;

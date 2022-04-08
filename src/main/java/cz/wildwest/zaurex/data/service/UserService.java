@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 public class UserService extends GenericService<User, UserRepository> {
 
     private final HolidayService holidayService;
+    private final ShiftService shiftService;
 
-    public UserService(UserRepository userRepository, HolidayService holidayService) {
+    public UserService(UserRepository userRepository, HolidayService holidayService, ShiftService shiftService) {
         super(userRepository);
         this.holidayService = holidayService;
+        this.shiftService = shiftService;
     }
 
     @Override
@@ -30,6 +32,7 @@ public class UserService extends GenericService<User, UserRepository> {
     @Override
     public void delete(User objekt) {
         holidayService.deleteAll(objekt);
+        shiftService.deleteAll(objekt);
         super.delete(objekt);
     }
 
