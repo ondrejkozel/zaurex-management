@@ -5,6 +5,7 @@ import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
 import cz.wildwest.zaurex.views.homePage.HomePageView;
 import cz.wildwest.zaurex.views.invoices.InvoicesView;
+import cz.wildwest.zaurex.views.sell.SellView;
 import cz.wildwest.zaurex.views.warehouse.QuickAddView;
 import cz.wildwest.zaurex.views.warehouse.WarehouseView;
 
@@ -78,6 +79,20 @@ public class Helpers {
         //
         HELPER_MAP.put(HomePageView.class, new Helper(
                     "<p>Toto je nápověda, která vám vždy ujasní základní pokyny k obsluze dané stránky, pokud by to z ní samotné nebylo jasné. Dají se spustit buď otazníkem v pravém horním rohu nebo klávesovou zkratkou <code>Alt&nbsp;+&nbsp;H</code>. Na této stránce jsou základní informace o fungování systému.</p>"
+        ));
+        //
+        //
+        HELPER_MAP.put(SellView.class, new Helper(
+                "<p>Zde můžete prodávat produkty ze skladu.</p>"
+            +   "<h4>Ovládací prvky</h4>" 
+            +   "<h5>Přidávání zboží k prodeji</h5>" 
+            +   "<p> Zboží přidáte k prodeji možností <b>!DOPLNIT!</b>. U prodávaného produktu musíte vybrat nejprve název zboží, následně variantu a nakonec množství. Program by vám neměl dovolit prodat více zboží, než je na skladě a pokud tedy tento údaj zadáte chybně, sám vás opraví na maximum možné </p>"           
+            +   "<h5>Vymazávání položky na prodej</h5>"
+            +   "<p> Pokud si kupříkladu zákazník nákup určité položky rozmyslel, dá se snadno odstranit červeným křížkem napravo od položky. Pokud chcete vymazat celý seznam, stačí stisknout ikonku červeného koštěte </p>"
+            +   "<h5>Přidání kontaktních údajů zákazníka</h5>" 
+            +   "<p> Pokud chcete přidat kontaktní údaje na zákazníka, jde to snadno přes možnost <b>!DOPLNIT!</b>.  </p>"
+            +   "<h5>Vytvoření PDF faktury</h5>" 
+            +   "<p> PDF faktura se dá vytvořit po provedení transakce stiskutím tlačítka v levém dolním rohu, anebo zpětně na stránce <b>Faktury</b>. </p>"              
         ));
         //
         //
