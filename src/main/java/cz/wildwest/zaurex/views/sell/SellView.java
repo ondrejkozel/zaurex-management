@@ -163,6 +163,7 @@ public class SellView extends Div {
 
         ic = new TextField("IČ");
         ic.setPattern("^[0-9]{0,50}$");
+        ic.setMaxLength(50);
 
         companyName = new TextField("Název firmy");
         companyName.setMaxLength(50);
@@ -181,6 +182,7 @@ public class SellView extends Div {
         postalCode = new TextField("PSČ");
         postalCode.setRequiredIndicatorVisible(true);
         postalCode.setPattern("^[0-9]{1,5}$");
+        postalCode.setMaxLength(5);
         postalCode.addValueChangeListener(event -> {
             if (event.getValue().contains(" ")) postalCode.setValue(event.getValue().replace(" ", ""));
         });
@@ -197,6 +199,9 @@ public class SellView extends Div {
         purchaseFields.getStyle().set("overflow", "hidden");
 
         purchaserFields = List.of(ic, companyName, purchaserName, address, postalCode, city);
+        purchaserFields.forEach(textField -> textField.addValueChangeListener(event -> {
+            if (event.getValue().length() > textField.getMaxLength()) textField.setValue(event.getOldValue());
+        }));
 
         specifyPurchaser.addValueChangeListener(event -> switchPurchaseFieldsEnabled());
         setPurchaseFieldsEnabled(false);
@@ -209,7 +214,7 @@ public class SellView extends Div {
         setPurchaseFieldsEnabled(!specifyPurchaserStatus);
     }
 
-    private List<AbstractField<?, String>> purchaserFields;
+    private List<TextField> purchaserFields;
 
     private void setPurchaseFieldsEnabled(boolean enabled) {
         specifyPurchaserStatus = enabled;
@@ -311,13 +316,12 @@ public class SellView extends Div {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<Invoice>> violations = new HashSet<>(validator.validate(invoice));
-        validateCount(invoice.getItems(), itemsEditor.count(), violations);
+        if (violations.isEmpty()) validateCount(invoice.getItems(), itemsEditor.count(), violations);
         if (!violations.isEmpty()) {
             violations.forEach(invoiceConstraintViolation -> Notification.show(invoiceConstraintViolation.getMessage()));
             return;
         }
         //
-        // TODO: 05.04.2022 odečíst ze skladu
         generatedModelValue.forEach((variant, integer) -> {
             variant.setQuantity(variant.getQuantity() - integer);
             warehouseItemVariantService.save(variant);
