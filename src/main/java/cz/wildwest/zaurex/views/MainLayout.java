@@ -21,6 +21,7 @@ import cz.wildwest.zaurex.help.Helper;
 import cz.wildwest.zaurex.help.Helpers;
 import cz.wildwest.zaurex.security.AuthenticatedUser;
 import cz.wildwest.zaurex.views.about.AboutView;
+import cz.wildwest.zaurex.views.allShifts.AllShiftsView;
 import cz.wildwest.zaurex.views.employees.EmployeesView;
 import cz.wildwest.zaurex.views.holidays.HolidaysView;
 import cz.wildwest.zaurex.views.holidaysForApproval.HolidaysForApprovalView;
@@ -177,7 +178,7 @@ public class MainLayout extends AppLayout {
 
 //                new MenuItemInfo("Vaše směny", "la la-screwdriver", YoursShiftsView.class),
 
-//                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
+                new MenuItemInfo("Všechny směny", "la la-tools", AllShiftsView.class),
 
                 holidays,
 
