@@ -102,7 +102,7 @@ public class WarehouseView extends VerticalLayout {
         Button button = new Button("Rychle naskladnit", new LineAwesomeIcon("las la-rocket"));
         button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         button.addClickListener(event -> {
-            if (event.isAltKey()) UI.getCurrent().navigate(QuickAddView.class);
+            if (event.isAltKey() || event.getClickCount() > 1) UI.getCurrent().navigate(QuickAddView.class);
             else showQuickAdditionDialog();
         });
         bottomMenuBarLayout.addComponentAsFirst(button);
