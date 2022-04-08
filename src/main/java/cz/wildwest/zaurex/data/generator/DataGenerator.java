@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class DataGenerator {
 
     @Bean
-    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService) {
+    public CommandLineRunner loadData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService, ShiftService shiftService) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
             if (userService.count() != 0L) {
@@ -28,11 +29,11 @@ public class DataGenerator {
                 return;
             }
             //
-            generateDemoData(passwordEncoder, userService, warehouseService, warehouseItemVariantService, holidayService, invoiceService, configurationService, logger);
+            generateDemoData(passwordEncoder, userService, warehouseService, warehouseItemVariantService, holidayService, invoiceService, configurationService, shiftService, logger);
         };
     }
 
-    public void generateDemoData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService, Logger logger) {
+    public void generateDemoData(PasswordEncoder passwordEncoder, UserService userService, WarehouseService warehouseService, WarehouseItemVariantService warehouseItemVariantService, HolidayService holidayService, InvoiceService invoiceService, ConfigurationService configurationService, ShiftService shiftService, Logger logger) {
         logger.info("Generating demo data.");
         //
         createConfiguration(configurationService);
@@ -40,6 +41,7 @@ public class DataGenerator {
         createWarehouseItems(warehouseService, warehouseItemVariantService);
         createHolidays(userService, holidayService);
         createInvoices(invoiceService, warehouseItemVariantService, userService);
+        createShifts(shiftService, userService);
         //
         logger.info("Generated demo data.");
     }
@@ -122,6 +124,13 @@ public class DataGenerator {
         invoice2.setPurchaserInfo(new Invoice.PurchaserInfo("6841846", "Alza.cz", "Petr Novák", "Pramenná 9", "64100, Brno"));
         invoiceService.save(invoice);
         invoiceService.save(invoice2);
+    }
+
+    private void createShifts(ShiftService shiftService, UserService userService) {
+        Shift shift = new Shift(userService.findAll().get(0), LocalDateTime.now(), LocalDateTime.now().plusHours(2));
+        Shift shift2 = new Shift(userService.findAll().get(0), LocalDateTime.now().plusDays(1), LocalDateTime.now().plusHours(2).plusDays(1));
+        shiftService.save(shift);
+        shiftService.save(shift2);
     }
 
 }

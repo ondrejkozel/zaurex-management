@@ -25,10 +25,12 @@ public class DataRegenerator {
     private final UserService userService;
     private final WarehouseItemVariantService warehouseItemVariantService;
     private final WarehouseService warehouseService;
+    private final ShiftService shiftService;
     private final PasswordEncoder passwordEncoder;
     private final Logger logger;
 
-    public DataRegenerator(@Autowired EntityManager entityManager, ConfigurationService configurationService, HolidayService holidayService, InvoiceService invoiceService, UserService userService, WarehouseItemVariantService warehouseItemVariantService, WarehouseService warehouseService, PasswordEncoder passwordEncoder) {
+    public DataRegenerator(@Autowired EntityManager entityManager, ConfigurationService configurationService, HolidayService holidayService, InvoiceService invoiceService, UserService userService, WarehouseItemVariantService warehouseItemVariantService, WarehouseService warehouseService, ShiftService shiftService, PasswordEncoder passwordEncoder) {
+        this.shiftService = shiftService;
         this.passwordEncoder = passwordEncoder;
         this.allServices = List.of(configurationService, holidayService, invoiceService, userService, warehouseItemVariantService, warehouseService);
         this.entityManager = entityManager;
@@ -70,7 +72,7 @@ public class DataRegenerator {
     }
 
     private void regenerateDatabase() {
-        new DataGenerator().generateDemoData(passwordEncoder, userService, warehouseService, warehouseItemVariantService, holidayService, invoiceService, configurationService, logger);
+        new DataGenerator().generateDemoData(passwordEncoder, userService, warehouseService, warehouseItemVariantService, holidayService, invoiceService, configurationService, shiftService, logger);
     }
 
 }
